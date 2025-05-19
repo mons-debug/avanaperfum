@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "sample1",
+    "name": "Example Perfume 1",
+    "category": "Eau de Parfum",
+    "gender": "Femme",
+    "imageUrl": "/images/products/example1.jpg",
+    "volume": "100ml"
+  },
+  {
+    "_id": "sample2",
+    "name": "Example Perfume 2",
+    "category": "Eau de Toilette",
+    "gender": "Homme",
+    "imageUrl": "/images/products/example2.jpg",
+    "volume": "50ml"
+  }
+]

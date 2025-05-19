@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" version="1.1" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+ <rect width="800" height="600" fill="#1a1a1a"/>
+ <g fill="#ffffff" opacity=".15">
+   <circle cx="400" cy="300" r="200" fill="none" stroke="#ffffff" stroke-width="40"/>
+   <path d="m400 180v240" stroke="#ffffff" stroke-linecap="round" stroke-width="40"/>
+   <path d="m280 300h240" stroke="#ffffff" stroke-linecap="round" stroke-width="40"/>
+ </g>
+ <text x="400" y="500" fill="#ffffff" font-family="Arial" font-size="24" text-anchor="middle">Category Image</text>
+</svg> 

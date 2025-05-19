@@ -1,0 +1,42 @@
+[
+  {
+    "_id": "1",
+    "name": "Sample Perfume 1",
+    "category": "Eau de Parfum",
+    "gender": "Femme",
+    "price": 0,
+    "images": [
+      "/images/products/sample1.jpg"
+    ],
+    "inspiredBy": "Designer Brand 1",
+    "description": "A beautiful floral scent",
+    "volume": "100ml",
+    "tags": [
+      "floral",
+      "fresh"
+    ],
+    "ingredients": "Alcohol, Water, Fragrance",
+    "createdAt": "2025-05-17T19:43:21.241Z",
+    "updatedAt": "2025-05-17T19:43:21.241Z"
+  },
+  {
+    "_id": "2",
+    "name": "Sample Perfume 2",
+    "category": "Eau de Toilette",
+    "gender": "Homme",
+    "price": 0,
+    "images": [
+      "/images/products/sample2.jpg"
+    ],
+    "inspiredBy": "Designer Brand 2",
+    "description": "A masculine woody scent",
+    "volume": "50ml",
+    "tags": [
+      "woody",
+      "spicy"
+    ],
+    "ingredients": "Alcohol, Water, Fragrance",
+    "createdAt": "2025-05-17T19:43:21.246Z",
+    "updatedAt": "2025-05-17T19:43:21.246Z"
+  }
+]

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" version="1.1" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+   <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+     <stop offset="0%" style="stop-color:#6c5ce7;stop-opacity:1" />
+     <stop offset="100%" style="stop-color:#a29bfe;stop-opacity:1" />
+   </linearGradient>
+ </defs>
+ <rect width="800" height="600" fill="url(#grad)"/>
+ <g fill="#ffffff" opacity="0.9">
+   <circle cx="350" cy="250" r="40" stroke="#ffffff" stroke-width="20" fill="none"/>
+   <path d="M350 290 v80" stroke="#ffffff" stroke-width="20" stroke-linecap="round"/>
+   <path d="M320 330 l30 30 l30 -30" stroke="#ffffff" stroke-width="20" stroke-linecap="round" fill="none"/>
+   
+   <circle cx="450" cy="250" r="40" stroke="#ffffff" stroke-width="20" fill="none"/>
+   <path d="M450 290 v80" stroke="#ffffff" stroke-width="20" stroke-linecap="round"/>
+   <path d="M450 330 l-30 -30" stroke="#ffffff" stroke-width="20" stroke-linecap="round"/>
+   <path d="M450 330 l30 -30" stroke="#ffffff" stroke-width="20" stroke-linecap="round"/>
+ </g>
+ <text x="400" y="500" fill="#ffffff" font-family="Arial" font-size="32" text-anchor="middle">Unisexe</text>
+</svg> 

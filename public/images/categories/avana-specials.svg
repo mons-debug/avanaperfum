@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" version="1.1" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+   <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+     <stop offset="0%" style="stop-color:#c6a55c;stop-opacity:1" />
+     <stop offset="100%" style="stop-color:#deb853;stop-opacity:1" />
+   </linearGradient>
+ </defs>
+ <rect width="800" height="600" fill="url(#grad)"/>
+ <g fill="#ffffff" opacity="0.9">
+   <path d="M400 150 l50 150 l-100 0 Z" fill="none" stroke="#ffffff" stroke-width="20"/>
+   <path d="M350 300 l100 0" stroke="#ffffff" stroke-width="20"/>
+   <path d="M370 300 l30 100 l30 -100" fill="none" stroke="#ffffff" stroke-width="20"/>
+   <path d="M350 350 h100" stroke="#ffffff" stroke-width="20"/>
+ </g>
+ <text x="400" y="500" fill="#ffffff" font-family="Arial" font-size="32" text-anchor="middle">Avana Specials</text>
+</svg> 

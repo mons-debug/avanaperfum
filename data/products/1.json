@@ -1,0 +1,20 @@
+{
+  "_id": "1",
+  "name": "Sample Perfume 1",
+  "category": "Eau de Parfum",
+  "gender": "Femme",
+  "price": 0,
+  "images": [
+    "/images/products/sample1.jpg"
+  ],
+  "inspiredBy": "Designer Brand 1",
+  "description": "A beautiful floral scent",
+  "volume": "100ml",
+  "tags": [
+    "floral",
+    "fresh"
+  ],
+  "ingredients": "Alcohol, Water, Fragrance",
+  "createdAt": "2025-05-17T19:43:21.241Z",
+  "updatedAt": "2025-05-17T19:43:21.241Z"
+}

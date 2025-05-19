@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" version="1.1" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+   <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+     <stop offset="0%" style="stop-color:#c6a55c;stop-opacity:1" />
+     <stop offset="100%" style="stop-color:#8b7355;stop-opacity:1" />
+   </linearGradient>
+ </defs>
+ <rect width="800" height="600" fill="url(#grad)"/>
+ <g fill="#ffffff" opacity="0.9">
+   <path d="M400 150 L450 250 L350 250 Z" />
+   <rect x="370" y="250" width="60" height="200" />
+   <circle cx="400" cy="300" r="100" fill="none" stroke="#ffffff" stroke-width="20"/>
+ </g>
+ <text x="400" y="500" fill="#ffffff" font-family="Arial" font-size="32" text-anchor="middle">Luxury Collection</text>
+</svg> 

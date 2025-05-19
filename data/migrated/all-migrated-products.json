@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "sample1",
+    "name": "Example Perfume 1",
+    "category": "Eau de Parfum",
+    "gender": "Femme",
+    "price": 0,
+    "images": [
+      "/images/products/example1.jpg"
+    ],
+    "volume": "100ml",
+    "tags": [],
+    "createdAt": "2025-05-17T19:44:58.149Z",
+    "updatedAt": "2025-05-17T19:44:58.149Z"
+  },
+  {
+    "_id": "sample2",
+    "name": "Example Perfume 2",
+    "category": "Eau de Toilette",
+    "gender": "Homme",
+    "price": 0,
+    "images": [
+      "/images/products/example2.jpg"
+    ],
+    "volume": "50ml",
+    "tags": [],
+    "createdAt": "2025-05-17T19:44:58.149Z",
+    "updatedAt": "2025-05-17T19:44:58.149Z"
+  }
+]
