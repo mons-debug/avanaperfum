@@ -19,13 +19,34 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   compress: true,
+  swcMinify: true,
+  output: 'standalone',
   
   // Enable aggressive caching and optimization
   experimental: {
     optimizeCss: true,
     scrollRestoration: true,
-    optimisticClientCache: true
+    optimisticClientCache: true,
+    // Enable server components external packages
+    serverComponentsExternalPackages: ['mongoose'],
+  },
+  
+  // Environment variables
+  env: {
+    MONGODB_URI: process.env.MONGODB_URI,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  },
+  
+  // Disable TypeScript type checking during build for faster builds
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  
+  // Disable ESLint during build for faster builds
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

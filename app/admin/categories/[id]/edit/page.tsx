@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import { successToast, errorToast } from '@/lib/toast';
@@ -16,13 +16,9 @@ interface Category {
   featured?: boolean;
 }
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function EditCategoryPage({ params }: PageProps) {
+export default function EditCategoryPage() {
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   const [category, setCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
@@ -38,7 +34,7 @@ export default function EditCategoryPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchCategory() {
       try {
-        const response = await fetch(`/api/categories/${params.id}`);
+        const response = await fetch(`/api/categories/${id}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -65,7 +61,7 @@ export default function EditCategoryPage({ params }: PageProps) {
     }
 
     fetchCategory();
-  }, [params.id]);
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -87,7 +83,7 @@ export default function EditCategoryPage({ params }: PageProps) {
         throw new Error('Category name is required');
       }
 
-      const response = await fetch(`/api/categories/${params.id}`, {
+      const response = await fetch(`/api/categories/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
