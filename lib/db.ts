@@ -14,12 +14,6 @@ function getMongoDBUri(): string {
   return uri;
 }
 
-// Connection options
-const options = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-};
-
 // Create client promise lazily
 function createClientPromise(): Promise<MongoClient> {
   if (process.env.NODE_ENV === 'development') {
@@ -44,9 +38,6 @@ function getClientPromise(): Promise<MongoClient> {
   }
   return cachedClientPromise;
 }
-
-// Export the client promise
-export const clientPromise = getClientPromise();
 
 // Function for NextAuth to connect to the database
 export async function connectToDatabase() {

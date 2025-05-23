@@ -40,7 +40,7 @@ type Category = {
   slug: string;
 };
 
-export default function ShopPage() {
+function ShopPageContent() {
   const { t, locale } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -657,5 +657,22 @@ export default function ShopPage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen pt-[120px] pb-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center py-20">
+            <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-[#c8a45d] border-r-transparent"></div>
+            <p className="mt-4 text-gray-600">Loading shop...</p>
+          </div>
+        </div>
+      </main>
+    }>
+      <ShopPageContent />
+    </Suspense>
   );
 }

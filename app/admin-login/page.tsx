@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FaLock, FaEnvelope, FaExclamationTriangle, FaArrowLeft } from 'react-icons/fa';
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/admin';
@@ -139,5 +139,27 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#f9f5eb]">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="p-8 text-center bg-white">
+            <div className="flex justify-center mb-4">
+              <div className="w-20 h-20 flex items-center justify-center rounded-full bg-[#f9f5eb] shadow-inner">
+                <span className="text-[#c8a45d] text-2xl font-bold">AP</span>
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800">AVANA PARFUM</h1>
+            <p className="mt-1 text-gray-500">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <AdminLoginForm />
+    </Suspense>
   );
 }

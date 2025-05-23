@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaLock, FaEnvelope, FaExclamationTriangle, FaArrowLeft } from 'react-icons/fa';
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/admin';
@@ -145,5 +145,28 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#f9f5eb] to-white p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100">
+            <div className="p-8 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-24 h-24 bg-[#f9f5eb] rounded-lg flex items-center justify-center">
+                  <span className="text-[#c8a45d] text-xl font-bold">AP</span>
+                </div>
+              </div>
+              <p className="mt-2 text-gray-500">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <AdminLoginForm />
+    </Suspense>
   );
 }
