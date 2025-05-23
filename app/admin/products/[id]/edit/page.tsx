@@ -1,8 +1,5 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import ProductForm from '@/components/ProductForm';
 import LocalImageInstructions from '@/components/LocalImageInstructions';
@@ -25,63 +22,56 @@ interface PageProps {
   params: {
     id: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function EditProductPage({ params }: PageProps) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await fetch(`/api/products/${params.id}`);
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to fetch product');
-        }
-        
-        if (data.success && data.data) {
-          setProduct(data.data);
-        } else {
-          throw new Error('Product not found');
-        }
-      } catch (err: any) {
-        setError(err.message);
-        console.error('Error fetching product:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchProduct();
-  }, [params.id]);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-pulse text-lg text-gray-600">Loading product...</div>
-        </div>
-      </div>
+export default async function EditProductPage({ params }: PageProps) {
+  // Fetch product data on the server side
+  let product: Product | null = null;
+  let error = '';
+  
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/products/${params.id}`, 
+      { cache: 'no-store' }
     );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch product');
+    }
+    
+    const data = await response.json();
+    if (data.success) {
+      product = data.data;
+    } else {
+      throw new Error(data.error || 'Failed to fetch product');
+    }
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'An error occurred';
+    console.error('Error fetching product:', err);
   }
-
-  if (error || !product) {
+  
+  if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          <p className="font-medium">Error: {error || 'Product not found'}</p>
-          <p className="mt-2">
-            <Link href="/admin/products" className="text-red-600 underline">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+          <div className="mt-2">
+            <Link href="/admin/products" className="text-red-700 underline">
               Return to products
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     );
   }
+  
+  if (!product) {
+    notFound();
+  }
+
+  // No loading state needed as we're using server components
 
   return (
     <div className="container mx-auto px-4 py-8">
