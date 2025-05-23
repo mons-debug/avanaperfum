@@ -115,7 +115,7 @@ function GridProductCard({ product, index }: { product: Product; index: number }
       <div className="relative aspect-square">
         <Image
           src={product.images[0] || '/images/product-placeholder.svg'}
-          alt={product.name}
+          alt={typeof product.name === 'object' ? (product.name[locale as keyof typeof product.name] || product.name.fr || product.name.en || 'Product') : (product.name || 'Product')}
           fill
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           className="object-cover"
@@ -177,7 +177,7 @@ function GridProductCard({ product, index }: { product: Product; index: number }
           <div className="flex justify-between items-center mt-2">
             <span className="text-[#c8a45d] font-semibold">{product.price} {t('product.currency', 'DH')}</span>
             {product.volume && (
-              <span className="text-gray-500 text-sm">{product.volume}</span>
+              <span className="text-gray-500 text-sm">{typeof product.volume === 'object' ? (product.volume[locale as keyof typeof product.volume] || product.volume.fr || product.volume.en) : product.volume}</span>
             )}
           </div>
         </Link>
@@ -248,7 +248,7 @@ function ListProductCard({ product, index }: { product: Product; index: number }
       <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
         <Image
           src={product.images[0] || '/images/product-placeholder.svg'}
-          alt={product.name}
+          alt={typeof product.name === 'object' ? (product.name[locale as keyof typeof product.name] || product.name.fr || product.name.en || 'Product') : (product.name || 'Product')}
           fill
           sizes="(max-width: 768px) 128px, 160px"
           className="object-cover"
@@ -324,7 +324,7 @@ function ListProductCard({ product, index }: { product: Product; index: number }
           <div className="flex items-baseline">
             <span className="text-[#c8a45d] font-semibold text-lg">{product.price} {t('product.currency', 'DH')}</span>
             {product.volume && (
-              <span className="text-gray-500 text-sm ml-2">{product.volume}</span>
+              <span className="text-gray-500 text-sm ml-2">{typeof product.volume === 'object' ? (product.volume[locale as keyof typeof product.volume] || product.volume.fr || product.volume.en) : product.volume}</span>
             )}
           </div>
           

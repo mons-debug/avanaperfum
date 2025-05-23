@@ -3,14 +3,14 @@ import { connectToDB } from '@/lib/mongodb';
 import Product from '@/models/Product';
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const { id } = await Promise.resolve(params);
+    const { id } = await params;
     await connectToDB();
     
     const product = await Product.findById(id);
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
-    const { id } = await Promise.resolve(params);
+    const { id } = await params;
     const body = await request.json();
     
     // Validate required fields
@@ -95,7 +95,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
-    const { id } = await Promise.resolve(params);
+    const { id } = await params;
     await connectToDB();
     
     const deletedProduct = await Product.findByIdAndDelete(id);

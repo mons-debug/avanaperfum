@@ -240,7 +240,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
               <div className="relative h-[400px] md:h-[500px] rounded-lg overflow-hidden bg-white">
                 <Image
                   src={currentImage}
-                  alt={product.name}
+                  alt={getTranslatedText(product.name, 'Product')}
                   fill
                   sizes={imageConfig.product.sizes.medium}
                   className="object-contain"
@@ -333,7 +333,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                   )}
                   {product.volume && (
                     <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                      {t('product.volume', 'Volume')}: {product.volume}
+                      {t('product.volume', 'Volume')}: {getTranslatedText(product.volume)}
                     </span>
                   )}
                   {product.category && (
@@ -415,7 +415,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                 
                 <Link
                   href={`https://wa.me/+212600000000?text=${encodeURIComponent(
-                    `Hello, I'm interested in purchasing:\n\n*${product.name}*${product.inspiredBy ? ` (Inspired by ${product.inspiredBy})` : ''}\nPrice: ${product.price.toFixed(2)} DH\n${product.volume ? `Volume: ${product.volume}\n` : ''}${product.gender ? `Type: ${product.gender}\n` : ''}\n\nPlease let me know how to proceed with my order.`
+                    `Hello, I'm interested in purchasing:\n\n*${getTranslatedText(product.name)}*${product.inspiredBy ? ` (Inspired by ${getTranslatedText(product.inspiredBy)})` : ''}\nPrice: ${product.price.toFixed(2)} DH\n${product.volume ? `Volume: ${getTranslatedText(product.volume)}\n` : ''}${product.gender ? `Type: ${product.gender}\n` : ''}\n\nPlease let me know how to proceed with my order.`
                   )}`}
                   target="_blank"
                   className="w-full flex items-center justify-center gap-2 py-3.5 px-6 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
@@ -481,7 +481,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                       <div className="relative aspect-square">
                         <Image
                           src={getImageSrc(relatedProduct.images[0])}
-                          alt={relatedProduct.name}
+                          alt={getTranslatedText(relatedProduct.name, 'Product')}
                           fill
                           sizes="(max-width: 768px) 50vw, 25vw"
                           className="object-cover"
@@ -532,7 +532,14 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
       
       {isModalOpen && (
         <OrderModal
-          product={product}
+          product={{
+            _id: product._id,
+            name: getTranslatedText(product.name, 'Unnamed Product'),
+            price: product.price,
+            images: product.images,
+            volume: getTranslatedText(product.volume),
+            inspiredBy: getTranslatedText(product.inspiredBy)
+          }}
           onClose={closeModal}
         />
       )}

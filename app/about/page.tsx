@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaAward, FaLeaf, FaStar, FaHandshake, FaHeart } from 'react-icons/fa';
+import { FaAward, FaLeaf, FaHandshake, FaHeart } from 'react-icons/fa';
 import WhatsAppButton from '@/components/WhatsAppButton';
 
 export default function AboutPage() {
@@ -13,20 +13,20 @@ export default function AboutPage() {
     story: (
       <div className="space-y-6">
         <p className="text-lg leading-relaxed text-gray-700">
-          Fondée en 2018, AVANA PARFUM a commencé avec une mission simple : rendre les expériences de parfums de luxe accessibles à tous. Notre fondateur, avec plus de 15 ans d'expérience dans l'industrie du parfum, a reconnu que de nombreuses personnes apprécient les fragrances raffinées mais trouvent les prix des créateurs prohibitifs.
+          Fondée en 2018, AVANA PARFUM a commencé avec une mission simple : rendre les expériences de parfums de luxe accessibles à tous. Notre fondateur, avec plus de 15 ans d&apos;expérience dans l&apos;industrie du parfum, a reconnu que de nombreuses personnes apprécient les fragrances raffinées mais trouvent les prix des créateurs prohibitifs.
         </p>
         <p className="text-lg leading-relaxed text-gray-700">
-          En commençant avec seulement 10 parfums signature, nous avons développé notre collection à plus de 100 fragrances premium inspirées des parfums de renommée mondiale. Chaque parfum AVANA capture l'essence des parfums de luxe tout en maintenant un prix abordable et une qualité exceptionnelle.
+          En commençant avec seulement 10 parfums signature, nous avons développé notre collection à plus de 100 fragrances premium inspirées des parfums de renommée mondiale. Chaque parfum AVANA capture l&apos;essence des parfums de luxe tout en maintenant un prix abordable et une qualité exceptionnelle.
         </p>
         <p className="text-lg leading-relaxed text-gray-700">
-          Aujourd'hui, AVANA PARFUM sert fièrement des milliers de clients à travers le Maroc et s'étend à l'international, apportant notre passion pour les fragrances de luxe accessibles à de nouveaux marchés.
+          Aujourd&apos;hui, AVANA PARFUM sert fièrement des milliers de clients à travers le Maroc et s&apos;étend à l&apos;international, apportant notre passion pour les fragrances de luxe accessibles à de nouveaux marchés.
         </p>
       </div>
     ),
     mission: (
       <div className="space-y-6">
         <p className="text-lg leading-relaxed text-gray-700">
-          Chez AVANA PARFUM, notre mission est de démocratiser les parfums de luxe en créant des parfums de qualité premium accessibles à tous. Nous croyons que chacun mérite de vivre la confiance et le plaisir qui viennent avec le port d'un parfum distinctif.
+          Chez AVANA PARFUM, notre mission est de démocratiser les parfums de luxe en créant des parfums de qualité premium accessibles à tous. Nous croyons que chacun mérite de vivre la confiance et le plaisir qui viennent avec le port d&apos;un parfum distinctif.
         </p>
         <p className="text-lg leading-relaxed text-gray-700">
           Nous nous engageons à :
@@ -51,7 +51,7 @@ export default function AboutPage() {
             {
               icon: <FaAward className="w-8 h-8 text-[#c8a45d]" />,
               title: "Excellence",
-              description: "Nous visons l'excellence dans tout ce que nous faisons, du développement de produits au service client."
+              description: "Nous visons l&apos;excellence dans tout ce que nous faisons, du développement de produits au service client."
             },
             {
               icon: <FaHandshake className="w-8 h-8 text-[#c8a45d]" />,
@@ -86,7 +86,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-playfair text-[#c8a45d] mb-6">
-              À Propos d'AVANA PARFUM
+              À Propos d&apos;AVANA PARFUM
             </h1>
             <p className="text-xl text-gray-700 mb-8 leading-relaxed">
               Création de parfums de luxe accessibles inspirés des plus beaux parfums du monde.
@@ -149,7 +149,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
               { number: "100+", label: "Parfums" },
-              { number: "5+", label: "Années d'Expérience" },
+              { number: "5+", label: "Années d&apos;Expérience" },
               { number: "10k+", label: "Clients Satisfaits" },
               { number: "30+", label: "Villes Desservies" }
             ].map((stat, index) => (

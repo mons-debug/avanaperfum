@@ -9,7 +9,7 @@ console.log('Current NODE_ENV:', process.env.NODE_ENV);
 dotenv.config();
 
 // Initialize cached connection
-let cached: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } = global.mongoose || {
+let cached: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } = (global as any).mongoose || {
   conn: null,
   promise: null,
 };
@@ -19,7 +19,7 @@ const envState = {
   nodeEnv: process.env.NODE_ENV,
   hasMongoUri: !!process.env.MONGODB_URI,
   hasNextPublicMongoUri: !!process.env.NEXT_PUBLIC_MONGODB_URI,
-  hasMongoUri: !!process.env.MONGO_URI,
+  hasMongoUriAlt: !!process.env.MONGO_URI,
   availableEnvKeys: Object.keys(process.env).filter(key => !key.includes('SECRET')),
 };
 
@@ -38,7 +38,7 @@ function getMongoURI(): string {
       nodeEnv: process.env.NODE_ENV,
       hasMongoUri: !!process.env.MONGODB_URI,
       hasNextPublicMongoUri: !!process.env.NEXT_PUBLIC_MONGODB_URI,
-      hasMongoUri: !!process.env.MONGO_URI,
+      hasMongoUriAlt: !!process.env.MONGO_URI,
       availableEnvKeys: Object.keys(process.env).filter(key => !key.includes('SECRET')),
     });
     throw new Error(
@@ -52,6 +52,7 @@ function getMongoURI(): string {
 
 // Declare global mongoose cache
 declare global {
+  // eslint-disable-next-line no-var
   var mongoose: {
     conn: typeof mongoose | null;
     promise: Promise<typeof mongoose> | null;
@@ -59,9 +60,9 @@ declare global {
 }
 
 // Initialize mongoose connection
-if (!global.mongoose) {
-  global.mongoose = { conn: null, promise: null };
-  cached = global.mongoose;
+if (!(global as any).mongoose) {
+  (global as any).mongoose = { conn: null, promise: null };
+  cached = (global as any).mongoose;
 }
 
 export async function connectToDB() {

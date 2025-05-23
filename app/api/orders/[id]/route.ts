@@ -3,14 +3,14 @@ import { connectToDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 
 interface Params {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const { id } = await Promise.resolve(params);
+    const { id } = await params;
     await connectToDB();
     
     const order = await Order.findById(id);
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
-    const { id } = await Promise.resolve(params);
+    const { id } = await params;
     const body = await request.json();
     const { status } = body;
     

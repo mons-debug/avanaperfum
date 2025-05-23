@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { connectToDB } from '@/lib/mongodb';
 import Product from '@/models/Product';
 import Category from '@/models/Category';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import HeroSection from '@/components/HeroSection';
-import ProductCard from '@/components/ProductCard';
-import CategoryCard from '@/components/CategoryCard';
+// import ProductCard from '@/components/ProductCard';
+// import CategoryCard from '@/components/CategoryCard';
 import BasicProductDisplay from '@/components/BasicProductDisplay';
-import { FaVenus, FaMars, FaShoppingBag, FaWhatsapp, FaCheck, FaArrowRight, FaArrowLeft, FaPhone, FaBox, FaCrown, FaTruck, FaMoneyBillWave } from 'react-icons/fa';
+import { FaShoppingBag, FaWhatsapp, FaCheck, FaArrowRight, FaPhone, FaBox, FaCrown, FaTruck, FaMoneyBillWave } from 'react-icons/fa';
 import Image from 'next/image';
-import { useProducts } from '@/hooks/useProducts';
+// import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useTranslation } from '@/components/i18n/TranslationProvider';
 

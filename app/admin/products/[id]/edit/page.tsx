@@ -19,20 +19,21 @@ interface Product {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function EditProductPage({ params }: PageProps) {
+  const { id } = await params;
   // Fetch product data on the server side
   let product: Product | null = null;
   let error = '';
   
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/products/${params.id}`, 
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/products/${id}`, 
       { cache: 'no-store' }
     );
     

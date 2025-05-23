@@ -12,8 +12,8 @@ import {
   FaHome,
   FaUserCog
 } from 'react-icons/fa';
-import { usePathname, useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import { SessionProvider } from 'next-auth/react';
 
 // Client component for active link detection
@@ -74,8 +74,6 @@ export function AdminSidebar() {
 
 // Client component wrapper for the admin layout
 export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
-  const router = useRouter();
   return (
     <>
       <style jsx global>{`

@@ -8,9 +8,9 @@ import { isValidObjectId } from 'mongoose';
 const DEFAULT_LOCALE = 'fr';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 async function getProductBySlug(slugOrId: string) {
@@ -54,9 +54,10 @@ async function getProductBySlug(slugOrId: string) {
 }
 
 export default async function ProductPage({ params }: PageProps) {
+  const { slug } = await params;
   // Set French as the default locale for server-side rendering
   const locale = DEFAULT_LOCALE;
-  const product = await getProductBySlug(params.slug);
+  const product = await getProductBySlug(slug);
   
   if (!product) {
     return (
