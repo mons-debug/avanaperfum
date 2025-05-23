@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build files
+.next/
+out/
+
+# Environment variables
+.env*
+!.env.example
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local development
+.DS_Store
+*.pem
+
+# IDE
+.vscode/
+.idea/
+
+# Test files
+**/*.test.*
+**/*.spec.*
+
+# Backup files
+backup/
+
+# Local development
+*.local
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/

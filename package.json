@@ -17,6 +17,10 @@
     "finalize-migration": "node ./scripts/finalizeProductMigration.js",
     "import-products": "node ./scripts/importMigratedProducts.js"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
