@@ -15,11 +15,11 @@
 /out/
 
 # backup files and folders
-/backup/**/node_modules
-/backup/**/.next
-/backup/**/cache
+/backup/
 **/*.pack
 **/*.node
+.next/cache/
+.next/cache/**/*
 
 # production
 /build
