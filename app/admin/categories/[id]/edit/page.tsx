@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import { successToast, errorToast } from '@/lib/toast';
@@ -16,20 +16,29 @@ interface Category {
   featured?: boolean;
 }
 
+interface FormData {
+  name: string;
+  description: string;
+  image: string;
+  featured: boolean;
+}
+
 interface PageProps {
   params: {
     id: string;
   };
 }
 
-export default function EditCategoryPage({ params }: PageProps) {
+export default function EditCategoryPage() {
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   const [category, setCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
     image: '',
-    featured: false
+    featured: false,
   });
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,7 +47,7 @@ export default function EditCategoryPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchCategory() {
       try {
-        const response = await fetch(`/api/categories/${params.id}`);
+        const response = await fetch(`/api/categories/${id}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -51,7 +60,7 @@ export default function EditCategoryPage({ params }: PageProps) {
             name: data.data.name || '',
             description: data.data.description || '',
             image: data.data.image || '',
-            featured: data.data.featured || false
+            featured: data.data.featured || false,
           });
         } else {
           throw new Error('Category not found');
@@ -65,16 +74,19 @@ export default function EditCategoryPage({ params }: PageProps) {
     }
 
     fetchCategory();
-  }, [params.id]);
+  }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+    }));
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    setFormData(prev => ({ ...prev, [name]: checked }));
+    setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +99,7 @@ export default function EditCategoryPage({ params }: PageProps) {
         throw new Error('Category name is required');
       }
 
-      const response = await fetch(`/api/categories/${params.id}`, {
+      const response = await fetch(`/api/categories/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +129,10 @@ export default function EditCategoryPage({ params }: PageProps) {
   };
 
   const handleImageUpload = (url: string) => {
-    setFormData(prev => ({ ...prev, image: url }));
+    setFormData((prev) => ({
+      ...prev,
+      image: url,
+    }));
   };
 
   if (loading) {
@@ -148,7 +163,7 @@ export default function EditCategoryPage({ params }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <Link 
+        <Link
           href="/admin/categories"
           className="inline-flex items-center text-blue-600 hover:text-blue-800"
         >
@@ -157,7 +172,7 @@ export default function EditCategoryPage({ params }: PageProps) {
         </Link>
         <h1 className="text-2xl font-bold">Edit Category</h1>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
@@ -165,7 +180,7 @@ export default function EditCategoryPage({ params }: PageProps) {
               {error}
             </div>
           )}
-          
+
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Category Name *
@@ -176,15 +191,16 @@ export default function EditCategoryPage({ params }: PageProps) {
               name="name"
               required
               value={formData.name}
-              onChange={handleChange}
-              className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Current slug: <code className="bg-gray-100 px-1 py-0.5 rounded">{category.slug}</code><br />
+              Current slug: <code className="bg-gray-100 px-1 py-0.5 rounded">{category.slug}</code>
+              <br />
               The slug will be automatically updated based on the name.
             </p>
           </div>
-          
+
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
               Description
@@ -192,10 +208,10 @@ export default function EditCategoryPage({ params }: PageProps) {
             <textarea
               id="description"
               name="description"
-              rows={3}
+              rows={4}
               value={formData.description}
-              onChange={handleChange}
-              className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
 

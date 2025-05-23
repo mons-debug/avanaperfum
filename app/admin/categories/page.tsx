@@ -7,11 +7,16 @@ import { successToast, errorToast } from '@/lib/toast';
 import Link from 'next/link';
 
 // Define the category type
-type Category = {
+interface Category {
   _id: string;
   name: string;
   slug: string;
-};
+  description?: string;
+  image?: string;
+  featured?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export default function AdminCategoriesPage() {
   const router = useRouter();
@@ -149,6 +154,59 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  // Render category row
+  const renderCategoryRow = (category: Category) => (
+    <tr key={category._id} className="hover:bg-gray-50">
+      <td className="py-3 px-4 whitespace-nowrap">
+        <div className="font-medium text-gray-900">{category.name}</div>
+      </td>
+      <td className="py-3 px-4 whitespace-nowrap">
+        <div className="text-sm text-gray-600">{category.slug}</div>
+      </td>
+      <td className="py-3 px-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/categories/${category._id}/edit`}
+            className="p-2 text-blue-600 hover:text-blue-900 transition-colors"
+            title="Edit category"
+          >
+            <FaEdit />
+          </Link>
+          
+          {showDeleteConfirm === category._id ? (
+            <div className="flex items-center gap-2 ml-2">
+              <button
+                onClick={() => handleDeleteConfirm(category._id)}
+                className="p-1 px-2 text-white bg-red-500 text-xs rounded hover:bg-red-600 transition-colors"
+              >
+                Yes
+              </button>
+              <button
+                onClick={handleDeleteCancel}
+                className="p-1 px-2 text-gray-600 bg-gray-200 text-xs rounded hover:bg-gray-300 transition-colors"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => handleDeleteClick(category._id)}
+              className="p-2 text-red-600 hover:text-red-900 transition-colors"
+              title="Delete category"
+            >
+              <FaTrash />
+            </button>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+
+  // Handle edit
+  const handleEdit = (category: Category) => {
+    router.push(`/admin/categories/${category._id}/edit`);
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -250,52 +308,7 @@ export default function AdminCategoriesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {categories.map((category) => (
-                    <tr key={category._id} className="hover:bg-gray-50">
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{category.name}</div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{category.slug}</div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <Link
-                            href={`/admin/categories/${category._id}/edit`}
-                            className="p-2 text-blue-600 hover:text-blue-900 transition-colors"
-                            title="Edit category"
-                          >
-                            <FaEdit />
-                          </Link>
-                          
-                          {showDeleteConfirm === category._id ? (
-                            <div className="flex items-center gap-2 ml-2">
-                              <button
-                                onClick={() => handleDeleteConfirm(category._id)}
-                                className="p-1 px-2 text-white bg-red-500 text-xs rounded hover:bg-red-600 transition-colors"
-                              >
-                                Yes
-                              </button>
-                              <button
-                                onClick={handleDeleteCancel}
-                                className="p-1 px-2 text-gray-600 bg-gray-200 text-xs rounded hover:bg-gray-300 transition-colors"
-                              >
-                                No
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleDeleteClick(category._id)}
-                              className="p-2 text-red-600 hover:text-red-900 transition-colors"
-                              title="Delete category"
-                            >
-                              <FaTrash />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {categories.map(renderCategoryRow)}
                 </tbody>
               </table>
             </div>
