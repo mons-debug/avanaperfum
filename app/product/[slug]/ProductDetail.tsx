@@ -12,20 +12,30 @@ import {
 } from 'react-icons/fa';
 import OrderModal from '@/components/OrderModal';
 import { getImageSrc, imageConfig } from '@/lib/utils/image';
-import { addToCart, removeFromCart, isInCart } from '@/lib/cart';
+import { 
+  addToCart, 
+  removeFromCart, 
+  isInCart, 
+  ITranslation as CartITranslation, 
+  ProductWithTranslation,
+  CartProduct 
+} from '@/lib/cart';
+
+// Re-export the ITranslation type from cart to ensure consistency
+type ITranslation = CartITranslation;
 
 interface ProductProps {
   product: {
     _id: string;
-    name: string;
+    name: string | ITranslation;
     slug?: string;
-    inspiredBy?: string;
-    description?: string;
-    volume?: string;
+    inspiredBy?: string | ITranslation;
+    description?: string | ITranslation;
+    volume?: string | ITranslation;
     price: number;
     originalPrice?: number;
     tags?: string[];
-    ingredients?: string;
+    ingredients?: string | ITranslation;
     images: string[];
     category?: string;
     gender?: string;
@@ -33,7 +43,43 @@ interface ProductProps {
 }
 
 const ProductDetail: React.FC<ProductProps> = ({ product }) => {
-  const { t, locale } = useTranslation();
+  const { t, locale = 'fr' } = useTranslation();
+  
+  // Type guard to check if a value is an ITranslation object
+  const isITranslation = (value: any): value is ITranslation => {
+    return value && typeof value === 'object' && ('en' in value || 'fr' in value);
+  };
+
+  // Helper function to get translated text
+  const getTranslatedText = (text: string | ITranslation | undefined, defaultText: string = ''): string => {
+    if (!text) return defaultText;
+    if (typeof text === 'string') return text;
+    if (!isITranslation(text)) return defaultText;
+    
+    // Safely access the translation with type checking
+    const translation = text as ITranslation;
+    return translation[locale as keyof ITranslation] || translation.fr || translation.en || defaultText;
+  };
+  
+  // Helper function to get translated text for cart (ensures string output)
+  const getCartText = (text: string | ITranslation | undefined, defaultText: string = ''): string => {
+    if (!text) return defaultText;
+    if (typeof text === 'string') return text;
+    if (!isITranslation(text)) return defaultText;
+    
+    // For cart, default to French as per user preference
+    return text.fr || text.en || defaultText;
+  };
+  
+  // Helper function to ensure string output for JSX rendering
+  const renderTranslatedText = (text: string | ITranslation | undefined, defaultText: string = ''): React.ReactNode => {
+    if (!text) return defaultText;
+    if (typeof text === 'string') return text;
+    if (!isITranslation(text)) return defaultText;
+    
+    return text[locale as keyof ITranslation] || text.fr || text.en || defaultText;
+  };
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageError, setImageError] = useState<Record<number, boolean>>({});
@@ -109,31 +155,53 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
   
   // Check if product is in cart
   useEffect(() => {
-    // Check if product is in cart on initial load
-    setIsInCartState(isInCart(product._id));
-    
-    // Subscribe to cart changes
-    const handleCartChange = (items: any[]) => {
-      setIsInCartState(items.some(item => item._id === product._id));
+    const checkCart = () => {
+      setIsInCartState(isInCart(product._id));
     };
     
-    if (typeof window !== 'undefined') {
-      window.cartListeners = window.cartListeners || [];
-      window.cartListeners.push(handleCartChange);
-    }
+    checkCart();
     
-    return () => {
-      if (typeof window !== 'undefined' && window.cartListeners) {
-        window.cartListeners = window.cartListeners.filter(listener => listener !== handleCartChange);
+    // Listen for cart updates
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === 'avana_cart') {
+        checkCart();
       }
     };
+    
+    window.addEventListener('storage', handleStorage);
+    
+    // Also listen for custom cart update events
+    const handleCartUpdate = () => checkCart();
+    window.addEventListener('cartUpdated', handleCartUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('cartUpdated', handleCartUpdate as EventListener);
+    };
   }, [product._id]);
-  
+
   const handleAddToCart = () => {
     if (isInCartState) {
       removeFromCart(product._id);
     } else {
-      addToCart(product);
+      try {
+        // Create a properly typed cart product with all translations resolved to strings
+        const cartProduct: Omit<CartProduct, 'quantity'> = {
+          _id: product._id,
+          name: getCartText(product.name, 'Unnamed Product'),
+          price: product.price,
+          images: Array.isArray(product.images) ? product.images : [],
+          inspiredBy: getCartText(product.inspiredBy),
+          volume: getCartText(product.volume)
+        };
+        
+        addToCart(cartProduct);
+        
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('cartUpdated'));
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+      }
     }
   };
 
@@ -141,8 +209,8 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
   const orderSteps = [
     {
       icon: <FaShoppingBag className="w-6 h-6 text-[#c8a45d]" />,
-      title: t('home.howToOrder.steps.choose.title', 'Choose Your Fragrance'),
-      description: t('home.howToOrder.steps.choose.description', 'Select the perfect scent that matches your personality.')
+      title: renderTranslatedText(t('home.howToOrder.steps.choose.title', 'Choose Your Fragrance')),
+      description: renderTranslatedText(t('home.howToOrder.steps.choose.description', 'Select the perfect scent that matches your personality.'))
     },
     {
       icon: <FaWhatsapp className="w-6 h-6 text-[#c8a45d]" />,
@@ -246,13 +314,11 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
               {/* Product title and inspired by */}
               <div className="border-b border-gray-100 pb-6">
                 <h1 className="text-3xl font-playfair text-gray-800 mb-2">
-                  {typeof product.name === 'object' ? (product.name[locale] || product.name.fr || product.name.en) : product.name}
+                  {getTranslatedText(product.name, 'Unnamed Product')}
                 </h1>
                 {product.inspiredBy && (
                   <p className="text-gray-600">
-                    {t('product.inspiredBy', 'Inspired by')}: {typeof product.inspiredBy === 'object' ? 
-                      (product.inspiredBy[locale] || product.inspiredBy.fr || product.inspiredBy.en) : 
-                      product.inspiredBy}
+                    {t('product.inspiredBy', 'Inspired by')}: {getTranslatedText(product.inspiredBy)}
                   </p>
                 )}
                 
@@ -280,6 +346,10 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
               
               {/* Price */}
               <div className="mb-6">
+                <div className="flex items-center mb-2">
+                  <span className="text-gray-600 w-24">{t('product.volume', 'Volume')}:</span>
+                  <span className="font-medium">{getTranslatedText(product.volume)}ml</span>
+                </div>
                 <div className="flex items-center">
                   <span className="text-2xl font-bold text-[#c8a45d] mr-3">
                     ${product.price.toFixed(2)}
@@ -298,9 +368,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                   <div className="mb-6">
                     <h2 className="text-lg font-playfair font-semibold mb-2">{t('product.description', 'Description')}</h2>
                     <p className="text-gray-600">
-                      {typeof product.description === 'object' ? 
-                        (product.description[locale] || product.description.fr || product.description.en) : 
-                        product.description}
+                      {getTranslatedText(product.description)}
                     </p>
                   </div>
                 )}
@@ -308,7 +376,9 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                 {product.ingredients && (
                   <div className="mt-4">
                     <h2 className="text-lg font-playfair font-semibold mb-2">Ingredients</h2>
-                    <p className="text-gray-600">{product.ingredients}</p>
+                    <p className="text-gray-600">
+                      {getTranslatedText(product.ingredients)}
+                    </p>
                   </div>
                 )}
               </div>

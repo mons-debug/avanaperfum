@@ -2,9 +2,9 @@
 
 // Define translation interface
 export interface ITranslation {
-  en: string;
-  fr: string;
-  [key: string]: string;
+  en?: string;
+  fr?: string;
+  [key: string]: string | undefined;
 }
 
 // Define the product type
@@ -22,13 +22,17 @@ export type CartProduct = {
 export type ProductWithTranslation = {
   _id: string;
   name: string | ITranslation;
+  slug?: string;
   price: number;
   images: string[];
   inspiredBy?: string | ITranslation;
   description?: string | ITranslation;
-  volume?: string;
+  volume?: string | ITranslation;
+  originalPrice?: number;
   gender?: string;
   category?: string;
+  tags?: string[];
+  ingredients?: string | ITranslation;
 };
 
 // Type definitions for window globals
@@ -52,32 +56,25 @@ if (typeof window !== 'undefined') {
 }
 
 // Helper function to convert a product with translations to a cart product
-const convertToCartProduct = (product: ProductWithTranslation): Omit<CartProduct, 'quantity'> => {
-  // Get the current locale or default to English
-  const locale = typeof window !== 'undefined' && document.documentElement.lang || 'en';
-  
-  // Convert name to string if it's a translation object
-  const name = typeof product.name === 'object' 
-    ? (product.name[locale as keyof typeof product.name] || product.name.en) 
-    : product.name;
-    
-  // Convert inspiredBy to string if it's a translation object
-  const inspiredBy = product.inspiredBy && typeof product.inspiredBy === 'object'
-    ? (product.inspiredBy[locale as keyof typeof product.inspiredBy] || product.inspiredBy.en)
-    : product.inspiredBy;
-  
+function convertToCartProduct(product: ProductWithTranslation): Omit<CartProduct, 'quantity'> {
+  const getTranslatedValue = (value: string | ITranslation | undefined, defaultVal: string = ''): string => {
+    if (!value) return defaultVal;
+    if (typeof value === 'string') return value;
+    return value.en || value.fr || defaultVal;
+  };
+
   return {
     _id: product._id,
-    name,
+    name: getTranslatedValue(product.name, 'Unnamed Product'),
     price: product.price,
     images: product.images,
-    inspiredBy,
-    volume: product.volume
+    inspiredBy: getTranslatedValue(product.inspiredBy),
+    volume: getTranslatedValue(product.volume)
   };
-};
+}
 
 // Add a product to the cart
-export const addToCart = (product: ProductWithTranslation | Omit<CartProduct, 'quantity'>) => {
+export function addToCart(product: ProductWithTranslation | Omit<CartProduct, 'quantity'>) {
   if (typeof window === 'undefined') return;
   
   // Ensure cart items and listeners are initialized
@@ -85,22 +82,37 @@ export const addToCart = (product: ProductWithTranslation | Omit<CartProduct, 'q
   window.cartListeners = window.cartListeners || [];
   
   // Convert product to cart product if it has translations
-  const cartProduct = 'description' in product ? convertToCartProduct(product as ProductWithTranslation) : product;
+  const cartProduct = 'description' in product 
+    ? convertToCartProduct(product as ProductWithTranslation)
+    : product as Omit<CartProduct, 'quantity'>;
   
-  // Check if product already exists in cart
-  const existingProductIndex = window.cartItems.findIndex(
-    (item: CartProduct) => item._id === cartProduct._id
-  );
+    // Helper function to safely get string value from ITranslation or string
+  const getStringValue = (value: string | ITranslation | undefined): string => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    return value.en || value.fr || '';
+  };
+
+  // Ensure the product has all required fields with proper types
+  const productToAdd: CartProduct = {
+    _id: cartProduct._id,
+    name: getStringValue(cartProduct.name) || 'Unnamed Product',
+    price: cartProduct.price,
+    images: cartProduct.images || [],
+    inspiredBy: getStringValue(cartProduct.inspiredBy),
+    volume: getStringValue(cartProduct.volume),
+    quantity: 1
+  };
+
+  // Add the product to the cart or update quantity if it already exists
+  const existingProductIndex = window.cartItems.findIndex(item => item._id === productToAdd._id);
   
   if (existingProductIndex >= 0) {
     // Increment quantity
     window.cartItems[existingProductIndex].quantity += 1;
   } else {
     // Add new product with quantity 1
-    window.cartItems.push({
-      ...cartProduct,
-      quantity: 1
-    } as CartProduct);
+    window.cartItems.push(productToAdd);
   }
   
   // Save to local storage
@@ -111,7 +123,7 @@ export const addToCart = (product: ProductWithTranslation | Omit<CartProduct, 'q
 };
 
 // Remove a product from the cart
-export const removeFromCart = (productId: string) => {
+export function removeFromCart(productId: string) {
   if (typeof window === 'undefined') return;
   
   // Ensure cart items and listeners are initialized
@@ -128,7 +140,7 @@ export const removeFromCart = (productId: string) => {
 };
 
 // Check if a product is in the cart
-export const isInCart = (productId: string): boolean => {
+export function isInCart(productId: string): boolean {
   if (typeof window === 'undefined') return false;
   
   // Ensure cart items are initialized
@@ -138,7 +150,7 @@ export const isInCart = (productId: string): boolean => {
 };
 
 // Get the total number of items in the cart
-export const getCartCount = (): number => {
+export function getCartCount(): number {
   if (typeof window === 'undefined') return 0;
   
   // Ensure cart items are initialized
@@ -148,7 +160,7 @@ export const getCartCount = (): number => {
 };
 
 // Get the total price of all items in the cart
-export const getCartTotal = (): number => {
+export function getCartTotal(): number {
   if (typeof window === 'undefined') return 0;
   
   // Ensure cart items are initialized
@@ -161,7 +173,7 @@ export const getCartTotal = (): number => {
 };
 
 // Clear the entire cart
-export const clearCart = () => {
+export function clearCart() {
   if (typeof window === 'undefined') return;
   
   // Ensure cart items and listeners are initialized
@@ -183,7 +195,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Update a product's quantity in the cart
-export const updateCartItemQuantity = (productId: string, quantity: number) => {
+export function updateCartItemQuantity(productId: string, quantity: number) {
   if (typeof window === 'undefined') return;
   
   // Ensure cart items and listeners are initialized
