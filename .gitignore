@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+**/**/node_modules
 /.pnp
 .pnp.js
 
@@ -10,7 +11,15 @@
 
 # next.js
 /.next/
+**/**/.next/
 /out/
+
+# backup files and folders
+/backup/**/node_modules
+/backup/**/.next
+/backup/**/cache
+**/*.pack
+**/*.node
 
 # production
 /build
@@ -34,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Large files over 100MB
+**/*.pack
+**/*.node
