@@ -1,24 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaSearch, FaShoppingBag, FaUser, FaBars, FaTimes } from 'react-icons/fa';
-import { getCartCount } from '@/lib/cart';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faShoppingBag, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { getCartCount, CartProduct } from '@/lib/cart';
+import { useTranslation } from '@/components/i18n/TranslationProvider';
 
 // Extend Window interface to include cart properties
-declare global {
-  interface Window {
-    cartItems?: any[];
-    cartListeners?: Function[];
-  }
-}
+// Type definition is already declared in cart.ts, so we don't need to redeclare it here
+// Using the CartProduct type imported from cart.ts
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const pathname = usePathname();
+  const { t, locale } = useTranslation();
   
   // Check if we're on the home page
   const isHomePage = pathname === '/';
@@ -32,15 +31,16 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Memoize handler function for better performance
+  const updateCartCount = useCallback((items: any[]) => {
+    setCartCount(getCartCount());
+  }, []);
+
   // Listen for cart updates
   useEffect(() => {
     // Simple way to subscribe to cart updates
     // In a real app, this would be using a proper state management solution
     if (typeof window !== 'undefined') {
-      const updateCartCount = (items: any[]) => {
-        setCartCount(getCartCount());
-      };
-      
       // Add the listener to the global cartListeners
       if (window.cartListeners) {
         window.cartListeners.push(updateCartCount);
@@ -57,11 +57,18 @@ const Header = () => {
     }
   }, []);
 
+  const homeLabel = t('header.home');
+  const shopLabel = t('header.shop');
+  const aboutLabel = t('header.about');
+  const contactLabel = t('header.contact');
+  const searchLabel = t('header.search');
+  const cartLabel = t('header.cart');
+
   const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/shop', label: 'Shop' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
+    { href: '/', label: homeLabel },
+    { href: '/shop', label: shopLabel },
+    { href: '/about', label: aboutLabel },
+    { href: '/contact', label: contactLabel },
   ];
 
   return (
@@ -75,7 +82,7 @@ const Header = () => {
       {/* Announcement Bar - Removed */}
 
       <div className="container mx-auto">
-        <nav className="flex items-center justify-between py-4 px-4 lg:px-8">
+        <nav className="flex items-center justify-between py-3 px-4 lg:px-8">
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -84,16 +91,28 @@ const Header = () => {
             }`}
             aria-label="Toggle menu"
           >
-            {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+            {isMobileMenuOpen ? <FontAwesomeIcon icon={faTimes} size="lg" /> : <FontAwesomeIcon icon={faBars} size="lg" />}
           </button>
 
           {/* Logo */}
           <Link href="/" className="absolute left-1/2 transform -translate-x-1/2 lg:static lg:transform-none">
-            <h1 className={`font-display text-2xl tracking-[0.2em] transition-colors ${
-              isHomePage && !isScrolled ? 'text-white hover:text-gray-200' : 'text-primary hover:text-secondary'
-            }`}>
-              AVANA
-            </h1>
+            <div className="flex items-center justify-center py-2">
+              {isHomePage && !isScrolled ? (
+                // White logo for transparent header on homepage
+                <img 
+                  src="/images/logowhw.png" 
+                  alt="AVANA PARFUM" 
+                  className="h-14 w-auto object-contain transition-opacity opacity-95 hover:opacity-100" 
+                />
+              ) : (
+                // Black logo for white background
+                <img 
+                  src="/images/lgoavana.png" 
+                  alt="AVANA PARFUM" 
+                  className="h-14 w-auto object-contain transition-opacity opacity-90 hover:opacity-100" 
+                />
+              )}
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -102,7 +121,8 @@ const Header = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors ${
+                prefetch={true}
+                className={`text-sm font-medium px-1 py-2 transition-colors ${
                   isHomePage && !isScrolled
                     ? (pathname === link.href
                       ? 'text-white font-semibold'
@@ -120,33 +140,29 @@ const Header = () => {
           {/* Header Actions */}
           <div className="flex items-center space-x-4">
             <button
-              className={`p-2 transition-colors ${
+              className={`flex items-center justify-center w-10 h-10 transition-colors ${
                 isHomePage && !isScrolled ? 'text-white hover:text-gray-200' : 'text-gray-600 hover:text-secondary'
               }`}
-              aria-label="Search"
+              aria-label={searchLabel}
             >
-              <FaSearch size={20} />
+              <FontAwesomeIcon icon={faSearch} className="w-5 h-5" />
             </button>
             <Link
-              href="/account"
-              className={`p-2 transition-colors ${
-                isHomePage && !isScrolled ? 'text-white hover:text-gray-200' : 'text-gray-600 hover:text-secondary'
-              }`}
-              aria-label="Account"
-            >
-              <FaUser size={20} />
-            </Link>
-            <Link
               href="/cart"
-              className={`p-2 relative transition-colors ${
+              className={`flex items-center justify-center w-10 h-10 transition-colors ${
                 isHomePage && !isScrolled ? 'text-white hover:text-gray-200' : 'text-gray-600 hover:text-secondary'
               }`}
-              aria-label="Shopping cart"
+              aria-label={cartLabel}
+              prefetch={true}
             >
-              <FaShoppingBag size={20} />
-              <span className="absolute -top-1 -right-1 bg-secondary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {cartCount}
-              </span>
+              <div className="relative flex items-center justify-center w-6 h-6">
+                <FontAwesomeIcon icon={faShoppingBag} className="text-current" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-secondary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium shadow-sm">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
             </Link>
           </div>
         </nav>
@@ -162,7 +178,8 @@ const Header = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`block py-3 text-lg font-medium transition-colors ${
+                prefetch={true}
+                className={`block py-3 px-2 text-lg font-medium transition-colors ${
                   isHomePage && !isScrolled
                     ? (pathname === link.href
                       ? 'text-secondary'
@@ -176,20 +193,6 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
-            <div className={`mt-6 pt-6 ${isHomePage && !isScrolled ? 'border-t border-gray-700' : 'border-t border-gray-100'}`}>
-              <Link
-                href="/account"
-                className={`flex items-center py-3 transition-colors ${
-                  isHomePage && !isScrolled
-                    ? 'text-white hover:text-gray-200'
-                    : 'text-gray-600 hover:text-secondary'
-                }`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <FaUser className="mr-3" />
-                <span>Account</span>
-              </Link>
-            </div>
           </nav>
         </div>
       )}
@@ -197,4 +200,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;

@@ -6,6 +6,7 @@ import { FaTimes, FaShoppingBag, FaUserAlt, FaEnvelope, FaPhone, FaHashtag } fro
 import { getImageSrc, imageConfig } from '@/lib/utils/image';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslation } from '@/components/i18n/TranslationProvider';
 
 interface ShippingSettings {
   shippingFee: number;
@@ -37,6 +38,7 @@ interface OrderModalProps {
 
 const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) => {
   const router = useRouter();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -172,7 +174,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
       <div className="bg-white rounded-xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-            <h2 className="text-2xl font-playfair font-semibold text-gray-800">Complete Your Order</h2>
+            <h2 className="text-2xl font-playfair font-semibold text-gray-800">{t('order.completeOrder')}</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -185,7 +187,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
           {/* Product Summary - Show either cart items or single product */}
           {cartItems && cartItems.length > 0 ? (
             <div className="mb-6 space-y-4">
-              <h3 className="font-medium text-gray-800">Your Cart Items</h3>
+              <h3 className="font-medium text-gray-800">{t('order.cartItems')}</h3>
               {cartItems.map((item) => (
                 <div key={item._id} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
                   <div className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden">
@@ -200,10 +202,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
                   <div className="flex-1">
                     <div className="flex justify-between">
                       <h4 className="font-medium text-gray-800">{item.name}</h4>
-                      <span className="text-sm font-medium">x{item.quantity}</span>
+                      <span className="text-sm font-medium">{t('order.qty')}: {item.quantity}</span>
                     </div>
                     {item.inspiredBy && (
-                      <p className="text-gray-500 text-xs">Inspired by {item.inspiredBy}</p>
+                      <p className="text-gray-500 text-xs">{t('product.inspiredBy')} {item.inspiredBy}</p>
                     )}
                     <div className="flex justify-between mt-1">
                       <span className="text-[#c8a45d] text-sm">{item.price.toFixed(2)} DH</span>
@@ -214,23 +216,23 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
               ))}
             </div>
           ) : (
-          <div className="flex gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="flex gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
               <div className="relative h-24 w-24 flex-shrink-0 rounded-lg overflow-hidden">
-              <Image
-                src={getImageSrc(product.images[0])}
-                alt={product.name}
-                fill
-                sizes={imageConfig.product.sizes.thumbnail}
+                <Image
+                  src={getImageSrc(product.images[0])}
+                  alt={product.name}
+                  fill
+                  sizes={imageConfig.product.sizes.thumbnail}
                   className="object-cover"
-              />
-            </div>
-            <div>
+                />
+              </div>
+              <div>
                 <h3 className="font-medium text-gray-800">{product.name}</h3>
                 {product.inspiredBy && (
-                  <p className="text-gray-500 text-sm">Inspired by {product.inspiredBy}</p>
+                  <p className="text-gray-500 text-sm">{t('product.inspiredBy')} {product.inspiredBy}</p>
                 )}
                 {product.volume && (
-                  <p className="text-gray-500 text-sm">{product.volume}</p>
+                  <p className="text-gray-500 text-sm">{t('product.volume')}: {product.volume}</p>
                 )}
                 <p className="text-[#c8a45d] font-medium mt-1">{product.price.toFixed(2)} DH</p>
               </div>
@@ -239,137 +241,136 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-              {error}
+              {t('order.error')}
             </div>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name *
+                {t('order.fullName')} *
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <FaUserAlt className="text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaUserAlt className="h-4 w-4 text-gray-400" />
                 </div>
-              <input
-                id="name"
-                name="name"
+                <input
                   type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   required
-                value={formData.name}
-                onChange={handleChange}
-                  placeholder="Your full name"
-                  className="pl-10 w-full rounded-lg border border-gray-200 p-2.5 focus:ring-1 focus:ring-[#c8a45d] focus:border-[#c8a45d]"
-              />
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
+                  placeholder={t('order.namePlaceholder')}
+                />
               </div>
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address <span className="text-gray-500 font-normal">(Optional)</span>
+                {t('order.emailAddress')} {t('order.emailOptional')}
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <FaEnvelope className="text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaEnvelope className="h-4 w-4 text-gray-400" />
                 </div>
-              <input
-                id="email"
-                name="email"
+                <input
                   type="email"
-                value={formData.email}
-                onChange={handleChange}
-                  placeholder="Your email address (optional)"
-                  className="pl-10 w-full rounded-lg border border-gray-200 p-2.5 focus:ring-1 focus:ring-[#c8a45d] focus:border-[#c8a45d]"
-              />
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
+                  placeholder={t('order.emailPlaceholder')}
+                />
               </div>
             </div>
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number *
+                {t('order.phoneNumber')} *
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <FaPhone className="text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaPhone className="h-4 w-4 text-gray-400" />
                 </div>
-              <input
-                id="phone"
-                name="phone"
+                <input
                   type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   required
-                value={formData.phone}
-                onChange={handleChange}
-                  placeholder="Your phone number"
-                  className="pl-10 w-full rounded-lg border border-gray-200 p-2.5 focus:ring-1 focus:ring-[#c8a45d] focus:border-[#c8a45d]"
-              />
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
+                  placeholder={t('order.phonePlaceholder')}
+                />
               </div>
             </div>
 
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                Delivery Address *
+                {t('order.deliveryAddress')} *
               </label>
-              <div className="relative">
-                <textarea
-                  id="address"
-                  name="address"
-                  required
-                  value={formData.address}
+              <textarea
+                id="address"
+                name="address"
+                value={formData.address}
                 onChange={handleChange}
-                  placeholder="Street address, building, apartment number, etc."
-                  className="w-full rounded-lg border border-gray-200 p-2.5 focus:ring-1 focus:ring-[#c8a45d] focus:border-[#c8a45d]"
-                  rows={2}
-                />
-              </div>
+                required
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
+                placeholder={t('order.addressPlaceholder')}
+              />
             </div>
 
             <div>
               <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                City *
+                {t('order.city')} *
               </label>
               <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaHashtag className="h-4 w-4 text-gray-400" />
+                </div>
                 <input
+                  type="text"
                   id="city"
                   name="city"
-                  type="text"
-                  required
                   value={formData.city}
                   onChange={handleChange}
-                  placeholder="Your city"
-                  className="w-full rounded-lg border border-gray-200 p-2.5 focus:ring-1 focus:ring-[#c8a45d] focus:border-[#c8a45d]"
+                  required
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
+                  placeholder={t('order.cityPlaceholder')}
                 />
               </div>
             </div>
 
-            {/* Quantity selector - only show for single product, not cart */}
+            {/* Quantity input - for single product only */}
             {!cartItems && (
-            <div>
-              <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
-                Quantity
-              </label>
+              <div>
+                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('order.quantity')}
+                </label>
                 <div className="flex items-center">
                   <button 
                     type="button"
                     onClick={decreaseQuantity}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-l-lg border border-gray-300 transition-colors"
+                    className="px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-gray-500 hover:bg-gray-100"
                   >
                     -
                   </button>
-              <input
-                type="number"
-                id="quantity"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleChange}
-                min="1"
-                required
-                    className="w-16 py-2 px-3 text-center border-t border-b border-gray-300 focus:outline-none focus:ring-0"
+                  <input
+                    type="number"
+                    id="quantity"
+                    name="quantity"
+                    value={formData.quantity}
+                    readOnly
+                    className="w-16 px-3 py-2 border-t border-b border-gray-300 text-center focus:outline-none text-sm"
                   />
                   <button 
                     type="button"
                     onClick={increaseQuantity}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-r-lg border border-gray-300 transition-colors"
+                    className="px-3 py-2 border border-gray-300 rounded-r-lg bg-gray-50 text-gray-500 hover:bg-gray-100"
                   >
                     +
                   </button>
@@ -378,60 +379,35 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
             )}
             
             {/* Order summary */}
-            <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-              {!cartItems ? (
-                <>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Price:</span>
-                    <span>{product.price.toFixed(2)} DH</span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Quantity:</span>
-                    <span>{formData.quantity}</span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Subtotal:</span>
-                    <span>{singleProductTotal.toFixed(2)} DH</span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">Subtotal:</span>
-                  <span>{cartTotal.toFixed(2)} DH</span>
+            <div className="mt-6">
+              <h3 className="font-medium text-gray-800 mb-4">{t('order.orderSummary')}</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>{t('order.subtotal')}</span>
+                  <span>{subtotal.toFixed(2)} {shippingSettings.currency}</span>
                 </div>
-              )}
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-600">Shipping:</span>
-                {qualifiesForFreeShipping ? (
-                  <span className="text-green-600 font-medium">Free</span>
-                ) : (
-                  <span>{shippingFee.toFixed(2)} DH</span>
-                )}
-              </div>
-              {!qualifiesForFreeShipping && (
-                <div className="text-xs text-gray-500 mb-2">
-                  Add {(shippingSettings.freeShippingThreshold - subtotal).toFixed(2)} DH more to qualify for free shipping
+                <div className="flex justify-between text-sm">
+                  <span>{t('order.shipping')}</span>
+                  <span>
+                    {qualifiesForFreeShipping 
+                      ? t('order.freeShipping') 
+                      : `${shippingFee.toFixed(2)} ${shippingSettings.currency}`}
+                  </span>
                 </div>
-              )}
-              <div className="flex justify-between font-medium text-lg border-t border-gray-200 pt-2 mt-2">
-                <span>Total:</span>
-                <span className="text-[#c8a45d]">{totalPrice.toFixed(2)} DH</span>
+                <div className="flex justify-between font-semibold text-base pt-2 border-t">
+                  <span>{t('order.total')}</span>
+                  <span className="text-[#c8a45d]">{totalPrice.toFixed(2)} {shippingSettings.currency}</span>
+                </div>
               </div>
             </div>
 
-            <div className="pt-4">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-[#c8a45d] text-white py-3 px-6 rounded-lg hover:bg-[#b08d48] transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-70"
-              >
-                <FaShoppingBag />
-                {isSubmitting ? 'Processing...' : 'Place Order'}
-              </button>
-              <p className="text-center text-gray-500 text-sm mt-3">
-                By placing your order, you agree to our <Link href="/terms" className="text-[#c8a45d] hover:underline">Terms and Conditions</Link>
-              </p>
-            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 px-4 bg-[#c8a45d] text-white rounded-lg shadow-md hover:bg-[#b18d4a] focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-50 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex justify-center items-center mt-4"
+            >
+              {isSubmitting ? t('order.processingOrder') : t('order.placeOrder')}
+            </button>
           </form>
         </div>
       </div>
@@ -439,4 +415,4 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
   );
 };
 
-export default OrderModal; 
+export default OrderModal;

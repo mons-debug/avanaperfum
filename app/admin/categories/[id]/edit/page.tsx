@@ -16,7 +16,13 @@ interface Category {
   featured?: boolean;
 }
 
-export default function EditCategoryPage({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function EditCategoryPage({ params }: PageProps) {
   const router = useRouter();
   const [category, setCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({

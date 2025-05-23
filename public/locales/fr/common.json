@@ -1,0 +1,192 @@
+{
+  "header": {
+    "home": "Accueil",
+    "shop": "Boutique",
+    "about": "À propos",
+    "contact": "Contact",
+    "search": "Rechercher",
+    "account": "Compte",
+    "cart": "Panier"
+  },
+  "home": {
+    "hero": {
+      "title": "Parfums Inspirés de Luxe",
+      "subtitle": "Découvrez notre collection exclusive",
+      "shopNow": "Acheter Maintenant"
+    },
+    "categories": {
+      "title": "Nos Collections",
+      "subtitle": "Explorez nos parfums par catégorie",
+      "viewAll": "Voir Tout"
+    },
+    "forHim": {
+      "title": "Pour Lui",
+      "subtitle": "Parfums masculins inspirés des plus grandes marques",
+      "viewAll": "Voir Tous les Parfums Homme"
+    },
+    "forHer": {
+      "title": "Pour Elle",
+      "subtitle": "Parfums féminins inspirés des plus grandes marques",
+      "viewAll": "Voir Tous les Parfums Femme"
+    },
+    "howToOrder": {
+      "title": "Comment Commander",
+      "subtitle": "Étapes simples pour recevoir votre parfum préféré chez vous",
+      "orderButton": "Commander sur WhatsApp",
+      "steps": {
+        "choose": {
+          "title": "Parcourir la Collection",
+          "description": "Explorez notre gamme de parfums inspirés de luxe"
+        },
+        "contact": {
+          "title": "Passez Votre Commande",
+          "description": "Contactez-nous sur WhatsApp et complétez le formulaire de commande"
+        },
+        "confirm": {
+          "title": "Appel de Confirmation",
+          "description": "Recevez un appel rapide pour vérifier votre commande"
+        },
+        "receive": {
+          "title": "Livraison Rapide",
+          "description": "Votre commande arrivera sous 3 à 5 jours ouvrés"
+        }
+      }
+    },
+    "features": {
+      "title": "Pourquoi Nous Choisir",
+      "quality": {
+        "title": "Qualité Premium",
+        "description": "Parfums inspirés de haute qualité"
+      },
+      "shipping": {
+        "title": "Livraison Rapide",
+        "description": "Expédition dans tout le Maroc"
+      },
+      "price": {
+        "title": "Prix Abordables",
+        "description": "Luxe à des prix accessibles"
+      }
+    },
+    "cta": {
+      "title": "Prêt à découvrir votre nouveau parfum préféré?",
+      "button": "Voir Tous les Parfums"
+    }
+  },
+  "about": {
+    "title": "À Propos d'AVANA PARFUM",
+    "description": {
+      "part1": "Chez AVANA PARFUM, nous croyons que les parfums de luxe devraient être accessibles à tous. Notre collection présente des parfums inspirés de qualité premium qui capturent l'essence des fragrances mondialement connues.",
+      "part2": "Chaque parfum est méticuleusement élaboré avec les meilleurs ingrédients, garantissant un parfum durable qui laisse une impression durable. Nous sommes fiers de vous offrir une expérience olfactive exceptionnelle à une fraction du prix."
+    },
+    "stats": {
+      "fragrances": "Parfums Uniques",
+      "customers": "Clients Satisfaits"
+    },
+    "learnMore": "En Savoir Plus"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Rejoignez notre newsletter",
+      "description": "Abonnez-vous pour recevoir des mises à jour, accéder à des offres exclusives, et plus encore.",
+      "placeholder": "Entrez votre email",
+      "button": "S'abonner"
+    },
+    "about": {
+      "description": "Découvrez notre collection de parfums inspirés haut de gamme, élaborés avec passion et précision. Découvrez le luxe à un prix accessible."
+    },
+    "categories": {
+      "shop": "Boutique",
+      "company": "Liens Rapides",
+      "support": "Support",
+      "contact": "Contact"
+    },
+    "contact": {
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "hours": "Horaires",
+      "workingHours": "Lun-Sam, 9h-18h"
+    },
+    "links": {
+      "forHim": "Pour Lui",
+      "forHer": "Pour Elle",
+      "collections": "Collections",
+      "newArrivals": "Nouveautés",
+      "bestSellers": "Meilleures Ventes",
+      "aboutUs": "À propos de nous",
+      "careers": "Carrières",
+      "storeLocator": "Localisateur de magasins",
+      "faq": "FAQ",
+      "shippingInfo": "Informations de livraison",
+      "returns": "Retours",
+      "trackOrder": "Suivre commande",
+      "privacyPolicy": "Politique de confidentialité",
+      "termsOfService": "Conditions d'utilisation",
+      "refundPolicy": "Politique de remboursement"
+    },
+    "copyright": "© {{year}} AVANA. Tous droits réservés.",
+    "social": {
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "instagram": "Instagram",
+      "whatsapp": "WhatsApp"
+    }
+  },
+  "product": {
+    "inspiredBy": "Inspiré par",
+    "volume": "Volume",
+    "addToCart": "Ajouter au Panier",
+    "inCart": "Dans le Panier",
+    "orderNow": "Commander Maintenant",
+    "description": "Description",
+    "relatedProducts": "Produits Similaires",
+    "discount": "PROMO",
+    "currency": "DH"
+  },
+  "shop": {
+    "filters": "Filtres",
+    "categories": "Catégories",
+    "price": "Prix",
+    "gender": "Genre",
+    "products": "produits",
+    "featured": "En vedette",
+    "priceLowToHigh": "Prix: Croissant",
+    "priceHighToLow": "Prix: Décroissant",
+    "newest": "Plus récents",
+    "under50": "Moins de 50€",
+    "price50-100": "50€ - 100€",
+    "price100-200": "100€ - 200€",
+    "over200": "Plus de 200€",
+    "unisex": "Unisexe",
+    "clearAll": "Effacer tout",
+    "loadingProducts": "Chargement des produits...",
+    "noProductsFound": "Aucun produit trouvé",
+    "noProductsFoundDescription": "Nous n'avons pas pu trouver de produits correspondant à vos critères.",
+    "resetFilters": "Réinitialiser les filtres",
+    "searchProducts": "Rechercher des produits..."
+  },
+  "order": {
+    "completeOrder": "Finaliser Votre Commande",
+    "fullName": "Nom Complet",
+    "emailAddress": "Adresse Email",
+    "emailOptional": "(Optionnel)",
+    "phoneNumber": "Numéro de Téléphone",
+    "deliveryAddress": "Adresse de Livraison",
+    "city": "Ville",
+    "orderSummary": "Résumé de la Commande",
+    "placeOrder": "Passer la Commande",
+    "processingOrder": "Traitement de la commande...",
+    "cartItems": "Articles dans votre Panier",
+    "qty": "Qté",
+    "quantity": "Quantité",
+    "subtotal": "Sous-total",
+    "shipping": "Frais de livraison",
+    "total": "Total",
+    "freeShipping": "Livraison gratuite",
+    "error": "Une erreur s'est produite lors du traitement de votre commande",
+    "addressPlaceholder": "Adresse, bâtiment, numéro d'appartement, etc.",
+    "namePlaceholder": "Votre nom complet",
+    "phonePlaceholder": "Votre numéro de téléphone",
+    "emailPlaceholder": "Votre adresse email (optionnel)",
+    "cityPlaceholder": "Votre ville"
+  }
+} 

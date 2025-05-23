@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { connectToDB } from '@/lib/mongodb';
 import Product from '@/models/Product';
@@ -9,10 +9,12 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import HeroSection from '@/components/HeroSection';
 import ProductCard from '@/components/ProductCard';
 import CategoryCard from '@/components/CategoryCard';
+import BasicProductDisplay from '@/components/BasicProductDisplay';
 import { FaVenus, FaMars, FaShoppingBag, FaWhatsapp, FaCheck, FaArrowRight, FaArrowLeft, FaPhone, FaBox, FaCrown, FaTruck, FaMoneyBillWave } from 'react-icons/fa';
 import Image from 'next/image';
 import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
+import { useTranslation } from '@/components/i18n/TranslationProvider';
 
 // Add type definitions at the top
 interface Product {
@@ -86,50 +88,98 @@ async function getCategoriesWithCount() {
   }
 }
 
+// Define the ProductImage component
+interface ProductImageProps {
+  initialSrc?: string;
+  alt: string;
+  productId?: string;
+  sizes: string;
+}
+
+const ProductImage: React.FC<ProductImageProps> = ({ initialSrc, alt, productId, sizes }) => {
+  const placeholderSrc = '/images/product-placeholder.svg';
+  const [currentSrc, setCurrentSrc] = useState(initialSrc || placeholderSrc);
+  const [hasErrored, setHasErrored] = useState(false);
+
+  useEffect(() => {
+    // When initialSrc changes, reset the image source
+    if (initialSrc && initialSrc !== currentSrc && !hasErrored) {
+      setCurrentSrc(initialSrc);
+    }
+  }, [initialSrc, currentSrc, hasErrored]);
+
+  const handleError = () => {
+    if (!hasErrored) {
+      console.error(`Image error for product ${productId || 'Unknown ID'} with src "${currentSrc}". Falling back to placeholder.`);
+      setCurrentSrc(placeholderSrc);
+      setHasErrored(true);
+    }
+  };
+
+  if (!initialSrc || hasErrored) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+        <Image
+          src={placeholderSrc}
+          alt={alt}
+          fill
+          sizes={sizes}
+          className="object-contain p-4"
+          unoptimized={true}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={currentSrc}
+      alt={alt}
+      fill
+      sizes={sizes}
+      className="object-cover transition-transform duration-500 group-hover:scale-105"
+      onError={handleError}
+    />
+  );
+};
+
 export default function Home() {
   const [selectedGender, setSelectedGender] = useState('Homme');
   const [currentMenSlide, setCurrentMenSlide] = useState(0);
   const [currentWomenSlide, setCurrentWomenSlide] = useState(0);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  // Hero slide state is now handled within the HeroSection component
   const [activeGender, setActiveGender] = useState('male'); // For mobile toggle
+  const [isSeeding, setIsSeeding] = useState(false);
+  const { t, locale } = useTranslation();
   
-  const { products: menProducts, isLoading: isLoadingMen } = useProducts({
-    gender: 'Homme',
-    limit: 10
-  });
+  // Fetch directly from API instead of using SWR hook
+  const [menProducts, setMenProducts] = useState<Product[]>([]);
+  const [isLoadingMen, setIsLoadingMen] = useState(true);
+  const [womenProducts, setWomenProducts] = useState<Product[]>([]);
+  const [isLoadingWomen, setIsLoadingWomen] = useState(true);
 
-  const { products: womenProducts, isLoading: isLoadingWomen } = useProducts({
-    gender: 'Femme',
-    limit: 10
-  });
 
   const { categories, isLoading: isLoadingCategories } = useCategories({
     featured: true,
   });
 
-  const heroSlides = [
-    {
-      image: '/images/hero3.jpg',
-      alt: 'AVANA PARFUM luxury fragrance by the ocean at sunset'
-    },
-    {
-      image: '/images/hero2.jpg',
-      alt: 'AVANA PARFUM premium collection with elegant packaging'
-    },
-    {
-      image: '/images/hero-avana.jpg',
-      alt: 'AVANA PARFUM signature perfume collection'
-    }
-  ];
+  // We'll directly fetch products instead of using the useProducts hook
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [isLoadingAll, setIsLoadingAll] = useState(true);
 
-  // Auto-advance slides every 7 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((current) => (current === heroSlides.length - 1 ? 0 : current + 1));
-    }, 7000);
+  // Product Display settings
+  const productsPerDesktopSlide = 3; // 3 products per slide on desktop
+  const productsPerMobileSlide = 2; // 2 products per slide on mobile
 
-    return () => clearInterval(timer);
-  }, []);
+  // Calculate max slides for men's products
+  const totalMenDesktopSlides = menProducts ? Math.ceil(menProducts.length / productsPerDesktopSlide) : 0;
+  const totalMenMobileSlides = menProducts ? Math.ceil(menProducts.length / productsPerMobileSlide) : 0;
+
+  // Calculate max slides for women's products
+  const totalWomenDesktopSlides = womenProducts ? Math.ceil(womenProducts.length / productsPerDesktopSlide) : 0;
+  const totalWomenMobileSlides = womenProducts ? Math.ceil(womenProducts.length / productsPerMobileSlide) : 0;
+
+  // Hero slides and auto-advancing are now handled in the HeroSection component
 
   const howToOrderSteps = [
     {
@@ -149,39 +199,54 @@ export default function Home() {
     }
   ];
 
-  const nextSlide = () => {
-    setCurrentSlide((current) => (current === heroSlides.length - 1 ? 0 : current + 1));
-  };
+  // Hero slide navigation is now handled within the HeroSection component
 
-  const prevSlide = () => {
-    setCurrentSlide((current) => (current === 0 ? heroSlides.length - 1 : current - 1));
-  };
-
+  // Updated navigation functions for product slides
   const nextProductSlide = (gender: 'men' | 'women') => {
     if (gender === 'men') {
-      setCurrentMenSlide(current => {
-        const totalSlides = menProducts ? Math.ceil(menProducts.length / 2) : 0;
-        return current >= totalSlides - 1 ? 0 : current + 1;
-      });
+      // For desktop: advance in groups of 3
+      if (window.innerWidth >= 768) {
+        const totalSlides = Math.ceil(menProducts.length / productsPerDesktopSlide);
+        setCurrentMenSlide(current => (current >= totalSlides - 1 ? 0 : current + 1));
+      } 
+      // For mobile: advance in groups of 2
+      else {
+        const totalSlides = Math.ceil(menProducts.length / productsPerMobileSlide);
+        setCurrentMenSlide(current => (current >= totalSlides - 1 ? 0 : current + 1));
+      }
     } else {
-      setCurrentWomenSlide(current => {
-        const totalSlides = womenProducts ? Math.ceil(womenProducts.length / 2) : 0;
-        return current >= totalSlides - 1 ? 0 : current + 1;
-      });
+      // Updated women's functionality to match men's
+      if (window.innerWidth >= 768) {
+        const totalSlides = Math.ceil(womenProducts.length / productsPerDesktopSlide);
+        setCurrentWomenSlide(current => (current >= totalSlides - 1 ? 0 : current + 1));
+      } else {
+        const totalSlides = Math.ceil(womenProducts.length / productsPerMobileSlide);
+        setCurrentWomenSlide(current => (current >= totalSlides - 1 ? 0 : current + 1));
+      }
     }
   };
 
   const prevProductSlide = (gender: 'men' | 'women') => {
     if (gender === 'men') {
-      setCurrentMenSlide(current => {
-        const totalSlides = menProducts ? Math.ceil(menProducts.length / 2) : 0;
-        return current <= 0 ? totalSlides - 1 : current - 1;
-      });
+      // For desktop: go back in groups of 3
+      if (window.innerWidth >= 768) {
+        const totalSlides = Math.ceil(menProducts.length / productsPerDesktopSlide);
+        setCurrentMenSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
+      }
+      // For mobile: go back in groups of 2
+      else {
+        const totalSlides = Math.ceil(menProducts.length / productsPerMobileSlide);
+        setCurrentMenSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
+      }
     } else {
-      setCurrentWomenSlide(current => {
-        const totalSlides = womenProducts ? Math.ceil(womenProducts.length / 2) : 0;
-        return current <= 0 ? totalSlides - 1 : current - 1;
-      });
+      // Updated women's functionality to match men's
+      if (window.innerWidth >= 768) {
+        const totalSlides = Math.ceil(womenProducts.length / productsPerDesktopSlide);
+        setCurrentWomenSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
+      } else {
+        const totalSlides = Math.ceil(womenProducts.length / productsPerMobileSlide);
+        setCurrentWomenSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
+      }
     }
   };
 
@@ -190,514 +255,451 @@ export default function Home() {
     // Will be implemented if needed
   }, []);
 
+  // Log products for debugging
+  useEffect(() => {
+    if (!isLoadingMen) {
+      console.log(`Fetched Homme category products: ${menProducts?.length || 0}`);
+      
+      if (menProducts?.length > 0) {
+        // Log all products with details to check the data
+        menProducts.forEach((product: Product, index: number) => {
+          console.log(`Homme product ${index + 1}:`, {
+            id: product._id,
+            name: product.name,
+            gender: product.gender,
+            category: product.category,
+            price: product.price,
+            hasImages: !!product.images?.length,
+            firstImage: product.images?.[0] || 'No image',
+            allImages: product.images || []
+          });
+        });
+        
+        // Check all unique genders among men's products
+        if (menProducts.length > 1) {
+          const genders = [...new Set(menProducts.map((p: Product) => p.gender))];
+          console.log('Homme products genders:', genders);
+        }
+      } else {
+        console.log('No products found in Homme category');
+      }
+    }
+  }, [menProducts, isLoadingMen]);
+
+  // Additional debugging to list all products
+  useEffect(() => {
+    if (!isLoadingAll && allProducts) {
+      console.log(`Total products in database: ${allProducts.length}`);
+      
+      // Count products by gender
+      const genderCounts = allProducts.reduce((acc: Record<string, number>, product: Product) => {
+        const gender = product.gender || 'unspecified';
+        acc[gender] = (acc[gender] || 0) + 1;
+        return acc;
+      }, {});
+      console.log('Products by gender:', genderCounts);
+      
+      // Count products by category
+      const categoryCounts = allProducts.reduce((acc: Record<string, number>, product: Product) => {
+        const category = product.category || 'unspecified';
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+      }, {});
+      console.log('Products by category:', categoryCounts);
+      
+      // List first 5 products with detailed info
+      if (allProducts.length > 0) {
+        console.log('First 5 products:');
+        allProducts.slice(0, 5).forEach((product: Product, index: number) => {
+          console.log(`Product ${index + 1}:`, {
+            id: product._id,
+            name: product.name,
+            gender: product.gender,
+            category: product.category
+          });
+        });
+      }
+    }
+  }, [allProducts, isLoadingAll]);
+
+  // Function to seed test data when no products are found
+  const seedTestData = async () => {
+    setIsSeeding(true);
+    try {
+      const response = await fetch('/api/seed-test-data');
+      const data = await response.json();
+      if (data.success) {
+        console.log('Successfully seeded test data:', data);
+        // Reload the page to fetch new data
+        window.location.reload();
+      } else {
+        console.error('Failed to seed test data:', data);
+        alert('Failed to add test products. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Error seeding test data:', error);
+      alert('An error occurred while adding test products.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  // Fetch products from the API for the home page
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        // Fetch men's products
+        setIsLoadingMen(true);
+        console.log('Fetching Homme products by gender...');
+        const menResponse = await fetch('/api/products?gender=Homme&limit=6', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        const menData = await menResponse.json();
+        
+        // Process men's products
+        if (menData.success && Array.isArray(menData.data)) {
+          // Use the actual images from the database
+          const menProductsWithImages = menData.data.map((product: Product) => {
+            // If product has no images, use placeholder
+            if (!product.images || product.images.length === 0) {
+              return {
+                ...product,
+                images: ['/images/product-placeholder.svg']
+              };
+            }
+            return product;
+          });
+          
+          console.log(`Found ${menProductsWithImages.length} Homme products`);
+          if (menProductsWithImages.length > 0) {
+            console.log('Example men product:', menProductsWithImages[0]);
+          }
+          
+          // If no products found, use fallback data
+          if (menProductsWithImages.length === 0) {
+            console.log('No Homme products found, using fallback data');
+            setMenProducts([
+              {
+                _id: 'sample1',
+                name: 'Homme Classic',
+                description: 'A sophisticated fragrance for the modern man',
+                price: 299,
+                volume: '100ml',
+                gender: 'Homme',
+                category: 'Homme',
+                images: ['/images/product-placeholder.svg']
+              },
+              {
+                _id: 'sample2',
+                name: 'Homme Sport',
+                description: 'An energetic scent for active lifestyles',
+                price: 250,
+                volume: '50ml',
+                gender: 'Homme',
+                category: 'Homme',
+                images: ['/images/product-placeholder.svg']
+              },
+              {
+                _id: 'sample3',
+                name: 'Homme Elegance',
+                description: 'A distinguished fragrance with woody notes',
+                price: 350,
+                volume: '100ml',
+                gender: 'Homme',
+                category: 'Homme',
+                images: ['/images/product-placeholder.svg']
+              }
+            ]);
+          } else {
+            setMenProducts(menProductsWithImages);
+          }
+        } else {
+          console.error('API response format error for men products:', menData);
+          // Fallback to sample products if API fails
+          setMenProducts([
+            {
+              _id: 'sample1',
+              name: 'Homme Classic',
+              description: 'A sophisticated fragrance for the modern man',
+              price: 299,
+              volume: '100ml',
+              gender: 'Homme',
+              category: 'Homme',
+              images: ['/images/product-placeholder.svg']
+            },
+            {
+              _id: 'sample2',
+              name: 'Homme Sport',
+              description: 'An energetic scent for active lifestyles',
+              price: 250,
+              volume: '50ml',
+              gender: 'Homme',
+              category: 'Homme',
+              images: ['/images/product-placeholder.svg']
+            },
+            {
+              _id: 'sample3',
+              name: 'Homme Elegance',
+              description: 'A distinguished fragrance with woody notes',
+              price: 350,
+              volume: '100ml',
+              gender: 'Homme',
+              category: 'Homme',
+              images: ['/images/product-placeholder.svg']
+            }
+          ]);
+        }
+        setIsLoadingMen(false);
+        
+        // Fetch women's products
+        setIsLoadingWomen(true);
+        console.log('Fetching Femme products by gender...');
+        const womenResponse = await fetch('/api/products?gender=Femme&limit=6', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        const womenData = await womenResponse.json();
+        
+        // Process women's products
+        if (womenData.success && Array.isArray(womenData.data)) {
+          // Use the actual images from the database
+          const womenProductsWithImages = womenData.data.map((product: Product) => {
+            // If product has no images, use placeholder
+            if (!product.images || product.images.length === 0) {
+              return {
+                ...product,
+                images: ['/images/product-placeholder.svg']
+              };
+            }
+            return product;
+          });
+          
+          console.log(`Found ${womenProductsWithImages.length} Femme products`);
+          if (womenProductsWithImages.length > 0) {
+            console.log('Example women product:', womenProductsWithImages[0]);
+          }
+          
+          // If no products found, use fallback data
+          if (womenProductsWithImages.length === 0) {
+            console.log('No Femme products found, using fallback data');
+            setWomenProducts([
+              {
+                _id: 'sample-f1',
+                name: 'Femme Classic',
+                description: 'A sophisticated fragrance for the modern woman',
+                price: 299,
+                volume: '100ml',
+                gender: 'Femme',
+                category: 'Femme',
+                images: ['/images/product-placeholder.svg']
+              },
+              {
+                _id: 'sample-f2',
+                name: 'Femme Elegance',
+                description: 'An elegant scent with floral notes',
+                price: 250,
+                volume: '50ml',
+                gender: 'Femme',
+                category: 'Femme',
+                images: ['/images/product-placeholder.svg']
+              },
+              {
+                _id: 'sample-f3',
+                name: 'Femme Chic',
+                description: 'A distinguished fragrance with fruity notes',
+                price: 350,
+                volume: '100ml',
+                gender: 'Femme',
+                category: 'Femme',
+                images: ['/images/product-placeholder.svg']
+              }
+            ]);
+          } else {
+            setWomenProducts(womenProductsWithImages);
+          }
+        } else {
+          console.error('API response format error for women products:', womenData);
+          // Fallback to sample products if API fails
+          setWomenProducts([
+            {
+              _id: 'sample-f1',
+              name: 'Femme Classic',
+              description: 'A sophisticated fragrance for the modern woman',
+              price: 299,
+              volume: '100ml',
+              gender: 'Femme',
+              category: 'Femme',
+              images: ['/images/product-placeholder.svg']
+            },
+            {
+              _id: 'sample-f2',
+              name: 'Femme Elegance',
+              description: 'An elegant scent with floral notes',
+              price: 250,
+              volume: '50ml',
+              gender: 'Femme',
+              category: 'Femme',
+              images: ['/images/product-placeholder.svg']
+            },
+            {
+              _id: 'sample-f3',
+              name: 'Femme Chic',
+              description: 'A distinguished fragrance with fruity notes',
+              price: 350,
+              volume: '100ml',
+              gender: 'Femme',
+              category: 'Femme',
+              images: ['/images/product-placeholder.svg']
+            }
+          ]);
+        }
+        setIsLoadingWomen(false);
+        
+        // Also fetch all products for debugging
+        setIsLoadingAll(true);
+        const allResponse = await fetch('/api/products?limit=100', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        const allData = await allResponse.json();
+        if (allData.success && Array.isArray(allData.data)) {
+          setAllProducts(allData.data);
+        }
+        setIsLoadingAll(false);
+        
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        // Set fallback products for both genders
+        setMenProducts([
+          {
+            _id: 'fallback-m1',
+            name: 'Homme Classic',
+            description: 'A sophisticated fragrance for the modern man',
+            price: 299,
+            volume: '100ml',
+            gender: 'Homme',
+            category: 'Homme',
+            images: ['/images/product-placeholder.svg']
+          },
+          {
+            _id: 'fallback-m2',
+            name: 'Homme Sport',
+            description: 'An energetic scent for active lifestyles',
+            price: 250,
+            volume: '50ml',
+            gender: 'Homme',
+            category: 'Homme',
+            images: ['/images/product-placeholder.svg']
+          },
+          {
+            _id: 'fallback-m3',
+            name: 'Homme Elegance',
+            description: 'A distinguished fragrance with woody notes',
+            price: 350,
+            volume: '100ml',
+            gender: 'Homme',
+            category: 'Homme',
+            images: ['/images/product-placeholder.svg']
+          }
+        ]);
+        
+        setWomenProducts([
+          {
+            _id: 'fallback-f1',
+            name: 'Femme Classic',
+            description: 'A sophisticated fragrance for the modern woman',
+            price: 299,
+            volume: '100ml',
+            gender: 'Femme',
+            category: 'Femme',
+            images: ['/images/product-placeholder.svg']
+          },
+          {
+            _id: 'fallback-f2',
+            name: 'Femme Elegance',
+            description: 'An elegant scent with floral notes',
+            price: 250,
+            volume: '50ml',
+            gender: 'Femme',
+            category: 'Femme',
+            images: ['/images/product-placeholder.svg']
+          },
+          {
+            _id: 'fallback-f3',
+            name: 'Femme Chic',
+            description: 'A distinguished fragrance with fruity notes',
+            price: 350,
+            volume: '100ml',
+            gender: 'Femme',
+            category: 'Femme',
+            images: ['/images/product-placeholder.svg']
+          }
+        ]);
+      } finally {
+        setIsLoadingMen(false);
+        setIsLoadingWomen(false);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
+
+  // Simplified but reliable product image component
+  const SimpleProductImage = ({ product }: { product: Product }) => {
+    // Use the first product image if available, otherwise use placeholder
+    const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '/images/product-placeholder.svg';
+    
+    return (
+      <div 
+        className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm"
+        style={{
+          backgroundImage: `url('${imageUrl}')`,
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          width: "100%",
+          height: "100%"
+        }}
+      />
+    );
+  };
+
+  // Add a debug function to check what's happening with men's products
+  useEffect(() => {
+    if (!isLoadingMen) {
+      console.log('Men products state updated:', {
+        count: menProducts?.length || 0,
+        isArray: Array.isArray(menProducts),
+        isEmpty: menProducts?.length === 0,
+        firstProduct: menProducts?.[0]
+      });
+    }
+  }, [menProducts, isLoadingMen]);
+
   return (
     <main className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center overflow-hidden">
-        {/* Slides */}
-        {heroSlides.map((slide, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-all duration-1000 transform ${
-              index === currentSlide 
-                ? 'opacity-100 scale-100' 
-                : 'opacity-0 scale-105'
-            }`}
-          >
-            <div className="absolute inset-0">
-              <Image
-                src={slide.image}
-                alt={slide.alt}
-                fill
-                className="object-cover"
-                priority={index === 0}
-                quality={100}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
-            </div>
-          </div>
-        ))}
+      {/* Hero Section - Using our optimized mobile-focused component */}
+      <HeroSection />
 
-        {/* Navigation Buttons */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full backdrop-blur-sm transition-all group"
-          aria-label="Previous slide"
-        >
-          <FaArrowLeft className="w-6 h-6 transition-transform group-hover:-translate-x-1" />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full backdrop-blur-sm transition-all group"
-          aria-label="Next slide"
-        >
-          <FaArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
-        </button>
-        
-        {/* Content */}
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-2xl">
-            <h1 className="text-5xl md:text-6xl font-playfair text-white mb-6 transform transition-all duration-700 delay-300 translate-y-0 opacity-100">
-              Discover Your Signature Scent
-            </h1>
-            <p className="text-xl text-white/90 mb-8 leading-relaxed transform transition-all duration-700 delay-500 translate-y-0 opacity-100">
-              Experience luxury fragrances inspired by world-renowned perfumes at a fraction of the price.
-            </p>
-            <div className="flex gap-4 transform transition-all duration-700 delay-700 translate-y-0 opacity-100">
-              <Link
-                href="/shop?gender=Homme"
-                className="px-8 py-3 bg-[#c8a45d] text-white rounded-full hover:bg-[#c8a45d]/90 transition-colors"
-              >
-                Shop Men
-              </Link>
-              <Link
-                href="/shop?gender=Femme"
-                className="px-8 py-3 border-2 border-white text-white rounded-full hover:bg-white hover:text-[#c8a45d] transition-colors"
-              >
-                Shop Women
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Slide Indicators */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3">
-          {heroSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-2 transition-all duration-500 rounded-full ${
-                index === currentSlide 
-                  ? 'w-8 bg-white' 
-                  : 'w-2 bg-white/50 hover:bg-white/70'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Fragrances Section */}
-      <section className="py-24 bg-white">
-  <div className="container mx-auto px-4">
-          {/* Section Title - Visible on all screens */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-playfair text-[#c8a45d] mb-4">Featured Fragrances</h2>
-            <p className="text-gray-600 max-w-3xl mx-auto">
-              Discover our exquisite collection of premium fragrances for both men and women, 
-              inspired by world-renowned perfumes at affordable prices.
-            </p>
-          </div>
-          
-          {/* Mobile Toggle - Only visible on small screens */}
-          <div className="flex justify-center gap-12 text-2xl font-playfair mb-8 md:hidden">
-      <button
-        onClick={() => setActiveGender('female')}
-        className={`relative pb-2 transition-colors ${
-          activeGender === 'female' 
-            ? 'text-[#c8a45d] font-semibold' 
-            : 'text-gray-400 hover:text-gray-600'
-        }`}
-      >
-        FEMME
-        {activeGender === 'female' && (
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#c8a45d]"></div>
-        )}
-      </button>
-      <button
-        onClick={() => setActiveGender('male')}
-        className={`relative pb-2 transition-colors ${
-          activeGender === 'male' 
-            ? 'text-[#c8a45d] font-semibold' 
-            : 'text-gray-400 hover:text-gray-600'
-        }`}
-      >
-        HOMME
-        {activeGender === 'male' && (
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#c8a45d]"></div>
-        )}
-      </button>
-    </div>
-
-          {/* Mobile Products - Only visible on small screens */}
-          <div className="md:hidden">
-            {/* Current gender title */}
-            <h3 className="text-lg font-playfair text-center mb-4 text-[#c8a45d]">
-              {activeGender === 'male' ? 'HOMME' : 'FEMME'} Collection
-            </h3>
-            
-            <div className="relative px-2 pb-2">
-              {/* Slides container with overflow */}
-              <div className="overflow-hidden rounded-lg">
-                <div 
-                  className="flex transition-transform duration-300 ease-in-out mobile-slides-container will-change-transform"
-                  style={{ 
-                    transform: activeGender === 'male' 
-                      ? `translateX(-${currentMenSlide * 100}%)` 
-                      : `translateX(-${currentWomenSlide * 100}%)` 
-                  }}
-                >
-                  {/* Create slides with 2 products per slide */}
-                  {(() => {
-                    const products = activeGender === 'male' ? menProducts : womenProducts;
-                    const isLoading = activeGender === 'male' ? isLoadingMen : isLoadingWomen;
-                    
-                    if (isLoading) {
-                      return (
-                        <div className="min-w-full flex-shrink-0">
-                          <div className="grid grid-cols-2 gap-3 w-full">
-                            {[1, 2].map((i) => (
-                              <div key={i} className="animate-pulse flex flex-col w-full">
-                                <div className="aspect-square bg-gray-200 rounded-lg mb-2 w-full"></div>
-                                <div className="h-3 bg-gray-200 rounded mb-2 w-full"></div>
-                                <div className="h-2 bg-gray-200 rounded mb-2 w-3/4"></div>
-                                <div className="h-3 bg-gray-200 rounded w-1/3 mt-auto"></div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-                    
-                    if (!products || products.length === 0) {
-                      return (
-                        <div className="min-w-full flex-shrink-0 flex items-center justify-center py-16">
-                          <p className="text-gray-500 text-center">No products found.</p>
-                        </div>
-                      );
-                    }
-
-                    // Group products into pairs (2 per slide)
-                    const slides = [];
-                    for (let i = 0; i < products.length; i += 2) {
-                      slides.push(
-                        <div key={i} className="min-w-full flex-shrink-0">
-                          <div className="grid grid-cols-2 gap-3 w-full">
-                            {products.slice(i, i + 2).map((product: Product) => (
-        <Link 
-          href={`/product/${product._id}`} 
-          key={product._id} 
-                                className="group text-center flex flex-col w-full"
-        >
-                                <div className="aspect-square relative mb-2 bg-gray-50 rounded-lg overflow-hidden shadow-sm w-full">
-            <Image
-              src={product.images[0] || '/images/product-placeholder.svg'}
-              alt={product.name}
-              fill
-                                    sizes="(max-width: 768px) 40vw, 100px"
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          </div>
-                                <h3 className="text-xs font-medium mb-1 line-clamp-1">{product.name}</h3>
-                                <p className="text-xs text-gray-500 mb-1 line-clamp-1">{product.description?.slice(0, 30) || ''}...</p>
-                                <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
-        </Link>
-      ))}
-    </div>
-                        </div>
-                      );
-                    }
-                    return slides;
-                  })()}
-                </div>
-              </div>
-
-              {/* Navigation buttons - only shown if more than one slide */}
-              {(() => {
-                const products = activeGender === 'male' ? menProducts : womenProducts;
-                const totalSlides = products ? Math.ceil(products.length / 2) : 0;
-                
-                if (totalSlides <= 1) return null;
-                
-                return (
-                  <>
-                    <button 
-                      onClick={() => activeGender === 'male' ? prevProductSlide('men') : prevProductSlide('women')}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-md w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#c8a45d]/10 transition-colors"
-                      aria-label="Previous products"
-                    >
-                      <FaArrowLeft className="w-3.5 h-3.5 text-[#c8a45d]" />
-                    </button>
-                    <button 
-                      onClick={() => activeGender === 'male' ? nextProductSlide('men') : nextProductSlide('women')}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-md w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#c8a45d]/10 transition-colors"
-                      aria-label="Next products"
-                    >
-                      <FaArrowRight className="w-3.5 h-3.5 text-[#c8a45d]" />
-                    </button>
-                  </>
-                );
-              })()}
-
-              {/* Slide indicators */}
-              <div className="flex justify-center gap-1.5 mt-4">
-                {(() => {
-                  const products = activeGender === 'male' ? menProducts : womenProducts;
-                  const totalSlides = products ? Math.ceil(products.length / 2) : 0;
-                  const currentSlide = activeGender === 'male' ? currentMenSlide : currentWomenSlide;
-                  
-                  if (totalSlides <= 1) return null;
-                  
-                  return Array.from({ length: totalSlides }).map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        if (activeGender === 'male') {
-                          setCurrentMenSlide(index);
-                        } else {
-                          setCurrentWomenSlide(index);
-                        }
-                      }}
-                      className={`h-2 rounded-full transition-all ${
-                        currentSlide === index
-                          ? 'w-6 bg-[#c8a45d]'
-                          : 'w-2 bg-gray-300'
-                      }`}
-                      aria-label={`Go to slide ${index + 1}`}
-                    />
-                  ));
-                })()}
-              </div>
-            </div>
-
-            <div className="text-center mt-10">
-      <Link
-        href={`/shop?gender=${activeGender === 'male' ? 'Homme' : 'Femme'}`}
-        className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
-      >
-        EN SAVOIR PLUS
-      </Link>
-            </div>
-          </div>
-
-          {/* Desktop Layout - Only visible on medium screens and up */}
-          <div className="hidden md:block">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative">
-              {/* Center divider - only visible on large screens */}
-              <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 transform -translate-x-1/2"></div>
-              
-              {/* Women's Section */}
-              <div className="lg:pr-6">
-                <h2 className="text-xl sm:text-2xl font-playfair mb-6 text-center text-[#c8a45d]">FEMME</h2>
-                
-                {/* Women's Products Slider */}
-                <div className="relative px-2">
-                  <div className="overflow-hidden rounded-xl">
-                    <div 
-                      className="flex transition-transform duration-300 ease-in-out"
-                      style={{ transform: `translateX(-${currentWomenSlide * 100}%)` }}
-                    >
-                      {womenProducts?.reduce((slides: React.ReactElement[], _: any, index: number, array: Product[]) => {
-                        if (index % 3 === 0) {
-                          slides.push(
-                            <div key={index} className="min-w-full flex-shrink-0">
-                              <div className="grid grid-cols-3 gap-4">
-                                {array.slice(index, index + 3).map((product: Product) => (
-                                  <Link 
-                                    href={`/product/${product._id}`} 
-                                    key={product._id} 
-                                    className="group text-center"
-                                  >
-                                    <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm">
-                                      <Image
-                                        src={product.images[0] || '/images/product-placeholder.svg'}
-                                        alt={product.name}
-                                        fill
-                                        sizes="(max-width: 1024px) 30vw, 20vw"
-                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                      />
-                                    </div>
-                                    <h3 className="text-sm font-medium mb-1 line-clamp-1">{product.name}</h3>
-                                    <p className="text-xs text-gray-500 mb-1 line-clamp-2">{product.description?.slice(0, 40) || ''}...</p>
-                                    <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-                        return slides;
-                      }, [])}
-                    </div>
-                  </div>
-                  
-                  {/* Navigation buttons - only shown if more than one slide */}
-                  {(() => {
-                    const totalSlides = womenProducts ? Math.ceil(womenProducts.length / 3) : 0;
-                    
-                    if (totalSlides <= 1) return null;
-                    
-                    return (
-                      <>
-                        <button 
-                          onClick={() => prevProductSlide('women')}
-                          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-md w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#c8a45d]/10 transition-colors"
-                          aria-label="Previous products"
-                        >
-                          <FaArrowLeft className="w-3.5 h-3.5 text-[#c8a45d]" />
-                        </button>
-                        <button 
-                          onClick={() => nextProductSlide('women')}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-md w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#c8a45d]/10 transition-colors"
-                          aria-label="Next products"
-                        >
-                          <FaArrowRight className="w-3.5 h-3.5 text-[#c8a45d]" />
-                        </button>
-                      </>
-                    );
-                  })()}
-                  
-                  {/* Slide indicators */}
-                  <div className="flex justify-center gap-1.5 mt-4">
-                    {(() => {
-                      const totalSlides = womenProducts ? Math.ceil(womenProducts.length / 3) : 0;
-                      
-                      if (totalSlides <= 1) return null;
-                      
-                      return Array.from({ length: totalSlides }).map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentWomenSlide(index)}
-                          className={`h-2 rounded-full transition-all ${
-                            currentWomenSlide === index
-                              ? 'w-6 bg-[#c8a45d]'
-                              : 'w-2 bg-gray-300'
-                          }`}
-                          aria-label={`Go to slide ${index + 1}`}
-                        />
-                      ));
-                    })()}
-                  </div>
-                </div>
-                
-                <div className="text-center mt-8">
-                  <Link
-                    href="/shop?gender=Femme"
-                    className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
-                  >
-                    EN SAVOIR PLUS
-                  </Link>
-                </div>
-              </div>
-
-              {/* Men's Section */}
-              <div className="lg:pl-6">
-                <h2 className="text-xl sm:text-2xl font-playfair mb-6 text-center text-[#c8a45d]">HOMME</h2>
-                
-                {/* Men's Products Slider */}
-                <div className="relative px-2">
-                  <div className="overflow-hidden rounded-xl">
-                    <div 
-                      className="flex transition-transform duration-300 ease-in-out"
-                      style={{ transform: `translateX(-${currentMenSlide * 100}%)` }}
-                    >
-                      {menProducts?.reduce((slides: React.ReactElement[], _: any, index: number, array: Product[]) => {
-                        if (index % 3 === 0) {
-                          slides.push(
-                            <div key={index} className="min-w-full flex-shrink-0">
-                              <div className="grid grid-cols-3 gap-4">
-                                {array.slice(index, index + 3).map((product: Product) => (
-                                  <Link 
-                                    href={`/product/${product._id}`} 
-                                    key={product._id} 
-                                    className="group text-center"
-                                  >
-                                    <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm">
-                                      <Image
-                                        src={product.images[0] || '/images/product-placeholder.svg'}
-                                        alt={product.name}
-                                        fill
-                                        sizes="(max-width: 1024px) 30vw, 20vw"
-                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                      />
-                                    </div>
-                                    <h3 className="text-sm font-medium mb-1 line-clamp-1">{product.name}</h3>
-                                    <p className="text-xs text-gray-500 mb-1 line-clamp-2">{product.description?.slice(0, 40) || ''}...</p>
-                                    <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-                        return slides;
-                      }, [])}
-                    </div>
-                  </div>
-                  
-                  {/* Navigation buttons - only shown if more than one slide */}
-                  {(() => {
-                    const totalSlides = menProducts ? Math.ceil(menProducts.length / 3) : 0;
-                    
-                    if (totalSlides <= 1) return null;
-                    
-                    return (
-                      <>
-                        <button 
-                          onClick={() => prevProductSlide('men')}
-                          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-md w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#c8a45d]/10 transition-colors"
-                          aria-label="Previous products"
-                        >
-                          <FaArrowLeft className="w-3.5 h-3.5 text-[#c8a45d]" />
-                        </button>
-                        <button 
-                          onClick={() => nextProductSlide('men')}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-md w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#c8a45d]/10 transition-colors"
-                          aria-label="Next products"
-                        >
-                          <FaArrowRight className="w-3.5 h-3.5 text-[#c8a45d]" />
-                        </button>
-                      </>
-                    );
-                  })()}
-                  
-                  {/* Slide indicators */}
-                  <div className="flex justify-center gap-1.5 mt-4">
-                    {(() => {
-                      const totalSlides = menProducts ? Math.ceil(menProducts.length / 3) : 0;
-                      
-                      if (totalSlides <= 1) return null;
-                      
-                      return Array.from({ length: totalSlides }).map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentMenSlide(index)}
-                          className={`h-2 rounded-full transition-all ${
-                            currentMenSlide === index
-                              ? 'w-6 bg-[#c8a45d]'
-                              : 'w-2 bg-gray-300'
-                          }`}
-                          aria-label={`Go to slide ${index + 1}`}
-                        />
-                      ));
-                    })()}
-                  </div>
-                </div>
-                
-                <div className="text-center mt-8">
-                  <Link
-                    href="/shop?gender=Homme"
-                    className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
-                  >
-                    EN SAVOIR PLUS
-                  </Link>
-                </div>
-              </div>
-            </div>
-    </div>
-  </div>
-</section>
+      {/* Featured Products Section */}
+      <BasicProductDisplay />
 
       {/* Featured Collections Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-playfair text-[#c8a45d] mb-4">
-              Featured Collection
+              {t('home.categories.title', 'Featured Collection')}
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Discover our most popular fragrances, crafted with premium ingredients
-              and inspired by world-renowned perfumes.
+              {t('home.categories.subtitle', 'Discover our most popular fragrances, crafted with premium ingredients and inspired by world-renowned perfumes.')}
             </p>
           </div>
           
@@ -809,7 +811,7 @@ export default function Home() {
               href="/shop" 
               className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
             >
-              View All Collections
+              {t('home.categories.viewAll', 'View All Collections')}
             </Link>
           </div>
         </div>
@@ -818,21 +820,26 @@ export default function Home() {
       {/* Features Section - Now moved to be above the About section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-playfair text-[#c8a45d] mb-4">
+              {t('home.features.title', 'Why Choose Us')}
+            </h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                title: "Premium Quality",
-                description: "High-quality ingredients for long-lasting fragrance",
+                title: t('home.features.quality.title', 'Premium Quality'),
+                description: t('home.features.quality.description', 'High-quality ingredients for long-lasting fragrance'),
                 icon: <FaCrown className="w-8 h-8 text-[#c8a45d]" />
               },
               {
-                title: "Free Shipping",
-                description: "On orders over $150",
+                title: t('home.features.shipping.title', 'Fast Shipping'),
+                description: t('home.features.shipping.description', 'Shipping throughout Morocco'),
                 icon: <FaTruck className="w-8 h-8 text-[#c8a45d]" />
               },
               {
-                title: "Cash on Delivery",
-                description: "Pay when you receive your order",
+                title: t('home.features.price.title', 'Affordable Prices'),
+                description: t('home.features.price.description', 'Luxury at accessible prices'),
                 icon: <FaMoneyBillWave className="w-8 h-8 text-[#c8a45d]" />
               }
             ].map((feature, index) => (
@@ -858,7 +865,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           {/* Mobile Title - Centered on mobile only */}
           <h2 className="font-playfair text-3xl text-[#c8a45d] mb-6 text-center lg:hidden">
-            About AVANA PARFUM
+            {t('header.about', 'About AVANA PARFUM')}
           </h2>
           
           {/* Mobile Layout */}
@@ -895,11 +902,11 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4 mb-8 max-w-md mx-auto">
               <div className="text-center bg-gray-50 p-3 rounded-lg shadow-sm">
                 <h3 className="text-2xl font-playfair text-[#c8a45d] mb-1">100+</h3>
-                <p className="text-gray-600 text-sm">Unique Fragrances</p>
+                <p className="text-gray-600 text-sm">{t('about.stats.fragrances', 'Unique Fragrances')}</p>
               </div>
               <div className="text-center bg-gray-50 p-3 rounded-lg shadow-sm">
                 <h3 className="text-2xl font-playfair text-[#c8a45d] mb-1">10k+</h3>
-                <p className="text-gray-600 text-sm">Happy Customers</p>
+                <p className="text-gray-600 text-sm">{t('about.stats.customers', 'Happy Customers')}</p>
               </div>
             </div>
             
@@ -909,7 +916,7 @@ export default function Home() {
                 href="/about"
                 className="inline-flex items-center px-6 py-2 bg-[#c8a45d] text-white rounded-full hover:bg-[#c8a45d]/90 transition-colors text-sm"
               >
-                Learn More
+                {t('about.learnMore', 'Learn More')}
                 <svg
                   className="ml-2 w-4 h-4"
                   fill="none"
@@ -951,29 +958,24 @@ export default function Home() {
             {/* Content Column */}
             <div className="order-2">
               <h2 className="font-playfair text-5xl text-[#c8a45d] mb-8">
-                About AVANA PARFUM
+                {t('header.about', 'About AVANA PARFUM')}
               </h2>
               <div className="space-y-6">
                 <p className="text-gray-600 text-lg leading-relaxed">
-                  At AVANA PARFUM, we believe that luxury fragrances should be accessible to everyone. 
-                  Our collection features premium quality inspired perfumes that capture the essence 
-                  of world-renowned fragrances.
+                  {t('about.description.part1', 'At AVANA PARFUM, we believe that luxury fragrances should be accessible to everyone. Our collection features premium quality inspired perfumes that capture the essence of world-renowned fragrances.')}
                 </p>
                 <p className="text-gray-600 text-lg leading-relaxed">
-                  Each fragrance is meticulously crafted using the finest ingredients,
-                  ensuring a long-lasting scent that makes a lasting impression. We
-                  take pride in offering you an exceptional olfactory experience at a
-                  fraction of the price.
+                  {t('about.description.part2', 'Each fragrance is meticulously crafted using the finest ingredients, ensuring a long-lasting scent that makes a lasting impression. We take pride in offering you an exceptional olfactory experience at a fraction of the price.')}
                 </p>
                 
                 <div className="grid grid-cols-2 gap-8 pt-8">
                   <div className="text-center">
                     <h3 className="text-4xl font-playfair text-[#c8a45d] mb-2">100+</h3>
-                    <p className="text-gray-600">Unique Fragrances</p>
+                    <p className="text-gray-600">{t('about.stats.fragrances', 'Unique Fragrances')}</p>
                   </div>
                   <div className="text-center">
                     <h3 className="text-4xl font-playfair text-[#c8a45d] mb-2">10k+</h3>
-                    <p className="text-gray-600">Happy Customers</p>
+                    <p className="text-gray-600">{t('about.stats.customers', 'Happy Customers')}</p>
                   </div>
                 </div>
                 
@@ -982,7 +984,7 @@ export default function Home() {
                     href="/about"
                     className="inline-flex items-center px-8 py-3 bg-[#c8a45d] text-white rounded-full hover:bg-[#c8a45d]/90 transition-colors"
                   >
-                    Learn More
+                    {t('about.learnMore', 'Learn More')}
                     <svg
                       className="ml-2 w-5 h-5"
                       fill="none"
@@ -1009,10 +1011,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl font-playfair text-[#c8a45d] mb-4">
-              How to Order
+              {t('home.howToOrder.title', 'How to Order')}
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Simple steps to get your favorite fragrance delivered to your doorstep
+              {t('home.howToOrder.subtitle', 'Simple steps to get your favorite fragrance delivered to your doorstep')}
             </p>
           </div>
           
@@ -1038,23 +1040,23 @@ export default function Home() {
                 {[
                   {
                     icon: <FaShoppingBag className="w-10 h-10 text-[#c8a45d]" />,
-                    title: "Browse Collection",
-                    description: "Explore our wide range of luxury inspired fragrances"
+                    title: t('home.howToOrder.steps.choose.title', 'Browse Collection'),
+                    description: t('home.howToOrder.steps.choose.description', 'Explore our wide range of luxury inspired fragrances')
               },
               {
                     icon: <FaWhatsapp className="w-10 h-10 text-[#c8a45d]" />,
-                    title: "Place Your Order",
-                    description: "Message us on WhatsApp and complete the order form"
+                    title: t('home.howToOrder.steps.contact.title', 'Place Your Order'),
+                    description: t('home.howToOrder.steps.contact.description', 'Message us on WhatsApp and complete the order form')
               },
               {
                     icon: <FaPhone className="w-10 h-10 text-[#c8a45d]" />,
-                    title: "Confirmation Call",
-                    description: "Receive a quick confirmation call to verify your order"
+                    title: t('home.howToOrder.steps.confirm.title', 'Confirmation Call'),
+                    description: t('home.howToOrder.steps.confirm.description', 'Receive a quick confirmation call to verify your order')
                   },
                   {
                     icon: <FaBox className="w-10 h-10 text-[#c8a45d]" />,
-                    title: "Fast Delivery",
-                    description: "Your order will arrive within 3-5 business days"
+                    title: t('home.howToOrder.steps.receive.title', 'Fast Delivery'),
+                    description: t('home.howToOrder.steps.receive.description', 'Your order will arrive within 3-5 business days')
                   }
                 ].map((step, index) => (
                   <div key={index} className="flex flex-col items-center">
@@ -1077,23 +1079,23 @@ export default function Home() {
               {[
                 {
                   icon: <FaShoppingBag className="w-6 h-6 text-white" />,
-                  title: "Browse Collection",
-                  description: "Explore our wide range of luxury inspired fragrances"
+                  title: t('home.howToOrder.steps.choose.title', 'Browse Collection'),
+                  description: t('home.howToOrder.steps.choose.description', 'Explore our wide range of luxury inspired fragrances')
                 },
                 {
                   icon: <FaWhatsapp className="w-6 h-6 text-white" />,
-                  title: "Place Your Order",
-                  description: "Message us on WhatsApp and complete the order form"
+                  title: t('home.howToOrder.steps.contact.title', 'Place Your Order'),
+                  description: t('home.howToOrder.steps.contact.description', 'Message us on WhatsApp and complete the order form')
                 },
                 {
                   icon: <FaPhone className="w-6 h-6 text-white" />,
-                  title: "Confirmation Call",
-                  description: "Receive a quick confirmation call to verify your order"
+                  title: t('home.howToOrder.steps.confirm.title', 'Confirmation Call'),
+                  description: t('home.howToOrder.steps.confirm.description', 'Receive a quick confirmation call to verify your order')
                 },
                 {
                   icon: <FaBox className="w-6 h-6 text-white" />,
-                  title: "Fast Delivery",
-                  description: "Your order will arrive within 3-5 business days"
+                  title: t('home.howToOrder.steps.receive.title', 'Fast Delivery'),
+                  description: t('home.howToOrder.steps.receive.description', 'Your order will arrive within 3-5 business days')
                 }
               ].map((step, index) => (
                 <div key={index} className="flex items-start">
@@ -1117,7 +1119,7 @@ export default function Home() {
               rel="noopener noreferrer"
               className="inline-flex items-center px-8 py-3 bg-[#c8a45d] text-white rounded-full hover:bg-[#c8a45d]/90 transition-colors shadow-sm"
             >
-              Order on WhatsApp
+              {t('home.howToOrder.orderButton', 'Order on WhatsApp')}
               <FaWhatsapp className="ml-2 w-5 h-5" />
             </a>
           </div>
@@ -1135,13 +1137,13 @@ export default function Home() {
               href="/shop?gender=Homme" 
               className="px-10 py-4 bg-[#c8a45d] text-white rounded-full text-lg font-medium transition-transform hover:scale-105"
             >
-              Shop Men
+              {t('footer.links.forHim', 'Shop Men')}
             </Link>
             <Link 
               href="/shop?gender=Femme" 
               className="px-10 py-4 border-2 border-[#c8a45d] text-[#c8a45d] bg-white rounded-full text-lg font-medium transition-transform hover:scale-105"
             >
-              Shop Women
+              {t('footer.links.forHer', 'Shop Women')}
             </Link>
           </div>
         </div>

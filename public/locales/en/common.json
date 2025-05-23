@@ -1,0 +1,138 @@
+{
+  "header": {
+    "home": "Home",
+    "shop": "Shop",
+    "about": "About",
+    "contact": "Contact",
+    "search": "Search",
+    "account": "Account",
+    "cart": "Shopping cart"
+  },
+  "home": {
+    "hero": {
+      "title": "Discover Your Signature Scent",
+      "subtitle": "Premium inspired fragrances at affordable prices",
+      "shopNow": "Shop Now"
+    },
+    "featured": {
+      "title": "Featured Collections",
+      "subtitle": "Explore our most popular fragrances",
+      "viewAll": "View All"
+    },
+    "howToOrder": {
+      "title": "How to Order",
+      "subtitle": "Simple steps to get your favorite fragrance",
+      "steps": {
+        "choose": "Choose Your Fragrance",
+        "chooseDesc": "Browse our collection and find your perfect scent",
+        "customize": "Select Volume",
+        "customizeDesc": "Choose from different sizes based on your needs",
+        "checkout": "Easy Checkout",
+        "checkoutDesc": "Secure payment and fast delivery options"
+      }
+    },
+    "features": {
+      "title": "Why Choose AVANA",
+      "quality": {
+        "title": "Premium Quality",
+        "description": "High-quality ingredients for long-lasting scents"
+      },
+      "affordable": {
+        "title": "Affordable Luxury",
+        "description": "Luxury fragrances without the luxury price tag"
+      },
+      "inspired": {
+        "title": "Inspired Fragrances",
+        "description": "Scents inspired by world-renowned perfumes"
+      },
+      "satisfaction": {
+        "title": "Satisfaction Guaranteed",
+        "description": "Love your fragrance or get your money back"
+      }
+    },
+    "about": {
+      "title": "About AVANA PARFUM",
+      "description": "At AVANA, we believe that everyone deserves to experience luxury fragrances without the premium price tag. Our mission is to create high-quality, long-lasting scents inspired by the world's most beloved perfumes, making luxury accessible to all.",
+      "learnMore": "Learn More"
+    },
+    "cta": {
+      "title": "Ready to Find Your Signature Scent?",
+      "description": "Browse our collection of premium inspired fragrances and discover your perfect match today.",
+      "button": "Shop Now"
+    }
+  },
+  "product": {
+    "inspiredBy": "Inspired by",
+    "volume": "Volume",
+    "addToCart": "Add to Cart",
+    "inCart": "In Cart",
+    "orderNow": "Order Now",
+    "description": "Description",
+    "relatedProducts": "Related Products",
+    "discount": "SALE",
+    "currency": "DH"
+  },
+  "shop": {
+    "filters": "Filters",
+    "categories": "Categories",
+    "price": "Price",
+    "gender": "Gender",
+    "products": "products",
+    "featured": "Featured",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "newest": "Newest",
+    "under50": "Under $50",
+    "price50-100": "$50 - $100",
+    "price100-200": "$100 - $200",
+    "over200": "Over $200",
+    "unisex": "Unisex",
+    "clearAll": "Clear All",
+    "loadingProducts": "Loading products...",
+    "noProductsFound": "No products found",
+    "noProductsFoundDescription": "We couldn't find any products matching your criteria.",
+    "resetFilters": "Reset Filters",
+    "searchProducts": "Search products..."
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Join Our Newsletter",
+      "description": "Subscribe to receive updates, access to exclusive deals, and more.",
+      "placeholder": "Enter your email",
+      "button": "Subscribe"
+    },
+    "about": {
+      "description": "Discover our collection of premium inspired fragrances, crafted with passion and precision. Experience luxury at an accessible price point."
+    },
+    "categories": {
+      "shop": "Shop",
+      "company": "Company",
+      "support": "Support",
+      "contact": "Contact"
+    },
+    "links": {
+      "forHim": "For Him",
+      "forHer": "For Her",
+      "collections": "Collections",
+      "newArrivals": "New Arrivals",
+      "bestSellers": "Best Sellers",
+      "aboutUs": "About Us",
+      "careers": "Careers",
+      "storeLocator": "Store Locator",
+      "faq": "FAQ",
+      "shippingInfo": "Shipping Info",
+      "returns": "Returns",
+      "trackOrder": "Track Order",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "refundPolicy": "Refund Policy"
+    },
+    "copyright": "© {{year}} AVANA. All rights reserved.",
+    "social": {
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "instagram": "Instagram",
+      "whatsapp": "WhatsApp"
+    }
+  }
+} 

@@ -5,19 +5,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaEye, FaShoppingCart, FaCheck } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
-import { addToCart, removeFromCart, isInCart } from '@/lib/cart';
+import { addToCart, removeFromCart, isInCart, ProductWithTranslation } from '@/lib/cart';
+import { useTranslation } from '@/components/i18n/TranslationProvider';
 
-type Product = {
-  _id: string;
-  name: string;
-  inspiredBy?: string;
-  description?: string;
-  price: number;
-  volume?: string;
-  images: string[];
-  gender?: string;
-  category?: string;
+type ITranslation = {
+  en: string;
+  fr: string;
+  [key: string]: string;
 };
+
+// Use the ProductWithTranslation type from cart.ts
+type Product = ProductWithTranslation;
 
 interface ProductGridProps {
   products: Product[];
@@ -59,6 +57,7 @@ export default function ProductGrid({ products, viewMode = 'grid' }: ProductGrid
 }
 
 function GridProductCard({ product, index }: { product: Product; index: number }) {
+  const { t, locale } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [isInCartState, setIsInCartState] = useState(false);
   
@@ -148,7 +147,9 @@ function GridProductCard({ product, index }: { product: Product; index: number }
         {/* Gender badge */}
         {product.gender && (
           <div className="absolute top-2 left-2 bg-gray-800/80 text-white text-xs py-1 px-2 rounded">
-            {product.gender}
+            {product.gender === 'Homme' ? t('footer.links.forHim', 'For Him') : 
+             product.gender === 'Femme' ? t('footer.links.forHer', 'For Her') : 
+             product.gender === 'Mixte' || product.gender === 'Unisexe' ? t('shop.unisex', 'Unisex') : product.gender}
           </div>
         )}
         
@@ -164,17 +165,17 @@ function GridProductCard({ product, index }: { product: Product; index: number }
       <div className="p-4">
         <Link href={`/product/${product._id}`} className="block">
           <h3 className="text-gray-800 font-medium text-lg mb-1 line-clamp-1 group-hover:text-[#c8a45d] transition-colors">
-            {product.name}
+            {typeof product.name === 'object' ? (product.name[locale as keyof typeof product.name] || product.name.fr || product.name.en) : product.name}
           </h3>
           
           {product.inspiredBy && (
             <p className="text-gray-500 text-sm mb-2 line-clamp-1">
-              Inspired by {product.inspiredBy}
+              {t('product.inspiredBy', 'Inspired by')} {typeof product.inspiredBy === 'object' ? (product.inspiredBy[locale] || product.inspiredBy.en) : product.inspiredBy}
             </p>
           )}
           
           <div className="flex justify-between items-center mt-2">
-            <span className="text-[#c8a45d] font-semibold">{product.price} DH</span>
+            <span className="text-[#c8a45d] font-semibold">{product.price} {t('product.currency', 'DH')}</span>
             {product.volume && (
               <span className="text-gray-500 text-sm">{product.volume}</span>
             )}
@@ -193,12 +194,12 @@ function GridProductCard({ product, index }: { product: Product; index: number }
           {isInCartState ? (
             <>
               <FaCheck className="mr-2" />
-              Added to Cart
+              {t('product.inCart', 'In Cart')}
             </>
           ) : (
             <>
               <FaShoppingCart className="mr-2" />
-              Add to Cart
+              {t('product.addToCart', 'Add to Cart')}
             </>
           )}
         </button>
@@ -208,6 +209,7 @@ function GridProductCard({ product, index }: { product: Product; index: number }
 }
 
 function ListProductCard({ product, index }: { product: Product; index: number }) {
+  const { t, locale } = useTranslation();
   const [isInCartState, setIsInCartState] = useState(false);
   
   useEffect(() => {
@@ -255,7 +257,9 @@ function ListProductCard({ product, index }: { product: Product; index: number }
         {/* Gender badge */}
         {product.gender && (
           <div className="absolute top-2 left-2 bg-gray-800/80 text-white text-xs py-1 px-2 rounded">
-            {product.gender}
+            {product.gender === 'Homme' ? t('footer.links.forHim', 'For Him') : 
+             product.gender === 'Femme' ? t('footer.links.forHer', 'For Her') : 
+             product.gender === 'Mixte' || product.gender === 'Unisexe' ? t('shop.unisex', 'Unisex') : product.gender}
           </div>
         )}
       </div>
@@ -265,22 +269,35 @@ function ListProductCard({ product, index }: { product: Product; index: number }
         <div className="flex items-start justify-between">
           <div>
             <Link href={`/product/${product._id}`} className="block">
-              <h3 className="text-gray-800 font-medium text-lg mb-1 hover:text-[#c8a45d] transition-colors">
-                {product.name}
+              <h3 className="text-gray-800 font-medium text-lg mb-1 line-clamp-1 hover:text-[#c8a45d] transition-colors">
+                {typeof product.name === 'object' ? (product.name[locale as keyof typeof product.name] || product.name.en) : product.name}
               </h3>
+              
+              {product.inspiredBy && (
+                <p className="text-gray-500 text-sm mb-1">
+                  {t('product.inspiredBy', 'Inspired by')} {typeof product.inspiredBy === 'object' ? (product.inspiredBy[locale as keyof typeof product.inspiredBy] || product.inspiredBy.fr || product.inspiredBy.en) : product.inspiredBy}
+                </p>
+              )}
+              
+              {product.category && (
+                <span className="inline-block bg-gray-100 text-gray-700 text-xs py-1 px-2 rounded mb-2">
+                  {product.category}
+                </span>
+              )}
             </Link>
             
-            {product.inspiredBy && (
-              <p className="text-gray-500 text-sm mb-1">
-                Inspired by {product.inspiredBy}
-              </p>
-            )}
-            
-            {product.category && (
-              <span className="inline-block bg-gray-100 text-gray-700 text-xs py-1 px-2 rounded mb-2">
-                {product.category}
-              </span>
-            )}
+            {/* Mobile Add to Cart button */}
+            <div className="mt-3 block md:hidden">
+              <button
+                onClick={handleAddToCart}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isInCartState 
+                  ? 'bg-green-100 text-green-700 border border-green-200'
+                  : 'bg-[#c8a45d] text-white hover:bg-[#b08d48]'
+                }`}
+              >
+                {isInCartState ? t('product.inCart', 'In Cart') : t('product.addToCart', 'Add to Cart')}
+              </button>
+            </div>
           </div>
           
           <button 
@@ -297,13 +314,15 @@ function ListProductCard({ product, index }: { product: Product; index: number }
         
         {product.description && (
           <p className="text-gray-600 text-sm line-clamp-2 mb-3 mt-1">
-            {product.description}
+            {typeof product.description === 'object' ? 
+              (product.description[locale as keyof typeof product.description] || product.description.en) : 
+              product.description}
           </p>
         )}
         
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-baseline">
-            <span className="text-[#c8a45d] font-semibold text-lg">{product.price} DH</span>
+            <span className="text-[#c8a45d] font-semibold text-lg">{product.price} {t('product.currency', 'DH')}</span>
             {product.volume && (
               <span className="text-gray-500 text-sm ml-2">{product.volume}</span>
             )}

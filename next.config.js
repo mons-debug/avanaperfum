@@ -13,6 +13,19 @@ const nextConfig = {
       },
     ],
   },
+  // i18n config is now deprecated in app router, use middleware instead
+  
+  // Performance optimizations
+  poweredByHeader: false,
+  reactStrictMode: true,
+  compress: true,
+  
+  // Enable aggressive caching and optimization
+  experimental: {
+    optimizeCss: true,
+    scrollRestoration: true,
+    optimisticClientCache: true
+  },
 };
 
 module.exports = nextConfig; 

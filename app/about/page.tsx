@@ -13,29 +13,29 @@ export default function AboutPage() {
     story: (
       <div className="space-y-6">
         <p className="text-lg leading-relaxed text-gray-700">
-          Founded in 2018, AVANA PARFUM began with a simple mission: to make luxury fragrance experiences accessible to everyone. Our founder, with over 15 years of experience in the perfume industry, recognized that many people appreciate fine fragrances but find designer prices prohibitive.
+          Fondée en 2018, AVANA PARFUM a commencé avec une mission simple : rendre les expériences de parfums de luxe accessibles à tous. Notre fondateur, avec plus de 15 ans d'expérience dans l'industrie du parfum, a reconnu que de nombreuses personnes apprécient les fragrances raffinées mais trouvent les prix des créateurs prohibitifs.
         </p>
         <p className="text-lg leading-relaxed text-gray-700">
-          Starting with just 10 signature scents, we've grown our collection to over 100 premium fragrances inspired by world-renowned perfumes. Each AVANA PARFUM fragrance captures the essence of luxury scents while maintaining affordability and exceptional quality.
+          En commençant avec seulement 10 parfums signature, nous avons développé notre collection à plus de 100 fragrances premium inspirées des parfums de renommée mondiale. Chaque parfum AVANA capture l'essence des parfums de luxe tout en maintenant un prix abordable et une qualité exceptionnelle.
         </p>
         <p className="text-lg leading-relaxed text-gray-700">
-          Today, AVANA PARFUM proudly serves thousands of customers across Morocco and is expanding internationally, bringing our passion for accessible luxury fragrance to new markets.
+          Aujourd'hui, AVANA PARFUM sert fièrement des milliers de clients à travers le Maroc et s'étend à l'international, apportant notre passion pour les fragrances de luxe accessibles à de nouveaux marchés.
         </p>
       </div>
     ),
     mission: (
       <div className="space-y-6">
         <p className="text-lg leading-relaxed text-gray-700">
-          At AVANA PARFUM, our mission is to democratize luxury fragrances by creating premium quality perfumes that are accessible to all. We believe everyone deserves to experience the confidence and pleasure that comes with wearing a distinctive scent.
+          Chez AVANA PARFUM, notre mission est de démocratiser les parfums de luxe en créant des parfums de qualité premium accessibles à tous. Nous croyons que chacun mérite de vivre la confiance et le plaisir qui viennent avec le port d'un parfum distinctif.
         </p>
         <p className="text-lg leading-relaxed text-gray-700">
-          We are committed to:
+          Nous nous engageons à :
         </p>
         <ul className="list-disc pl-6 space-y-2 text-lg text-gray-700">
-          <li>Creating high-quality fragrances that rival premium brands</li>
-          <li>Maintaining affordable price points without compromising quality</li>
-          <li>Providing exceptional customer service and personalized recommendations</li>
-          <li>Constantly innovating and expanding our collection</li>
+          <li>Créer des fragrances de haute qualité qui rivalisent avec les marques premium</li>
+          <li>Maintenir des prix abordables sans compromettre la qualité</li>
+          <li>Fournir un service client exceptionnel et des recommandations personnalisées</li>
+          <li>Innover constamment et élargir notre collection</li>
         </ul>
       </div>
     ),
@@ -45,23 +45,23 @@ export default function AboutPage() {
           {[
             {
               icon: <FaLeaf className="w-8 h-8 text-[#c8a45d]" />,
-              title: "Quality",
-              description: "We use only the finest ingredients to ensure our fragrances are long-lasting and true to their inspiration."
+              title: "Qualité",
+              description: "Nous utilisons uniquement les meilleurs ingrédients pour garantir que nos parfums durent longtemps et restent fidèles à leur inspiration."
             },
             {
               icon: <FaAward className="w-8 h-8 text-[#c8a45d]" />,
               title: "Excellence",
-              description: "We strive for excellence in everything we do, from product development to customer service."
+              description: "Nous visons l'excellence dans tout ce que nous faisons, du développement de produits au service client."
             },
             {
               icon: <FaHandshake className="w-8 h-8 text-[#c8a45d]" />,
-              title: "Integrity",
-              description: "We operate with transparency and honesty in all our business practices."
+              title: "Intégrité",
+              description: "Nous opérons avec transparence et honnêteté dans toutes nos pratiques commerciales."
             },
             {
               icon: <FaHeart className="w-8 h-8 text-[#c8a45d]" />,
               title: "Passion",
-              description: "Our love for fragrances drives us to create scents that evoke emotion and leave lasting impressions."
+              description: "Notre amour pour les parfums nous pousse à créer des senteurs qui évoquent des émotions et laissent des impressions durables."
             }
           ].map((value, index) => (
             <div key={index} className="flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
@@ -86,10 +86,10 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-playfair text-[#c8a45d] mb-6">
-              About AVANA PARFUM
+              À Propos d'AVANA PARFUM
             </h1>
             <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-              Crafting accessible luxury fragrances inspired by the world's finest perfumes.
+              Création de parfums de luxe accessibles inspirés des plus beaux parfums du monde.
             </p>
           </div>
         </div>
@@ -119,17 +119,17 @@ export default function AboutPage() {
             <div className="order-1 lg:order-2">
               <div className="mb-8">
                 <div className="flex border-b border-gray-200">
-                  {['story', 'mission', 'values'].map((tab) => (
+                  {[{id: 'story', label: 'Histoire'}, {id: 'mission', label: 'Mission'}, {id: 'values', label: 'Valeurs'}].map((tab) => (
                     <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
                       className={`px-4 py-3 text-sm font-medium uppercase tracking-wider ${
-                        activeTab === tab
+                        activeTab === tab.id
                           ? 'border-b-2 border-[#c8a45d] text-[#c8a45d]'
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      Our {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      Notre {tab.label}
                     </button>
                   ))}
                 </div>
@@ -148,10 +148,10 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {[
-              { number: "100+", label: "Fragrances" },
-              { number: "5+", label: "Years Experience" },
-              { number: "10k+", label: "Happy Customers" },
-              { number: "30+", label: "Cities Served" }
+              { number: "100+", label: "Parfums" },
+              { number: "5+", label: "Années d'Expérience" },
+              { number: "10k+", label: "Clients Satisfaits" },
+              { number: "30+", label: "Villes Desservies" }
             ].map((stat, index) => (
               <div key={index} className="bg-white p-6 rounded-xl shadow-sm">
                 <h3 className="text-3xl md:text-4xl font-playfair text-[#c8a45d] mb-2">
@@ -164,85 +164,30 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-playfair text-[#c8a45d] mb-4">
-              Meet Our Team
-            </h2>
-            <p className="text-gray-600 max-w-3xl mx-auto">
-              A passionate group of fragrance experts dedicated to bringing you the best perfume experience.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                name: "Sarah Benjelloun",
-                role: "Founder & Creative Director",
-                image: "/images/team/founder.jpg"
-              },
-              {
-                name: "Ahmed Tazi",
-                role: "Head Perfumer",
-                image: "/images/team/perfumer.jpg"
-              },
-              {
-                name: "Layla Alaoui",
-                role: "Customer Experience Manager",
-                image: "/images/team/customer.jpg"
-              },
-              {
-                name: "Karim El Mansouri",
-                role: "Operations Manager",
-                image: "/images/team/operations.jpg"
-              }
-            ].map((member, index) => (
-              <div key={index} className="text-center">
-                <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-md bg-gray-200">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 30vw, 20vw"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/images/team/placeholder.svg';
-                    }}
-                  />
-                </div>
-                <h3 className="text-xl font-playfair text-gray-800 mb-1">{member.name}</h3>
-                <p className="text-[#c8a45d] mb-4">{member.role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Team Section removed as requested */}
 
       {/* CTA Section */}
       <section className="py-16 bg-[#f9f5eb]">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-playfair text-[#c8a45d] mb-4">
-              Experience AVANA PARFUM Today
+              Découvrez AVANA PARFUM Aujourd'hui
             </h2>
             <p className="text-gray-700 mb-8">
-              Discover our exquisite collection of premium fragrances at affordable prices.
+              Explorez notre collection exquise de parfums premium à des prix abordables.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href="/shop"
                 className="px-8 py-3 bg-[#c8a45d] text-white rounded-full hover:bg-[#c8a45d]/90 transition-colors"
               >
-                Shop Now
+                Acheter Maintenant
               </Link>
               <Link 
                 href="/contact"
                 className="px-8 py-3 border-2 border-[#c8a45d] text-[#c8a45d] rounded-full hover:bg-[#c8a45d]/10 transition-colors"
               >
-                Contact Us
+                Contactez-Nous
               </Link>
             </div>
           </div>

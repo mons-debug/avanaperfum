@@ -46,7 +46,7 @@ export function getProductImage(product: { images?: string[] }): string {
   if (product.images && product.images.length > 0) {
     return product.images[0];
   }
-  return '/images/product-placeholder.jpg';
+  return '/images/product-placeholder.svg';
 }
 
 /**

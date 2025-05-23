@@ -1,0 +1,52 @@
+{
+  "header": {
+    "home": "الرئيسية",
+    "shop": "المتجر",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "search": "بحث",
+    "account": "الحساب",
+    "cart": "سلة التسوق"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "اشترك في نشرتنا الإخبارية",
+      "description": "اشترك للحصول على التحديثات والوصول إلى العروض الحصرية والمزيد.",
+      "placeholder": "أدخل بريدك الإلكتروني",
+      "button": "اشتراك"
+    },
+    "about": {
+      "description": "اكتشف مجموعتنا من العطور الفاخرة المستوحاة، المصنوعة بشغف ودقة. استمتع بالفخامة بسعر في المتناول."
+    },
+    "categories": {
+      "shop": "المتجر",
+      "company": "الشركة",
+      "support": "الدعم",
+      "contact": "اتصل بنا"
+    },
+    "links": {
+      "forHim": "للرجال",
+      "forHer": "للنساء",
+      "collections": "المجموعات",
+      "newArrivals": "وصل حديثا",
+      "bestSellers": "الأكثر مبيعا",
+      "aboutUs": "من نحن",
+      "careers": "وظائف",
+      "storeLocator": "مواقع المتاجر",
+      "faq": "الأسئلة المتكررة",
+      "shippingInfo": "معلومات الشحن",
+      "returns": "الإرجاع",
+      "trackOrder": "تتبع الطلب",
+      "privacyPolicy": "سياسة الخصوصية",
+      "termsOfService": "شروط الخدمة",
+      "refundPolicy": "سياسة الاسترداد"
+    },
+    "copyright": "© {{year}} أفانا. جميع الحقوق محفوظة.",
+    "social": {
+      "facebook": "فيسبوك",
+      "twitter": "تويتر",
+      "instagram": "انستغرام",
+      "whatsapp": "واتساب"
+    }
+  }
+} 

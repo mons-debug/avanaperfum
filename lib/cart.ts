@@ -1,5 +1,12 @@
 // Simple cart utility for managing product cart functionality
 
+// Define translation interface
+export interface ITranslation {
+  en: string;
+  fr: string;
+  [key: string]: string;
+}
+
 // Define the product type
 export type CartProduct = {
   _id: string;
@@ -9,6 +16,19 @@ export type CartProduct = {
   inspiredBy?: string;
   volume?: string;
   quantity: number;
+};
+
+// Define the product type with translations
+export type ProductWithTranslation = {
+  _id: string;
+  name: string | ITranslation;
+  price: number;
+  images: string[];
+  inspiredBy?: string | ITranslation;
+  description?: string | ITranslation;
+  volume?: string;
+  gender?: string;
+  category?: string;
 };
 
 // Type definitions for window globals
@@ -31,17 +51,45 @@ if (typeof window !== 'undefined') {
   window.cartListeners = window.cartListeners || [];
 }
 
+// Helper function to convert a product with translations to a cart product
+const convertToCartProduct = (product: ProductWithTranslation): Omit<CartProduct, 'quantity'> => {
+  // Get the current locale or default to English
+  const locale = typeof window !== 'undefined' && document.documentElement.lang || 'en';
+  
+  // Convert name to string if it's a translation object
+  const name = typeof product.name === 'object' 
+    ? (product.name[locale as keyof typeof product.name] || product.name.en) 
+    : product.name;
+    
+  // Convert inspiredBy to string if it's a translation object
+  const inspiredBy = product.inspiredBy && typeof product.inspiredBy === 'object'
+    ? (product.inspiredBy[locale as keyof typeof product.inspiredBy] || product.inspiredBy.en)
+    : product.inspiredBy;
+  
+  return {
+    _id: product._id,
+    name,
+    price: product.price,
+    images: product.images,
+    inspiredBy,
+    volume: product.volume
+  };
+};
+
 // Add a product to the cart
-export const addToCart = (product: Omit<CartProduct, 'quantity'>) => {
+export const addToCart = (product: ProductWithTranslation | Omit<CartProduct, 'quantity'>) => {
   if (typeof window === 'undefined') return;
   
   // Ensure cart items and listeners are initialized
   window.cartItems = window.cartItems || [];
   window.cartListeners = window.cartListeners || [];
   
+  // Convert product to cart product if it has translations
+  const cartProduct = 'description' in product ? convertToCartProduct(product as ProductWithTranslation) : product;
+  
   // Check if product already exists in cart
   const existingProductIndex = window.cartItems.findIndex(
-    (item: CartProduct) => item._id === product._id
+    (item: CartProduct) => item._id === cartProduct._id
   );
   
   if (existingProductIndex >= 0) {
@@ -49,7 +97,10 @@ export const addToCart = (product: Omit<CartProduct, 'quantity'>) => {
     window.cartItems[existingProductIndex].quantity += 1;
   } else {
     // Add new product with quantity 1
-    window.cartItems.push({ ...product, quantity: 1 });
+    window.cartItems.push({
+      ...cartProduct,
+      quantity: 1
+    } as CartProduct);
   }
   
   // Save to local storage

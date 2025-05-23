@@ -1,7 +1,11 @@
 import { connectToDB } from '@/lib/mongodb';
+import { notFound } from 'next/navigation';
 import Product from '@/models/Product';
 import ProductDetail from './ProductDetail';
 import { isValidObjectId } from 'mongoose';
+
+// Default language for the page
+const DEFAULT_LOCALE = 'fr';
 
 interface PageProps {
   params: {
@@ -50,6 +54,8 @@ async function getProductBySlug(slugOrId: string) {
 }
 
 export default async function ProductPage({ params }: PageProps) {
+  // Set French as the default locale for server-side rendering
+  const locale = DEFAULT_LOCALE;
   const product = await getProductBySlug(params.slug);
   
   if (!product) {

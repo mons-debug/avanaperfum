@@ -20,6 +20,38 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-display text-gray-900;
   }
+  
+  /* RTL Support */
+  .rtl {
+    direction: rtl;
+    text-align: right;
+  }
+  
+  .ltr {
+    direction: ltr;
+    text-align: left;
+  }
+  
+  /* RTL specific adjustments */
+  .rtl .ml-1, .rtl .ml-2, .rtl .ml-3, .rtl .ml-4 {
+    margin-left: 0 !important;
+    margin-right: 0.25rem !important;
+  }
+  
+  .rtl .mr-1, .rtl .mr-2, .rtl .mr-3, .rtl .mr-4 {
+    margin-right: 0 !important;
+    margin-left: 0.25rem !important;
+  }
+  
+  .rtl .pl-1, .rtl .pl-2, .rtl .pl-3, .rtl .pl-4 {
+    padding-left: 0 !important;
+    padding-right: 0.25rem !important;
+  }
+  
+  .rtl .pr-1, .rtl .pr-2, .rtl .pr-3, .rtl .pr-4 {
+    padding-right: 0 !important;
+    padding-left: 0.25rem !important;
+  }
 }
 
 @layer components {
@@ -68,6 +100,27 @@
 }
 
 /* Custom Scrollbar */
+.no-x-scrollbar {
+  overflow-x: hidden !important;
+  scrollbar-width: none; /* Firefox */
+}
+
+.no-x-scrollbar::-webkit-scrollbar-horizontal {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Hide horizontal scrollbar completely */
+body::-webkit-scrollbar-horizontal,
+html::-webkit-scrollbar-horizontal,
+.root-wrapper::-webkit-scrollbar-horizontal {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Vertical scrollbar styling */
 ::-webkit-scrollbar {
   @apply w-2;
 }
@@ -126,12 +179,14 @@ html, body {
   position: relative;
   margin: 0 !important;
   padding: 0 !important;
+  overscroll-behavior-x: none; /* Prevents overscrolling on iOS */
 }
 
 /* Make sure all sections don't overflow horizontally */
-section, div, main {
+section, div, main, header, footer, nav {
   max-width: 100% !important;
   overflow-x: clip !important;
+  box-sizing: border-box !important;
 }
 
 /* Fix for any absolute positioned elements */
@@ -156,10 +211,61 @@ body::after {
   z-index: -1;
 }
 
+/* Additional overflow fixes */
+.overflow-fix {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Universal horizontal scroll prevention */
+html, body, #__next, .root-wrapper, main, .container, section, header, footer, div {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+html::-webkit-scrollbar-horizontal,
+body::-webkit-scrollbar-horizontal,
+#__next::-webkit-scrollbar-horizontal,
+.root-wrapper::-webkit-scrollbar-horizontal,
+main::-webkit-scrollbar-horizontal,
+.container::-webkit-scrollbar-horizontal,
+section::-webkit-scrollbar-horizontal,
+header::-webkit-scrollbar-horizontal,
+footer::-webkit-scrollbar-horizontal,
+div::-webkit-scrollbar-horizontal {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Fix for mobile devices */
+@media (max-width: 768px) {
+  body, html, #__next, main {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix for iOS Safari */
+  body {
+    position: fixed;
+    position: relative;
+    width: 100%;
+  }
+  
+  /* Prevent content from causing overflow */
+  img, video, iframe, embed, object {
+    max-width: 100% !important;
+    height: auto;
+  }
+}
+
 /* Reset for any width issues */
-#__next, [data-reactroot] {
+#__next, [data-reactroot], main, .container, body > div {
   max-width: 100vw !important;
   overflow-x: hidden !important;
+  width: 100% !important;
 }
 
 /* Common class for screen width calculations instead of using 100vw */

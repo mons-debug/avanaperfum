@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Settings from '@/models/Settings';
-import connectDb from '@/lib/mongodb';
+import { connectToDB } from '@/lib/mongodb';
 
 // GET /api/settings
 export async function GET() {
   try {
-    await connectDb();
+    await connectToDB();
     
     // Get settings or create default if none exist
     let settings = await Settings.findOne();
@@ -35,7 +35,7 @@ export async function GET() {
 // PUT /api/settings
 export async function PUT(request: NextRequest) {
   try {
-    await connectDb();
+    await connectToDB();
     
     const data = await request.json();
     

@@ -219,8 +219,8 @@ export default function ContactPage() {
                     <div>
                       <h3 className="text-lg font-medium text-gray-800 mb-1">Phone</h3>
                       <p className="text-gray-600">
-                        <a href="tel:+212522123456" className="hover:text-[#c8a45d] transition-colors">
-                          +212 522 123 456
+                        <a href="tel:+212674428593" className="hover:text-[#c8a45d] transition-colors">
+                          +212 674428593
                         </a>
                       </p>
                     </div>
@@ -276,7 +276,7 @@ export default function ContactPage() {
                     <FaFacebookF className="w-5 h-5" />
                   </a>
                   <a 
-                    href="https://wa.me/+212XXXxxxXXX" 
+                    href="https://wa.me/212674428593" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-full bg-[#f9f5eb] flex items-center justify-center hover:bg-[#c8a45d] hover:text-white transition-colors"
@@ -292,7 +292,7 @@ export default function ContactPage() {
                   For fast orders, contact us directly on WhatsApp. We'll respond within minutes!
                 </p>
                 <a
-                  href="https://wa.me/+212XXXxxxXXX?text=Hello, I would like to place an order."
+                  href="https://wa.me/212674428593?text=Hello, I would like to place an order."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-6 py-3 bg-[#25D366] text-white rounded-md hover:bg-[#22c55e] transition-colors"

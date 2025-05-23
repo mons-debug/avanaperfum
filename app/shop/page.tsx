@@ -1,13 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import ProductGrid from '@/components/ProductGrid';
+import { useTranslation } from '@/components/i18n/TranslationProvider';
+
+// Split imports to reduce initial bundle size
+const ProductGridImport = () => import('@/components/ProductGrid');
+const ProductGrid = dynamic(ProductGridImport, {
+  loading: () => <div className="animate-pulse h-72 bg-gray-100 rounded-lg"></div>,
+  ssr: false // Disable SSR for faster client-side rendering
+});
+
+// Dynamically import heavy components
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { FaFilter, FaTimes, FaChevronDown, FaSearch } from 'react-icons/fa';
-import { RiPriceTag3Line } from 'react-icons/ri';
-import { IoGridOutline, IoList } from 'react-icons/io5';
+
+// Import only the icons we need and bundle them separately
+const FaFilter = dynamic(() => import('react-icons/fa').then(mod => ({ default: mod.FaFilter })), { ssr: false });
+const FaTimes = dynamic(() => import('react-icons/fa').then(mod => ({ default: mod.FaTimes })), { ssr: false });
+const FaChevronDown = dynamic(() => import('react-icons/fa').then(mod => ({ default: mod.FaChevronDown })), { ssr: false });
+const FaSearch = dynamic(() => import('react-icons/fa').then(mod => ({ default: mod.FaSearch })), { ssr: false });
+const RiPriceTag3Line = dynamic(() => import('react-icons/ri').then(mod => ({ default: mod.RiPriceTag3Line })), { ssr: false });
+const IoGridOutline = dynamic(() => import('react-icons/io5').then(mod => ({ default: mod.IoGridOutline })), { ssr: false });
+const IoList = dynamic(() => import('react-icons/io5').then(mod => ({ default: mod.IoList })), { ssr: false });
 
 type Product = {
   _id: string;
@@ -25,6 +41,7 @@ type Category = {
 };
 
 export default function ShopPage() {
+  const { t, locale } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -49,74 +66,98 @@ export default function ShopPage() {
   const categoryParam = searchParams.get('category');
   const genderParam = searchParams.get('gender');
 
-  // Fetch products and categories
+  // Create a cache key based on the current filters
+  const cacheKey = useMemo(() => {
+    return `shop-data-${categoryParam || 'all'}-${genderParam || 'all'}`;
+  }, [categoryParam, genderParam]);
+
+  // Check for cached data in sessionStorage
   useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
+    // Skip server-side execution
+    if (typeof window === 'undefined') return;
+    
+    const cachedData = sessionStorage.getItem(cacheKey);
+    if (cachedData) {
       try {
-        // Fetch categories
-        const categoriesResponse = await fetch('/api/categories');
-        const categoriesData = await categoriesResponse.json();
-        
-        if (categoriesData.success && categoriesData.data) {
-          setCategories(categoriesData.data);
+        const parsed = JSON.parse(cachedData);
+        if (parsed.products && parsed.categories) {
+          setProducts(parsed.products);
+          setCategories(parsed.categories);
+          setIsLoading(false);
+          return; // Skip fetch if we have cached data
         }
-        
-        // Build products API URL with optional category filter
-        let productsUrl = '/api/products';
-        const params = new URLSearchParams();
-        
-        if (categoryParam) {
-          params.append('category', categoryParam);
-        }
-        
-        if (genderParam) {
-          params.append('gender', genderParam);
-        }
-        
-        if (params.toString()) {
-          productsUrl += `?${params.toString()}`;
-        }
-        
-        console.log('Fetching products from:', productsUrl);
-        
-        // Fetch products
-        const productsResponse = await fetch(productsUrl);
-        const productsData = await productsResponse.json();
-        
-        console.log('Products API response:', productsData);
-        
-        if (productsData.success && Array.isArray(productsData.data)) {
-          setProducts(productsData.data);
-          console.log(`Loaded ${productsData.data.length} products`);
-        } else {
-          console.error('Invalid products data format:', productsData);
-          setProducts([]);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setProducts([]);
-      } finally {
-        setIsLoading(false);
+      } catch (e) {
+        // Invalid cache, continue with fetch
       }
     }
     
+    // Only fetch if no cached data
     fetchData();
-  }, [categoryParam, genderParam]);
+  }, [cacheKey]);
+  
+  // Super-optimized fetch function with aggressive caching
+  const fetchData = useCallback(async () => {
+    if (typeof window === 'undefined') return; // Skip on server
+    
+    setIsLoading(true);
+    try {
+      // Fetch with minimal payload and parallel requests
+      const categoriesPromise = fetch('/api/categories', { 
+        cache: 'force-cache',
+        next: { revalidate: 3600 } // Cache for 1 hour
+      }).then(r => r.json());
+      
+      const productsPromise = fetch(`/api/products?${new URLSearchParams({
+        ...(categoryParam ? { category: categoryParam } : {}),
+        ...(genderParam ? { gender: genderParam } : {}),
+        limit: '100'
+      })}`, {
+        cache: 'force-cache',
+        headers: { 'Cache-Control': 'max-age=300' }
+      }).then(r => r.json());
+      
+      // Wait for both requests to complete
+      const [categoriesData, productsData] = await Promise.all([categoriesPromise, productsPromise]);
+      
+      // Process and update state
+      if (categoriesData.success && categoriesData.data) {
+        setCategories(categoriesData.data);
+      }
+      
+      if (productsData.success && Array.isArray(productsData.data)) {
+        setProducts(productsData.data);
+        
+        // Cache the successful response in sessionStorage
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          products: productsData.data,
+          categories: categoriesData.data || []
+        }));
+      } else {
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [categoryParam, genderParam, cacheKey]);
 
-  // Get selected category
-  const selectedCategory = categoryParam 
-    ? categories.find(cat => cat.name === categoryParam)
-    : null;
+  // Get selected category - memoized to prevent recalculation
+  const selectedCategory = useMemo(() => 
+    categoryParam ? categories.find(cat => cat.name === categoryParam) : null,
+  [categoryParam, categories]);
 
-  const toggleFilter = (filterType: keyof typeof expandedFilters) => {
+  // Memoized filter toggle function
+  const toggleFilter = useCallback((filterType: keyof typeof expandedFilters) => {
     setExpandedFilters(prev => ({
       ...prev,
       [filterType]: !prev[filterType]
     }));
-  };
+  }, []);
 
-  const togglePriceFilter = (value: string) => {
+  // Memoized filter toggle functions
+  const togglePriceFilter = useCallback((value: string) => {
     setActiveFilters(prev => {
       const currentPriceFilters = [...prev.price];
       const index = currentPriceFilters.indexOf(value);
@@ -132,9 +173,9 @@ export default function ShopPage() {
         price: currentPriceFilters
       };
     });
-  };
+  }, []);
 
-  const toggleGenderFilter = (value: string) => {
+  const toggleGenderFilter = useCallback((value: string) => {
     setActiveFilters(prev => {
       const currentGenderFilters = [...prev.gender];
       const index = currentGenderFilters.indexOf(value);
@@ -150,17 +191,18 @@ export default function ShopPage() {
         gender: currentGenderFilters
       };
     });
-  };
+  }, []);
 
-  const resetFilters = () => {
-    router.push('/shop');
+  const resetFilters = useCallback(() => {
+    router.push('/shop', { scroll: false }); // Add scroll: false to prevent page jumps
     setActiveFilters({
       price: [],
       gender: []
     });
-  };
+  }, [router]);
 
-  const FilterSection = ({ 
+  // Memoize FilterSection component
+  const FilterSection = memo(({ 
     title, 
     isExpanded, 
     toggleExpand, 
@@ -190,7 +232,7 @@ export default function ShopPage() {
         {children}
       </div>
     </div>
-  );
+  ));
 
   return (
     <main className="min-h-screen pt-[120px] pb-16">
@@ -297,29 +339,20 @@ export default function ShopPage() {
                     icon={<FaFilter size={16} />}
                   >
                     <div className="space-y-3 pl-1">
-                      {[
-                        { value: 'Homme', label: 'Men' },
-                        { value: 'Femme', label: 'Women' },
-                        { value: 'Unisexe', label: 'Unisex' }
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center cursor-pointer">
-                          <div className="relative flex items-center">
-                            <input 
-                              type="checkbox"
-                              checked={activeFilters.gender.includes(option.value)}
-                              onChange={() => toggleGenderFilter(option.value)}
-                              className="sr-only"
-                            />
-                            <div className={`w-5 h-5 border rounded ${activeFilters.gender.includes(option.value) ? 'bg-[#c8a45d] border-[#c8a45d]' : 'border-gray-300'} flex items-center justify-center`}>
-                              {activeFilters.gender.includes(option.value) && (
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                              )}
-                            </div>
-                          </div>
-                          <span className="ml-2 text-gray-600">{option.label}</span>
-                </label>
+                      {['Homme', 'Femme', 'Mixte'].map((gender) => (
+                        <label key={gender} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={activeFilters.gender.includes(gender)}
+                            onChange={() => toggleGenderFilter(gender)}
+                            className="form-checkbox h-4 w-4 text-[#c8a45d] rounded border-gray-300 focus:ring-[#c8a45d]"
+                          />
+                          <span className="text-gray-700">
+                            {gender === 'Homme' ? t('footer.links.forHim', 'For Him') : 
+                             gender === 'Femme' ? t('footer.links.forHer', 'For Her') : 
+                             gender === 'Mixte' ? t('shop.unisex', 'Unisex') : gender}
+                          </span>
+                        </label>
                       ))}
                     </div>
                   </FilterSection>
@@ -339,12 +372,12 @@ export default function ShopPage() {
                   className="lg:hidden bg-gray-50 hover:bg-gray-100 p-2 rounded-lg text-gray-700 flex items-center mr-3"
               >
                   <FaFilter size={16} className="mr-2" />
-                  <span>Filters</span>
+                  <span>{t('shop.filters', 'Filters')}</span>
               </button>
                 
                 {/* Display count */}
                 <span className="text-gray-500 hidden md:inline-block">
-                  Showing {products.length} products
+                  {products.length} {t('shop.products', 'products')}
                 </span>
               </div>
               
@@ -354,10 +387,10 @@ export default function ShopPage() {
                   <select 
                     className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c8a45d]/20 focus:border-[#c8a45d]"
                   >
-                    <option value="featured">Featured</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="newest">Newest</option>
+                    <option value="featured">{t('shop.featured', 'Featured')}</option>
+                    <option value="price-asc">{t('shop.priceLowToHigh', 'Price: Low to High')}</option>
+                    <option value="price-desc">{t('shop.priceHighToLow', 'Price: High to Low')}</option>
+                    <option value="newest">{t('shop.newest', 'Newest')}</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                     <FaChevronDown size={12} />
@@ -401,10 +434,10 @@ export default function ShopPage() {
                 
                 {activeFilters.price.map(price => {
                   const priceLabels: Record<string, string> = {
-                    'under-50': 'Under $50',
-                    '50-100': '$50 - $100',
-                    '100-200': '$100 - $200',
-                    'over-200': 'Over $200'
+                    'under-50': t('shop.under50', 'Under $50'),
+                    '50-100': t('shop.price50-100', '$50 - $100'),
+                    '100-200': t('shop.price100-200', '$100 - $200'),
+                    'over-200': t('shop.over200', 'Over $200')
                   };
                   
                   return (
@@ -422,7 +455,9 @@ export default function ShopPage() {
                 
                 {activeFilters.gender.map(gender => (
                   <div key={gender} className="bg-gray-50 border border-gray-100 text-gray-700 py-1.5 px-3 rounded-full text-sm flex items-center">
-                    <span>Gender: {gender}</span>
+                    <span>Gender: {gender === 'Homme' ? t('footer.links.forHim', 'For Him') : 
+                             gender === 'Femme' ? t('footer.links.forHer', 'For Her') : 
+                             gender === 'Mixte' ? t('shop.unisex', 'Unisex') : gender}</span>
                     <button 
                       onClick={() => toggleGenderFilter(gender)}
                       className="ml-2 text-gray-400 hover:text-gray-700"
@@ -436,7 +471,7 @@ export default function ShopPage() {
                   onClick={resetFilters}
                   className="bg-gray-200 hover:bg-gray-300 text-gray-700 py-1.5 px-3 rounded-full text-sm"
                 >
-                  Clear All
+                  {t('shop.clearAll', 'Clear All')}
                 </button>
               </div>
             )}
@@ -445,7 +480,7 @@ export default function ShopPage() {
             {isLoading ? (
               <div className="text-center py-20">
                 <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-[#c8a45d] border-r-transparent"></div>
-                <p className="mt-4 text-gray-600">Loading products...</p>
+                <p className="mt-4 text-gray-600">{t('shop.loadingProducts', 'Loading products...')}</p>
               </div>
             ) : (
               <>
@@ -455,13 +490,13 @@ export default function ShopPage() {
                     <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-gray-100 rounded-full">
                       <FaSearch className="text-gray-300" size={30} />
                     </div>
-                    <h3 className="text-xl font-playfair text-gray-800 mb-2">No products found</h3>
-                    <p className="text-gray-600 mb-6">We couldn't find any products matching your criteria.</p>
+                    <h3 className="text-xl font-playfair text-gray-800 mb-2">{t('shop.noProductsFound', 'No products found')}</h3>
+                    <p className="text-gray-600 mb-6">{t('shop.noProductsFoundDescription', 'We couldn\'t find any products matching your criteria.')}</p>
                     <button 
                       onClick={resetFilters}
                       className="px-6 py-2 bg-[#c8a45d] hover:bg-[#b08d48] text-white rounded-lg transition-colors"
                     >
-                      Reset Filters
+                      {t('shop.resetFilters', 'Reset Filters')}
                     </button>
                   </div>
                 ) : (
@@ -478,11 +513,11 @@ export default function ShopPage() {
       {showMobileFilters && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
           <div className="bg-white h-full w-80 max-w-[80%] p-5 overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-playfair text-gray-800">Filters</h2>
-              <button 
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-playfair text-lg text-gray-800">{t('shop.filters', 'Filters')}</h3>
+              <button
                 onClick={() => setShowMobileFilters(false)}
-                className="text-gray-400 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-600"
               >
                 <FaTimes size={20} />
               </button>
@@ -492,7 +527,7 @@ export default function ShopPage() {
             <div className="relative mb-6">
               <input
                 type="text"
-                placeholder="Search products..."
+                placeholder={t('shop.searchProducts', 'Search products...')}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c8a45d]/20 focus:border-[#c8a45d]"
               />
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />

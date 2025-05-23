@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslation } from '@/components/i18n/TranslationProvider';
 import { 
   FaHeart, FaShare, FaArrowLeft as FaArrowPrev, 
   FaArrowRight as FaArrowNext, FaShoppingBag, 
@@ -32,6 +33,7 @@ interface ProductProps {
 }
 
 const ProductDetail: React.FC<ProductProps> = ({ product }) => {
+  const { t, locale } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageError, setImageError] = useState<Record<number, boolean>>({});
@@ -139,23 +141,23 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
   const orderSteps = [
     {
       icon: <FaShoppingBag className="w-6 h-6 text-[#c8a45d]" />,
-      title: 'Choose Your Fragrance',
-      description: 'Select the perfect scent that matches your personality.'
+      title: t('home.howToOrder.steps.choose.title', 'Choose Your Fragrance'),
+      description: t('home.howToOrder.steps.choose.description', 'Select the perfect scent that matches your personality.')
     },
     {
       icon: <FaWhatsapp className="w-6 h-6 text-[#c8a45d]" />,
-      title: 'Contact Us',
-      description: 'Place your order via WhatsApp or through our online form.'
+      title: t('home.howToOrder.steps.contact.title', 'Contact Us'),
+      description: t('home.howToOrder.steps.contact.description', 'Place your order via WhatsApp or through our online form.')
     },
     {
       icon: <FaCheck className="w-6 h-6 text-[#c8a45d]" />,
-      title: 'Confirm Your Order',
-      description: 'We\'ll verify your details and confirm your order.'
+      title: t('home.howToOrder.steps.confirm.title', 'Confirm Your Order'),
+      description: t('home.howToOrder.steps.confirm.description', 'We\'ll verify your details and confirm your order.')
     },
     {
       icon: <FaTruck className="w-6 h-6 text-[#c8a45d]" />,
-      title: 'Fast Delivery',
-      description: 'Receive your order at your doorstep within 1-3 business days.'
+      title: t('home.howToOrder.steps.receive.title', 'Fast Delivery'),
+      description: t('home.howToOrder.steps.receive.description', 'Receive your order at your doorstep within 1-3 business days.')
     }
   ];
   
@@ -180,7 +182,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                 />
                 {discount > 0 && (
                   <div className="absolute top-4 left-4 bg-[#c8a45d] text-white text-sm font-bold px-3 py-1 rounded-full">
-                    {discount}% OFF
+                    {discount}% {t('product.discount', 'OFF')}
                   </div>
                 )}
                 
@@ -243,21 +245,29 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
             <div className="lg:w-1/2 p-6 lg:p-8">
               {/* Product title and inspired by */}
               <div className="border-b border-gray-100 pb-6">
-                <h1 className="text-3xl font-playfair font-semibold mb-2">{product.name}</h1>
+                <h1 className="text-3xl font-playfair text-gray-800 mb-2">
+                  {typeof product.name === 'object' ? (product.name[locale] || product.name.fr || product.name.en) : product.name}
+                </h1>
                 {product.inspiredBy && (
-                  <p className="text-gray-600">Inspired by {product.inspiredBy}</p>
+                  <p className="text-gray-600">
+                    {t('product.inspiredBy', 'Inspired by')}: {typeof product.inspiredBy === 'object' ? 
+                      (product.inspiredBy[locale] || product.inspiredBy.fr || product.inspiredBy.en) : 
+                      product.inspiredBy}
+                  </p>
                 )}
                 
                 {/* Product badges */}
                 <div className="flex flex-wrap gap-2 mt-4">
                   {product.gender && (
                     <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                      {product.gender}
+                      {product.gender === 'Homme' ? t('footer.links.forHim', 'For Him') : 
+                       product.gender === 'Femme' ? t('footer.links.forHer', 'For Her') : 
+                       product.gender}
                     </span>
                   )}
                   {product.volume && (
                     <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                      {product.volume}
+                      {t('product.volume', 'Volume')}: {product.volume}
                     </span>
                   )}
                   {product.category && (
@@ -268,40 +278,17 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                 </div>
               </div>
               
-              {/* Price section */}
-              <div className="py-6 border-b border-gray-100">
-                <div className="flex items-baseline gap-4">
-                  <span className="text-3xl font-bold text-gray-900">{product.price.toFixed(2)} DH</span>
+              {/* Price */}
+              <div className="mb-6">
+                <div className="flex items-center">
+                  <span className="text-2xl font-bold text-[#c8a45d] mr-3">
+                    ${product.price.toFixed(2)}
+                  </span>
                   {product.originalPrice && product.originalPrice > product.price && (
-                    <span className="text-lg text-gray-400 line-through">
-                      {product.originalPrice.toFixed(2)} DH
+                    <span className="text-gray-400 line-through">
+                      ${product.originalPrice.toFixed(2)}
                     </span>
                   )}
-                  {discount > 0 && (
-                    <span className="bg-red-50 text-red-500 text-sm font-medium px-2 py-1 rounded">
-                      Save {discount}%
-                    </span>
-                  )}
-                </div>
-                
-                {/* Product benefits */}
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <FaCheck className="text-[#c8a45d]" />
-                    <span className="text-sm text-gray-600">Premium Quality</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaTruck className="text-[#c8a45d]" />
-                    <span className="text-sm text-gray-600">Fast Delivery</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaShieldAlt className="text-[#c8a45d]" />
-                    <span className="text-sm text-gray-600">Satisfaction Guaranteed</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaWhatsapp className="text-[#c8a45d]" />
-                    <span className="text-sm text-gray-600">24/7 Support</span>
-                  </div>
                 </div>
               </div>
               
@@ -309,13 +296,17 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
               <div className="py-6 border-b border-gray-100">
                 {product.description && (
                   <div className="mb-6">
-                    <h2 className="text-lg font-playfair font-semibold mb-2">Description</h2>
-                    <p className="text-gray-600">{product.description}</p>
+                    <h2 className="text-lg font-playfair font-semibold mb-2">{t('product.description', 'Description')}</h2>
+                    <p className="text-gray-600">
+                      {typeof product.description === 'object' ? 
+                        (product.description[locale] || product.description.fr || product.description.en) : 
+                        product.description}
+                    </p>
                   </div>
                 )}
                 
                 {product.ingredients && (
-                  <div>
+                  <div className="mt-4">
                     <h2 className="text-lg font-playfair font-semibold mb-2">Ingredients</h2>
                     <p className="text-gray-600">{product.ingredients}</p>
                   </div>
@@ -329,36 +320,26 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                   className="w-full bg-[#c8a45d] text-white py-3.5 px-6 rounded-lg hover:bg-[#b08d48] transition-colors font-medium text-base flex items-center justify-center gap-2"
                 >
                   <FaShoppingBag />
-                  <span>Order Now</span>
+                  <span>{t('product.orderNow', 'Order Now')}</span>
                 </button>
                 
-                <div className="flex gap-4">
+                <div className="flex gap-4 mt-6">
+                  {/* Add to Cart Button */}
                   <button
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 border rounded-lg transition-colors ${
-                      isInCartState 
-                        ? 'bg-green-100 text-green-700 border-green-200'
-                        : 'border-gray-300 hover:bg-gray-50 text-gray-700 hover:text-[#c8a45d]'
-                    }`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 border rounded-lg transition-colors ${isInCartState ? 'bg-green-100 text-green-700 border-green-200' : 'border-gray-300 hover:bg-gray-50 text-gray-700 hover:text-[#c8a45d]'}`}
                     onClick={handleAddToCart}
                   >
                     {isInCartState ? (
                       <>
                         <FaCheck className="text-green-600" />
-                        <span>Added to Cart</span>
+                        <span>{t('product.inCart', 'Added to Cart')}</span>
                       </>
                     ) : (
                       <>
                         <FaShoppingCart className="text-[#c8a45d]" />
-                        <span>Add to Cart</span>
+                        <span>{t('product.addToCart', 'Add to Cart')}</span>
                       </>
                     )}
-                  </button>
-                  <button
-                    className="flex-1 flex items-center justify-center gap-2 py-3 px-6 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    onClick={() => {/* Share logic */}}
-                  >
-                    <FaShare className="text-[#c8a45d]" />
-                    <span>Share</span>
                   </button>
                 </div>
                 
@@ -416,7 +397,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
         {/* You May Also Like Section */}
         {similarProducts.length > 0 && (
           <div className="mt-12 mb-8">
-            <h2 className="text-2xl font-playfair font-semibold mb-6">You May Also Like</h2>
+            <h2 className="text-2xl font-playfair text-[#c8a45d] mb-6 text-center">{t('product.relatedProducts', 'You May Also Like')}</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {similarProducts.map((relatedProduct) => {
                 const isProductInCart = isInCart(relatedProduct._id);
