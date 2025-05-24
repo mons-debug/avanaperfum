@@ -21,7 +21,6 @@ const FaFilter = dynamic(() => import('react-icons/fa').then(mod => ({ default: 
 const FaTimes = dynamic(() => import('react-icons/fa').then(mod => ({ default: mod.FaTimes })), { ssr: false });
 const FaChevronDown = dynamic(() => import('react-icons/fa').then(mod => ({ default: mod.FaChevronDown })), { ssr: false });
 const FaSearch = dynamic(() => import('react-icons/fa').then(mod => ({ default: mod.FaSearch })), { ssr: false });
-const RiPriceTag3Line = dynamic(() => import('react-icons/ri').then(mod => ({ default: mod.RiPriceTag3Line })), { ssr: false });
 const IoGridOutline = dynamic(() => import('react-icons/io5').then(mod => ({ default: mod.IoGridOutline })), { ssr: false });
 const IoList = dynamic(() => import('react-icons/io5').then(mod => ({ default: mod.IoList })), { ssr: false });
 
@@ -51,14 +50,11 @@ function ShopPageContent() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [expandedFilters, setExpandedFilters] = useState({
     categories: true,
-    price: true,
     gender: true
   });
   const [activeFilters, setActiveFilters] = useState<{
-    price: string[];
     gender: string[];
   }>({
-    price: [],
     gender: []
   });
   
@@ -157,24 +153,6 @@ function ShopPageContent() {
   }, []);
 
   // Memoized filter toggle functions
-  const togglePriceFilter = useCallback((value: string) => {
-    setActiveFilters(prev => {
-      const currentPriceFilters = [...prev.price];
-      const index = currentPriceFilters.indexOf(value);
-      
-      if (index >= 0) {
-        currentPriceFilters.splice(index, 1);
-      } else {
-        currentPriceFilters.push(value);
-      }
-      
-      return {
-        ...prev,
-        price: currentPriceFilters
-      };
-    });
-  }, []);
-
   const toggleGenderFilter = useCallback((value: string) => {
     setActiveFilters(prev => {
       const currentGenderFilters = [...prev.gender];
@@ -196,7 +174,6 @@ function ShopPageContent() {
   const resetFilters = useCallback(() => {
     router.push('/shop', { scroll: false }); // Add scroll: false to prevent page jumps
     setActiveFilters({
-      price: [],
       gender: []
     });
   }, [router]);
@@ -234,6 +211,22 @@ function ShopPageContent() {
     </div>
   ));
 
+  // Memoized filtered products
+  const filteredProducts = useMemo(() => {
+    if (!products || products.length === 0) {
+      return [];
+    }
+    
+    return products.filter(product => {
+      // Apply gender filter
+      if (activeFilters.gender.length > 0 && !activeFilters.gender.includes(product.gender)) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [products, activeFilters]);
+
   return (
     <main className="min-h-screen pt-[120px] pb-16">
       <div className="container mx-auto px-4">
@@ -244,7 +237,7 @@ function ShopPageContent() {
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-playfair text-gray-800">Filters</h2>
-                  {(categoryParam || activeFilters.price.length > 0 || activeFilters.gender.length > 0) && (
+                  {(categoryParam || activeFilters.gender.length > 0) && (
                     <button 
                       onClick={resetFilters}
                       className="text-sm text-[#c8a45d] hover:text-[#b08d48] transition-colors"
@@ -274,63 +267,27 @@ function ShopPageContent() {
                     icon={<IoGridOutline size={18} />}
                   >
                     <ul className="space-y-3 pl-1">
-                <li>
-                  <button 
-                    onClick={() => router.push('/shop')}
+                      <li>
+                        <button 
+                          onClick={() => router.push('/shop')}
                           className={`block transition-colors w-full text-left ${!categoryParam ? 'text-[#c8a45d] font-medium' : 'text-gray-600 hover:text-[#c8a45d]'}`}
-                  >
-                    All Products
-                  </button>
-                </li>
-                {categories.map((category) => (
-                  <li key={category._id}>
-                    <button 
-                      onClick={() => router.push(`/shop?category=${encodeURIComponent(category.name)}`)}
+                        >
+                          All Products
+                        </button>
+                      </li>
+                      {categories.map((category) => (
+                        <li key={category._id}>
+                          <button 
+                            onClick={() => router.push(`/shop?category=${encodeURIComponent(category.name)}`)}
                             className={`block transition-colors w-full text-left ${categoryParam === category.name ? 'text-[#c8a45d] font-medium' : 'text-gray-600 hover:text-[#c8a45d]'}`}
-                    >
-                      {category.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                          >
+                            {category.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
                   </FilterSection>
 
-                  {/* Price Range Filter */}
-                  <FilterSection 
-                    title="Price Range" 
-                    isExpanded={expandedFilters.price}
-                    toggleExpand={() => toggleFilter('price')}
-                    icon={<RiPriceTag3Line size={18} />}
-                  >
-                    <div className="space-y-3 pl-1">
-                      {[
-                        { value: 'under-50', label: 'Under $50' },
-                        { value: '50-100', label: '$50 - $100' },
-                        { value: '100-200', label: '$100 - $200' },
-                        { value: 'over-200', label: 'Over $200' }
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center cursor-pointer">
-                          <div className="relative flex items-center">
-                            <input 
-                              type="checkbox"
-                              checked={activeFilters.price.includes(option.value)}
-                              onChange={() => togglePriceFilter(option.value)}
-                              className="sr-only"
-                            />
-                            <div className={`w-5 h-5 border rounded ${activeFilters.price.includes(option.value) ? 'bg-[#c8a45d] border-[#c8a45d]' : 'border-gray-300'} flex items-center justify-center`}>
-                              {activeFilters.price.includes(option.value) && (
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                              )}
-                            </div>
-                          </div>
-                          <span className="ml-2 text-gray-600">{option.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </FilterSection>
-                  
                   {/* Gender Filter */}
                   <FilterSection 
                     title="Gender" 
@@ -367,13 +324,13 @@ function ShopPageContent() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 mb-6 flex items-center justify-between">
               <div className="flex items-center">
                 {/* Mobile Filter Button */}
-              <button 
-                onClick={() => setShowMobileFilters(true)}
+                <button 
+                  onClick={() => setShowMobileFilters(true)}
                   className="lg:hidden bg-gray-50 hover:bg-gray-100 p-2 rounded-lg text-gray-700 flex items-center mr-3"
-              >
+                >
                   <FaFilter size={16} className="mr-2" />
                   <span>{t('shop.filters', 'Filters')}</span>
-              </button>
+                </button>
                 
                 {/* Display count */}
                 <span className="text-gray-500 hidden md:inline-block">
@@ -388,15 +345,13 @@ function ShopPageContent() {
                     className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c8a45d]/20 focus:border-[#c8a45d]"
                   >
                     <option value="featured">{t('shop.featured', 'Featured')}</option>
-                    <option value="price-asc">{t('shop.priceLowToHigh', 'Price: Low to High')}</option>
-                    <option value="price-desc">{t('shop.priceHighToLow', 'Price: High to Low')}</option>
                     <option value="newest">{t('shop.newest', 'Newest')}</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                     <FaChevronDown size={12} />
                   </div>
-            </div>
-            
+                </div>
+                
                 {/* View Switcher */}
                 <div className="hidden md:flex bg-gray-50 rounded-lg p-1">
                   <button 
@@ -416,7 +371,7 @@ function ShopPageContent() {
             </div>
             
             {/* Active filters display */}
-            {(categoryParam || activeFilters.price.length > 0 || activeFilters.gender.length > 0) && (
+            {(categoryParam || activeFilters.gender.length > 0) && (
               <div className="mb-6 flex flex-wrap gap-2">
                 {categoryParam && selectedCategory && (
                   <div className="bg-gray-50 border border-gray-100 text-gray-700 py-1.5 px-3 rounded-full text-sm flex items-center">
@@ -431,27 +386,6 @@ function ShopPageContent() {
                     </button>
                   </div>
                 )}
-                
-                {activeFilters.price.map(price => {
-                  const priceLabels: Record<string, string> = {
-                    'under-50': t('shop.under50', 'Under $50'),
-                    '50-100': t('shop.price50-100', '$50 - $100'),
-                    '100-200': t('shop.price100-200', '$100 - $200'),
-                    'over-200': t('shop.over200', 'Over $200')
-                  };
-                  
-                  return (
-                    <div key={price} className="bg-gray-50 border border-gray-100 text-gray-700 py-1.5 px-3 rounded-full text-sm flex items-center">
-                      <span>Price: {priceLabels[price]}</span>
-                      <button 
-                        onClick={() => togglePriceFilter(price)}
-                        className="ml-2 text-gray-400 hover:text-gray-700"
-                      >
-                        <FaTimes size={10} />
-                      </button>
-                    </div>
-                  );
-                })}
                 
                 {activeFilters.gender.map(gender => (
                   <div key={gender} className="bg-gray-50 border border-gray-100 text-gray-700 py-1.5 px-3 rounded-full text-sm flex items-center">
@@ -485,7 +419,7 @@ function ShopPageContent() {
             ) : (
               <>
                 {/* No products found */}
-                {products.length === 0 ? (
+                {filteredProducts.length === 0 ? (
                   <div className="text-center py-16 bg-gray-50 rounded-xl border border-gray-100">
                     <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-gray-100 rounded-full">
                       <FaSearch className="text-gray-300" size={30} />
@@ -501,7 +435,7 @@ function ShopPageContent() {
                   </div>
                 ) : (
                   /* Products Grid */
-                  <ProductGrid products={products} viewMode={viewMode} />
+                  <ProductGrid products={filteredProducts} viewMode={viewMode} />
                 )}
               </>
             )}
@@ -540,66 +474,31 @@ function ShopPageContent() {
                 Categories
               </h3>
               <ul className="space-y-3 pl-1">
-              <li>
-                <button 
-                  onClick={() => {
-                    router.push('/shop');
-                    setShowMobileFilters(false);
-                  }}
-                    className={`block w-full text-left ${!categoryParam ? 'text-[#c8a45d] font-medium' : 'text-gray-600 hover:text-[#c8a45d]'} transition-colors`}
-                >
-                  All Products
-                </button>
-              </li>
-              {categories.map((category) => (
-                <li key={category._id}>
+                <li>
                   <button 
                     onClick={() => {
-                      router.push(`/shop?category=${encodeURIComponent(category.name)}`);
+                      router.push('/shop');
                       setShowMobileFilters(false);
                     }}
-                      className={`block w-full text-left ${categoryParam === category.name ? 'text-[#c8a45d] font-medium' : 'text-gray-600 hover:text-[#c8a45d]'} transition-colors`}
+                    className={`block w-full text-left ${!categoryParam ? 'text-[#c8a45d] font-medium' : 'text-gray-600 hover:text-[#c8a45d]'} transition-colors`}
                   >
-                    {category.name}
+                    All Products
                   </button>
                 </li>
-              ))}
-            </ul>
-            </div>
-            
-            {/* Mobile Price Range */}
-            <div className="mb-6">
-              <h3 className="text-lg font-playfair text-gray-800 mb-3 flex items-center">
-                <RiPriceTag3Line className="text-[#c8a45d] mr-2" size={18} />
-                Price Range
-              </h3>
-              <div className="space-y-3 pl-1">
-                {[
-                  { value: 'under-50', label: 'Under $50' },
-                  { value: '50-100', label: '$50 - $100' },
-                  { value: '100-200', label: '$100 - $200' },
-                  { value: 'over-200', label: 'Over $200' }
-                ].map((option) => (
-                  <label key={option.value} className="flex items-center cursor-pointer">
-                    <div className="relative flex items-center">
-                      <input 
-                        type="checkbox"
-                        checked={activeFilters.price.includes(option.value)}
-                        onChange={() => togglePriceFilter(option.value)}
-                        className="sr-only"
-                      />
-                      <div className={`w-5 h-5 border rounded ${activeFilters.price.includes(option.value) ? 'bg-[#c8a45d] border-[#c8a45d]' : 'border-gray-300'} flex items-center justify-center`}>
-                        {activeFilters.price.includes(option.value) && (
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                          </svg>
-                        )}
-                      </div>
-                    </div>
-                    <span className="ml-2 text-gray-600">{option.label}</span>
-              </label>
+                {categories.map((category) => (
+                  <li key={category._id}>
+                    <button 
+                      onClick={() => {
+                        router.push(`/shop?category=${encodeURIComponent(category.name)}`);
+                        setShowMobileFilters(false);
+                      }}
+                      className={`block w-full text-left ${categoryParam === category.name ? 'text-[#c8a45d] font-medium' : 'text-gray-600 hover:text-[#c8a45d]'} transition-colors`}
+                    >
+                      {category.name}
+                    </button>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
             
             {/* Mobile Gender */}
