@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDB } from '@/lib/mongodb';
 import Product from '@/models/Product';
+import { clearProductsCache } from '../route';
 
 interface Params {
   params: Promise<{
@@ -60,7 +61,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     
     // If no images, use placeholder
     if (body.images.length === 0) {
-      body.images = ['/images/product-placeholder.jpg'];
+      body.images = ['/images/product-placeholder.svg'];
     }
     
     // Log the images to debug
@@ -82,6 +83,9 @@ export async function PUT(request: NextRequest, { params }: Params) {
     }
     
     console.log(`Product ${id} updated successfully:`, updatedProduct);
+    
+    // Clear the products cache to ensure updated product is visible immediately
+    clearProductsCache();
     
     return NextResponse.json({ success: true, data: updatedProduct });
   } catch (error) {
@@ -106,6 +110,9 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         { status: 404 }
       );
     }
+    
+    // Clear the products cache after deletion
+    clearProductsCache();
     
     return NextResponse.json(
       { success: true, message: 'Product deleted successfully' }

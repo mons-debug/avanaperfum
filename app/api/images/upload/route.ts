@@ -53,15 +53,26 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(process.cwd(), 'public', productImagePath);
     fs.writeFileSync(filePath, buffer);
     
-    return NextResponse.json({
+    // Add a timestamp to prevent caching
+    const timestampedPath = `${productImagePath}?t=${Date.now()}`;
+    
+    // Return the response with cache control headers
+    const response = NextResponse.json({
       success: true,
       data: {
-        url: productImagePath,
+        url: timestampedPath,
         filename: fileName,
         size: file.size,
         type: file.type
       }
     });
+    
+    // Add headers to prevent caching
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error) {
     console.error('Error uploading image:', error);
     return NextResponse.json(

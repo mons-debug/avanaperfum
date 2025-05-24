@@ -102,8 +102,18 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
   // Handle available images with proper error handling
   const images = product.images?.filter(Boolean) || [];
   
-  // Get current image with fallback
-  const currentImage = getImageSrc(images[currentImageIndex]);
+  // Get current image with fallback and add a timestamp to prevent caching
+  const getTimestampedImage = (imageUrl: string) => {
+    const baseUrl = getImageSrc(imageUrl);
+    // Add timestamp to prevent caching if it's a local product image
+    if (baseUrl.includes('/images/products/')) {
+      return `${baseUrl}?t=${Date.now()}`;
+    }
+    return baseUrl;
+  };
+  
+  // Set current image with cache-busting
+  const currentImage = getTimestampedImage(images[currentImageIndex] || '');
   
   // Navigate through images
   const goToPrevImage = () => {
@@ -245,6 +255,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                   sizes={imageConfig.product.sizes.medium}
                   className="object-contain"
                   priority
+                  unoptimized={true} /* Disable Next.js image optimization to avoid caching */
                   quality={imageConfig.product.quality}
                   onError={() => handleImageError(currentImageIndex)}
                 />
@@ -290,11 +301,12 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                         aria-label={`Product image ${index + 1}`}
                       >
                         <Image
-                          src={thumbSrc}
+                          src={getTimestampedImage(img)}
                           alt={`${product.name} - image ${index + 1}`}
                           fill
                           sizes={imageConfig.product.sizes.thumbnail}
                           className="object-cover"
+                          unoptimized={true} /* Disable Next.js image optimization to avoid caching */
                           onError={() => handleImageError(index)}
                         />
                         {imageError[index] && (
@@ -414,7 +426,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                 </div>
                 
                 <Link
-                  href={`https://wa.me/+212600000000?text=${encodeURIComponent(
+                  href={`https://wa.me/+212674428593?text=${encodeURIComponent(
                     `Hello, I'm interested in purchasing:\n\n*${getTranslatedText(product.name)}*${product.inspiredBy ? ` (Inspired by ${getTranslatedText(product.inspiredBy)})` : ''}\nPrice: ${product.price.toFixed(2)} DH\n${product.volume ? `Volume: ${getTranslatedText(product.volume)}\n` : ''}${product.gender ? `Type: ${product.gender}\n` : ''}\n\nPlease let me know how to proceed with my order.`
                   )}`}
                   target="_blank"

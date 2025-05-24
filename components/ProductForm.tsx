@@ -119,6 +119,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setError('');
 
     try {
+      console.log('Starting product submission process...');
+      
       // Validate required fields
       if (!formData.name || !formData.gender || !formData.categoryId) {
         throw new Error('Please fill in all required fields');
@@ -139,12 +141,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
       // Find category name for backward compatibility
       const selectedCategory = categories.find(cat => cat._id === formData.categoryId);
       
+      // Handle images - ensure they're processed correctly
+      const processedImages = formData.images.length > 0 
+        ? formData.images.map(img => img.trim()).filter(img => img.length > 0)
+        : ['/images/product-placeholder.svg'];
+      
+      console.log('Processed images:', processedImages);
+      
       const productData = {
         ...formData,
         tags: tagsArray,
         price: priceValue,
         category: selectedCategory?.name || formData.category, // Keep for backward compatibility
-        images: formData.images.length > 0 ? formData.images : ['/images/product-placeholder.jpg']
+        images: processedImages
       };
       
       console.log(`${isEditing ? 'Updating' : 'Creating'} product:`, productData);
@@ -155,22 +164,36 @@ const ProductForm: React.FC<ProductFormProps> = ({
       
       const method = isEditing ? 'PUT' : 'POST';
       
+      console.log(`Sending ${method} request to ${url}`);
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache' // Prevent caching of the request
         },
         body: JSON.stringify(productData),
       });
       
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to save product');
+        throw new Error(data.error || `Failed to save product: ${response.status}`);
       }
       
       if (data.success) {
         console.log('Product saved successfully:', data.data);
+        
+        // Force a cache clear to ensure updated data is shown
+        try {
+          await fetch('/api/cache/clear', { method: 'POST' });
+          console.log('Cache cleared successfully');
+        } catch (cacheError) {
+          console.warn('Failed to clear cache:', cacheError);
+          // Continue anyway, not a critical error
+        }
         
         // Show success message
         alert(`Product ${isEditing ? 'updated' : 'created'} successfully!`);
@@ -178,16 +201,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
         // Refresh the router to trigger a revalidation
         router.refresh();
         
-        // Small delay to ensure the refresh is triggered before navigation
+        // Slightly longer delay to ensure refresh completes
         setTimeout(() => {
           router.push('/admin/products');
-        }, 100);
+        }, 500);
       } else {
         throw new Error(data.error || 'Failed to save product');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred');
       console.error('Form submission error:', err);
+      alert(`Error submitting product: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }

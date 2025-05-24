@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaTimes, FaShoppingBag, FaUserAlt, FaEnvelope, FaPhone, FaHashtag } from 'react-icons/fa';
+import { FaTimes, FaShoppingBag, FaUserAlt, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import { getImageSrc, imageConfig } from '@/lib/utils/image';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -42,11 +42,21 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    email: '',
-    quantity: product.quantity || 1,
-    address: '',
     city: '',
+    // Keep these fields for backend compatibility but don't show them in UI
+    email: '',
+    address: '',
+    quantity: product.quantity || 1
   });
+  
+  // List of major Moroccan cities
+  const moroccanCities = [
+    'Casablanca', 'Rabat', 'Marrakech', 'Fès', 'Tanger', 'Agadir', 'Meknès', 
+    'Oujda', 'Kénitra', 'Tétouan', 'Safi', 'Mohammedia', 'El Jadida', 'Béni Mellal', 
+    'Nador', 'Taza', 'Khémisset', 'Settat', 'Berrechid', 'Khénifra', 'Larache', 
+    'Khouribga', 'Ouarzazate', 'Essaouira', 'Chefchaouen', 'Ifrane', 'Errachidia', 
+    'Dakhla', 'Laâyoune', 'Tinghir', 'Al Hoceima', 'Guelmim', 'Tiznit', 'Taroudant'
+  ];
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -78,7 +88,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
     fetchSettings();
   }, []);
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -86,21 +96,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
     }));
   };
   
-  const increaseQuantity = () => {
-    setFormData(prev => ({
-      ...prev,
-      quantity: prev.quantity + 1
-    }));
-  };
-  
-  const decreaseQuantity = () => {
-    if (formData.quantity > 1) {
-      setFormData(prev => ({
-        ...prev,
-        quantity: prev.quantity - 1
-      }));
-    }
-  };
+  // Quantity is no longer needed as we're simplifying the form
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +108,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
       const orderData = cartItems 
         ? { 
             ...formData, 
+            // Auto-fill address with city for backend compatibility
+            address: formData.address || `Ville de ${formData.city}`,
             items: cartItems.map(item => ({ id: item._id, quantity: item.quantity })),
             subtotal: cartTotal,
             shipping: shippingFee,
@@ -119,6 +117,8 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
           }
         : { 
             ...formData, 
+            // Auto-fill address with city for backend compatibility
+            address: formData.address || `Ville de ${formData.city}`,
             product: product._id,
             subtotal: singleProductTotal,
             shipping: shippingFee,
@@ -150,7 +150,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
   };
   
   // Calculate total price for a single product
-  const singleProductTotal = product.price * formData.quantity;
+  const singleProductTotal = product.price * (product.quantity || 1);
   
   // Calculate total price for cart items if present
   const cartTotal = cartItems 
@@ -268,26 +268,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('order.emailAddress')} {t('order.emailOptional')}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaEnvelope className="h-4 w-4 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
-                  placeholder={t('order.emailPlaceholder')}
-                />
-              </div>
-            </div>
-
-            <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                 {t('order.phoneNumber')} *
               </label>
@@ -309,74 +289,28 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
             </div>
 
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('order.deliveryAddress')} *
-              </label>
-              <textarea
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
-                placeholder={t('order.addressPlaceholder')}
-              />
-            </div>
-
-            <div>
               <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
                 {t('order.city')} *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaHashtag className="h-4 w-4 text-gray-400" />
+                  <FaMapMarkerAlt className="h-4 w-4 text-gray-400" />
                 </div>
-                <input
-                  type="text"
+                <select
                   id="city"
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
                   required
-                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
-                  placeholder={t('order.cityPlaceholder')}
-                />
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm appearance-none"
+                >
+                  <option value="">{t('order.selectCity', 'Sélectionnez une ville')}</option>
+                  {moroccanCities.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
               </div>
             </div>
-
-            {/* Quantity input - for single product only */}
-            {!cartItems && (
-              <div>
-                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('order.quantity')}
-                </label>
-                <div className="flex items-center">
-                  <button 
-                    type="button"
-                    onClick={decreaseQuantity}
-                    className="px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-gray-500 hover:bg-gray-100"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    id="quantity"
-                    name="quantity"
-                    value={formData.quantity}
-                    readOnly
-                    className="w-16 px-3 py-2 border-t border-b border-gray-300 text-center focus:outline-none text-sm"
-                  />
-                  <button 
-                    type="button"
-                    onClick={increaseQuantity}
-                    className="px-3 py-2 border border-gray-300 rounded-r-lg bg-gray-50 text-gray-500 hover:bg-gray-100"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            )}
             
             {/* Order summary */}
             <div className="mt-6">

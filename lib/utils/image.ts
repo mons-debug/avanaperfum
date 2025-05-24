@@ -1,6 +1,6 @@
 import { StaticImageData } from 'next/image';
 
-const PLACEHOLDER_IMAGE = '/images/product-placeholder.jpg';
+const PLACEHOLDER_IMAGE = '/images/product-placeholder.svg';
 const CATEGORY_PLACEHOLDER = '/images/categories/default.jpg';
 
 export interface ImageConfig {

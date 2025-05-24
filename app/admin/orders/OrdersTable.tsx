@@ -196,125 +196,170 @@ export default function OrdersTable() {
 
   return (
     <div>
-      {/* Filters and Search */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
+      {/* Filters and Search - Mobile Optimized */}
+      <div className="mb-6 space-y-4">
+        <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <FaSearch className="text-gray-400" />
           </div>
           <input
             type="text"
-            placeholder="Search orders..."
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Rechercher une commande..."
+            className="pl-10 pr-4 py-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c8a45d] focus:border-transparent text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         
-        <div className="sm:w-48">
-          <select
-            className="w-full border border-gray-300 rounded-lg py-2 pl-4 pr-8 appearance-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={() => setStatusFilter('All')}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'All' ? 'bg-[#c8a45d] text-white' : 'bg-gray-100 text-gray-700'}`}
           >
-            <option value="All">All Statuses</option>
-            <option value="New">New</option>
-            <option value="Called">Called</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Shipped">Shipped</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
+            Tous
+          </button>
+          <button 
+            onClick={() => setStatusFilter('New')}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'New' ? 'bg-blue-500 text-white' : 'bg-blue-50 text-blue-700'}`}
+          >
+            Nouveau
+          </button>
+          <button 
+            onClick={() => setStatusFilter('Called')}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Called' ? 'bg-yellow-500 text-white' : 'bg-yellow-50 text-yellow-700'}`}
+          >
+            Appelé
+          </button>
+          <button 
+            onClick={() => setStatusFilter('Confirmed')}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Confirmed' ? 'bg-purple-500 text-white' : 'bg-purple-50 text-purple-700'}`}
+          >
+            Confirmé
+          </button>
+          <button 
+            onClick={() => setStatusFilter('Shipped')}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Shipped' ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-700'}`}
+          >
+            Expédié
+          </button>
+          <button 
+            onClick={() => setStatusFilter('Delivered')}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Delivered' ? 'bg-green-500 text-white' : 'bg-green-50 text-green-700'}`}
+          >
+            Livré
+          </button>
+          <button 
+            onClick={() => setStatusFilter('Cancelled')}
+            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Cancelled' ? 'bg-red-500 text-white' : 'bg-red-50 text-red-700'}`}
+          >
+            Annulé
+          </button>
         </div>
       </div>
       
       {/* Order Count */}
-      <div className="mb-4 text-sm text-gray-600">
-        Showing {filteredOrders.length} order{filteredOrders.length !== 1 ? 's' : ''}
-        {statusFilter !== 'All' && ` with status: ${statusFilter}`}
+      <div className="mb-4 text-sm text-gray-600 flex justify-between items-center">
+        <div>
+          {filteredOrders.length} commande{filteredOrders.length !== 1 ? 's' : ''}
+          {statusFilter !== 'All' && ` - ${statusFilter}`}
+        </div>
+        {(searchQuery || statusFilter !== 'All') && (
+          <button 
+            className="text-[#c8a45d] hover:text-[#b08d48] text-sm font-medium"
+            onClick={() => {
+              setSearchQuery('');
+              setStatusFilter('All');
+            }}
+          >
+            Effacer les filtres
+          </button>
+        )}
       </div>
       
       {filteredOrders.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-lg text-gray-600">No orders found</p>
-          {(searchQuery || statusFilter !== 'All') && (
-            <button 
-              className="mt-2 text-blue-600 hover:text-blue-800"
-              onClick={() => {
-                setSearchQuery('');
-                setStatusFilter('All');
-              }}
-            >
-              Clear filters
-            </button>
-          )}
+          <p className="text-lg text-gray-600">Aucune commande trouvée</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="py-3 px-4 border-b text-left font-medium text-gray-700">Customer</th>
-                  <th className="py-3 px-4 border-b text-left font-medium text-gray-700">Location</th>
-                  <th className="py-3 px-4 border-b text-left font-medium text-gray-700">Product</th>
-                  <th className="py-3 px-4 border-b text-left font-medium text-gray-700">Note</th>
-                  <th className="py-3 px-4 border-b text-left font-medium text-gray-700">Date</th>
-                  <th className="py-3 px-4 border-b text-left font-medium text-gray-700">Status</th>
-                  <th className="py-3 px-4 border-b text-left font-medium text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredOrders.map(order => (
-                  <tr key={order._id} className="hover:bg-gray-50">
-                    <td className="py-4 px-4">
-                      <div className="font-medium">{order.name}</div>
-                      <div className="text-sm text-gray-600">{order.phone}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-start">
-                        <FaMapMarkerAlt className="text-red-500 mt-1 mr-1 flex-shrink-0" />
-                        <div>
-                          <div className="font-medium">{order.city ? order.city : 'N/A'}</div>
-                          <div className="text-sm text-gray-600 truncate max-w-[200px]">{order.address || 'No address provided'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      {getProductDisplay(order)}
-                    </td>
-                    <td className="py-4 px-4 max-w-xs">
-                      <div className="truncate">
-                        {order.note || <span className="text-gray-400 italic">No note</span>}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      {formatDate(order.createdAt)}
-                    </td>
-                    <td className="py-4 px-4">
-                      {getStatusBadge(order.status)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <StatusDropdown 
-                          orderId={order._id}
-                          currentStatus={order.status}
-                          onStatusChange={handleStatusUpdate}
-                        />
-                        <button 
-                          className="p-1.5 hover:bg-gray-100 rounded text-blue-600" 
-                          title="View details"
-                          onClick={() => viewOrderDetails(order._id)}
-                        >
-                          <FaEye />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-1 gap-4">
+          {filteredOrders.map(order => (
+            <div key={order._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+              <div className="p-4">
+                {/* Order header with status and date */}
+                <div className="flex justify-between items-center mb-3">
+                  <div>
+                    {getStatusBadge(order.status)}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })}
+                  </div>
+                </div>
+                
+                {/* Customer info */}
+                <div className="flex items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900 text-base">{order.name}</h3>
+                    <a href={`tel:${order.phone}`} className="text-sm text-[#c8a45d] hover:underline">{order.phone}</a>
+                  </div>
+                  <button 
+                    onClick={() => viewOrderDetails(order._id)}
+                    className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-600"
+                  >
+                    <FaEye size={16} />
+                  </button>
+                </div>
+                
+                {/* Location */}
+                <div className="flex items-start mb-3">
+                  <FaMapMarkerAlt className="text-red-500 mt-1 mr-2 flex-shrink-0" />
+                  <div>
+                    <div className="font-medium">{order.city || 'N/A'}</div>
+                    <div className="text-sm text-gray-500 line-clamp-1">{order.address || 'Pas d\'adresse fournie'}</div>
+                  </div>
+                </div>
+                
+                {/* Product info */}
+                <div className="mb-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="font-medium">Produit</div>
+                  <div className="text-sm">{getProductDisplay(order)}</div>
+                </div>
+                
+                {/* Status indicator and actions */}
+                <div className="mt-2 pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-medium text-gray-700">Actions rapides</h4>
+                  </div>
+                  
+                  {/* Status dropdown */}
+                  <div className="mb-3">
+                    <StatusDropdown 
+                      orderId={order._id}
+                      currentStatus={order.status}
+                      onStatusChange={handleStatusUpdate}
+                    />
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <a 
+                      href={`tel:${order.phone}`} 
+                      className="flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="mr-2 text-xl">📞</span> 
+                      <span className="font-medium">Appeler</span>
+                    </a>
+                    <button 
+                      onClick={() => viewOrderDetails(order._id)} 
+                      className="flex items-center justify-center py-3 px-4 bg-[#c8a45d] rounded-lg text-white hover:bg-[#b08d48] transition-colors"
+                    >
+                      <span className="mr-2 text-xl">👁</span> 
+                      <span className="font-medium">Détails</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

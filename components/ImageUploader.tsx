@@ -25,7 +25,7 @@ export default function ImageUploader({
   const [error, setError] = useState<string>('');
   const [showFallback, setShowFallback] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const placeholderImage = '/images/product-placeholder.jpg';
+  const placeholderImage = '/images/product-placeholder.svg';
 
   // Check if the initial image exists, use placeholder if needed
   useEffect(() => {

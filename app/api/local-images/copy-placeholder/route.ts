@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Define the placeholder path and target path
-    const placeholderPath = path.join(process.cwd(), 'public/images/product-placeholder.jpg');
+    const placeholderPath = path.join(process.cwd(), 'public/images/product-placeholder.svg');
     const targetPath = path.join(process.cwd(), 'public', imagePath);
     const targetDir = path.dirname(targetPath);
     

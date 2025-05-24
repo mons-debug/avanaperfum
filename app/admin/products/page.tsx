@@ -104,7 +104,7 @@ export default function AdminProductsPage() {
     }
     
     // Fallback to placeholder
-    return '/images/product-placeholder.jpg';
+    return '/images/product-placeholder.svg';
   };
   
   // Format price to display with currency symbol
@@ -126,182 +126,161 @@ export default function AdminProductsPage() {
   });
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Product Management</h1>
-        <div className="flex items-center gap-2">
+    <div className="container mx-auto px-4">
+      {/* Header - Mobile Responsive */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl font-bold">Gestion des Produits</h1>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex-grow sm:flex-grow-0"
           >
             <FaSync className={`${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            {isRefreshing ? 'Actualisation...' : 'Actualiser'}
           </button>
           <Link
             href="/admin/products/new"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#c8a45d] text-white rounded-lg hover:bg-[#b08d48] transition-colors flex-grow sm:flex-grow-0"
           >
-            <FaPlus /> Add New Product
+            <FaPlus /> Ajouter un produit
           </Link>
         </div>
       </div>
       
-      {/* Search and filters */}
+      {/* Search - Mobile Optimized */}
       <div className="mb-6">
         <div className="relative">
           <input
             type="text"
-            placeholder="Search products..."
-            className="w-full px-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Rechercher des produits..."
+            className="w-full px-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c8a45d] text-base"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <FaSearch className="absolute left-3 top-3 text-gray-400" />
+          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-500 p-4 rounded-md mb-6">
-          Error: {error}
+        <div className="bg-red-50 text-red-500 p-4 rounded-lg mb-6">
+          Erreur: {error}
         </div>
       )}
 
       {isLoading ? (
         <div className="text-center py-12">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-          <p className="mt-2 text-gray-600">Loading products...</p>
+          <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-[#c8a45d] border-r-transparent"></div>
+          <p className="mt-2 text-gray-600">Chargement des produits...</p>
         </div>
       ) : (
         <>
           {filteredProducts.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-600">No products found.</p>
+              <p className="text-gray-600">Aucun produit trouvé.</p>
               <Link 
                 href="/admin/products/new"
-                className="inline-block mt-4 text-blue-600 hover:text-blue-800"
+                className="inline-block mt-4 text-[#c8a45d] hover:text-[#b08d48]"
               >
-                Add your first product
+                Ajouter votre premier produit
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Image
-                    </th>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Name
-                    </th>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Category
-                    </th>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Gender
-                    </th>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Volume
-                    </th>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Price
-                    </th>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Images
-                    </th>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredProducts.map((product) => (
-                    <tr key={product._id} className="hover:bg-gray-50">
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="relative h-12 w-12 rounded overflow-hidden">
-                          <Image
-                            src={getProductImage(product)}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            sizes="48px"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/images/product-placeholder.jpg';
-                            }}
-                          />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredProducts.map((product) => (
+                <div key={product._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                  {/* Product Image Header */}
+                  <div className="relative aspect-video w-full">
+                    <Image
+                      src={getProductImage(product)}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/product-placeholder.svg';
+                      }}
+                    />
+                    <div className="absolute top-2 right-2 flex space-x-1">
+                      {product.images && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-black bg-opacity-60 text-white">
+                          <FaImages className="mr-1" /> 
+                          <span>{product.images.length}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-medium text-gray-900 text-lg line-clamp-1">{product.name}</h3>
+                        <div className="flex items-center mt-1 space-x-2">
+                          {product.category && (
+                            <span className="text-sm text-gray-600">{product.category}</span>
+                          )}
                         </div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{product.name}</div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{product.category || '-'}</div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                      </div>
+                      <div className="text-base font-semibold text-[#c8a45d]">{formatPrice(product.price)}</div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {product.gender && (
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
                           ${product.gender === 'Femme' ? 'bg-pink-100 text-pink-800' :
                           product.gender === 'Homme' ? 'bg-blue-100 text-blue-800' :
                           'bg-purple-100 text-purple-800'}`}>
-                          {product.gender || 'Unspecified'}
+                          {product.gender}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{product.volume || '-'}</div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{formatPrice(product.price)}</div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
-                          {product.images && (
-                            <span className="inline-flex items-center">
-                              <FaImages className="mr-1 text-gray-400" /> 
-                              <span>{product.images.length}</span>
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap text-right text-sm font-medium">
+                      )}
+                      {product.volume && (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          {product.volume}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                    {showDeleteConfirm === product._id ? (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Confirmer la suppression?</span>
                         <div className="flex items-center gap-2">
-                          <Link
-                            href={`/admin/products/${product._id}/edit`}
-                            className="p-2 text-blue-600 hover:text-blue-900 transition-colors"
-                            title="Edit product"
+                          <button
+                            onClick={() => handleDeleteConfirm(product._id)}
+                            className="p-1 px-3 text-white bg-red-500 text-sm rounded-lg hover:bg-red-600 transition-colors"
                           >
-                            <FaEdit />
-                          </Link>
-                          
-                          {showDeleteConfirm === product._id ? (
-                            <div className="flex items-center gap-2 ml-2">
-                              <button
-                                onClick={() => handleDeleteConfirm(product._id)}
-                                className="p-1 px-2 text-white bg-red-500 text-xs rounded hover:bg-red-600 transition-colors"
-                              >
-                                Yes
-                              </button>
-                              <button
-                                onClick={handleDeleteCancel}
-                                className="p-1 px-2 text-gray-600 bg-gray-200 text-xs rounded hover:bg-gray-300 transition-colors"
-                              >
-                                No
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleDeleteClick(product._id)}
-                              className="p-2 text-red-600 hover:text-red-900 transition-colors"
-                              title="Delete product"
-                            >
-                              <FaTrash />
-                            </button>
-                          )}
+                            Oui
+                          </button>
+                          <button
+                            onClick={handleDeleteCancel}
+                            className="p-1 px-3 text-gray-600 bg-gray-200 text-sm rounded-lg hover:bg-gray-300 transition-colors"
+                          >
+                            Non
+                          </button>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/products/${product._id}/edit`}
+                          className="p-2 px-4 text-[#c8a45d] bg-white border border-[#c8a45d] rounded-lg hover:bg-[#c8a45d] hover:text-white transition-colors flex items-center"
+                        >
+                          <FaEdit className="mr-1" /> Modifier
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteClick(product._id)}
+                          className="p-2 px-4 text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors flex items-center"
+                        >
+                          <FaTrash className="mr-1" /> Supprimer
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           

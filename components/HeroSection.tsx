@@ -41,13 +41,7 @@ const HeroSection: React.FC = () => {
     return () => clearInterval(timer);
   }, [heroSlides.length]);
 
-  const nextSlide = () => {
-    setCurrentSlide((current) => (current === heroSlides.length - 1 ? 0 : current + 1));
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((current) => (current === 0 ? heroSlides.length - 1 : current - 1));
-  };
+  // Arrow navigation functions removed as per request
   
   return (
     <section className="relative h-[80vh] md:h-screen flex items-center overflow-hidden">
@@ -66,7 +60,7 @@ const HeroSection: React.FC = () => {
             {/* For mobile devices */}
             <div className="relative h-full w-full md:hidden">
               <Image
-                src={slide.image}
+                src={slide.image === '/images/hero-avana.jpg' ? '/images/heromobile.png' : slide.image}
                 alt={slide.alt}
                 fill
                 className={`object-cover ${slide.position}`}
@@ -94,21 +88,7 @@ const HeroSection: React.FC = () => {
         </div>
       ))}
 
-      {/* Navigation Buttons */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full backdrop-blur-sm transition-all group"
-        aria-label="Previous slide"
-      >
-        <FaArrowLeft className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:-translate-x-1" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full backdrop-blur-sm transition-all group"
-        aria-label="Next slide"
-      >
-        <FaArrowRight className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:translate-x-1" />
-      </button>
+      {/* Navigation Buttons Removed */}
       
       {/* Content */}
       <div className="container mx-auto px-4 relative z-10">

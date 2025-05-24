@@ -24,7 +24,7 @@ export default function MultiImageUploader({
   const [error, setError] = useState<string>('');
   const [showFallback, setShowFallback] = useState<boolean[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const placeholderImage = '/images/product-placeholder.jpg';
+  const placeholderImage = '/images/product-placeholder.svg';
 
   // Check if initial images exist, use placeholder if needed
   useEffect(() => {

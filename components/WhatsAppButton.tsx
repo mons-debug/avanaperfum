@@ -1,10 +1,20 @@
 import { FaWhatsapp } from 'react-icons/fa';
 import Link from 'next/link';
 
-const WhatsAppButton: React.FC = () => {
-  const phoneNumber = '+212674428593'; // Updated WhatsApp number
-  const message = encodeURIComponent('Hi! I have a question about AVANA PARFUM.');
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+const WhatsAppButton: React.FC<{ customMessage?: string }> = ({ customMessage }) => {
+  // Moroccan phone number format (ensuring correct international format for WhatsApp)
+  // The number format for Morocco should be +212 followed by the 9-digit number without the leading 0
+  const rawNumber = '0674428593';
+  const formattedNumber = rawNumber.startsWith('0') 
+    ? `+212${rawNumber.substring(1)}` 
+    : `+212${rawNumber}`;
+    
+  // Default message or use custom message if provided
+  const defaultMessage = 'Hi! I have a question about AVANA PARFUM.';
+  const message = encodeURIComponent(customMessage || defaultMessage);
+  
+  // Create WhatsApp URL using the wa.me format
+  const whatsappUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 
   return (
     <Link

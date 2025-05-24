@@ -108,7 +108,7 @@ const Footer = () => {
     { href: 'https://facebook.com/avanaparfum', icon: FaFacebookF, label: translatedSocial.facebook },
     { href: 'https://twitter.com/avanaparfum', icon: FaTwitter, label: translatedSocial.twitter },
     { href: 'https://instagram.com/avanaparfum', icon: FaInstagram, label: translatedSocial.instagram },
-    { href: 'https://wa.me/212674428593', icon: FaWhatsapp, label: translatedSocial.whatsapp },
+    { href: 'https://wa.me/+212674428593', icon: FaWhatsapp, label: translatedSocial.whatsapp },
   ];
 
   return (

@@ -1,12 +1,14 @@
 // components/ProductGrid.tsx
 "use client";
 
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaEye, FaShoppingCart, FaCheck } from 'react-icons/fa';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { FaEye, FaShoppingCart, FaCheck, FaShoppingBag } from 'react-icons/fa';
+import { formatPrice } from '@/lib/utils';
+import { useTranslation } from './i18n/TranslationProvider';
 import { addToCart, removeFromCart, isInCart, ProductWithTranslation } from '@/lib/cart';
-import { useTranslation } from '@/components/i18n/TranslationProvider';
 
 type ITranslation = {
   en: string;
@@ -58,8 +60,12 @@ export default function ProductGrid({ products, viewMode = 'grid' }: ProductGrid
 
 function GridProductCard({ product, index }: { product: Product; index: number }) {
   const { t, locale } = useTranslation();
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [isInCartState, setIsInCartState] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string>('/images/product-placeholder.svg');
   
   // Log product information to help diagnose problems
   useEffect(() => {
@@ -67,6 +73,21 @@ function GridProductCard({ product, index }: { product: Product; index: number }
       console.warn(`Product at index ${index} has no _id:`, product);
     }
   }, [product, index]);
+  
+  // Set image src with cache busting
+  useEffect(() => {
+    if (product.images?.[0]) {
+      const imgSrc = product.images[0];
+      // Add cache busting parameter for local images
+      if (typeof imgSrc === 'string') {
+        if (imgSrc.startsWith('/')) {
+          setImageSrc(`${imgSrc}?t=${Date.now()}`);
+        } else {
+          setImageSrc(imgSrc);
+        }
+      }
+    }
+  }, [product, product.images]);
   
   useEffect(() => {
     // Check if product is in cart on initial load
@@ -93,6 +114,7 @@ function GridProductCard({ product, index }: { product: Product; index: number }
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!product._id) {
       console.error('Cannot add product to cart: missing _id');
       return;
@@ -106,26 +128,40 @@ function GridProductCard({ product, index }: { product: Product; index: number }
   };
   
   return (
-    <div 
-      className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1"
+    <Link 
+      href={`/product/${product._id}`}
+      className="group block bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image */}
-      <div className="relative aspect-square">
+      <div className="relative w-full aspect-square overflow-hidden mb-2 rounded-md bg-gray-100">
         <Image
-          src={product.images[0] || '/images/product-placeholder.svg'}
+          src={imageSrc}
           alt={typeof product.name === 'object' ? (product.name[locale as keyof typeof product.name] || product.name.fr || product.name.en || 'Product') : (product.name || 'Product')}
           fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           className="object-cover"
+          unoptimized={true} // Disable Next.js image optimization to avoid caching
+          priority={true} // Load this image earlier
+          onError={() => {
+            console.error(`Image error for product ${product._id}: ${product.images[0]}`);
+            setImageError(true);
+            setImageSrc('/images/product-placeholder.svg');
+          }}
         />
         
         {/* Quick actions */}
-        <div className={`absolute inset-0 bg-black/5 flex items-center justify-center transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+        <div 
+          className={`absolute inset-0 bg-black/5 flex items-center justify-center transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+          data-component-name="GridProductCard"
+        >
           <div className="flex gap-2">
             <button 
-              onClick={handleAddToCart}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAddToCart(e);
+              }}
               className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-colors ${
                 isInCartState 
                   ? 'bg-[#c8a45d] text-white' 
@@ -135,12 +171,15 @@ function GridProductCard({ product, index }: { product: Product; index: number }
             >
               {isInCartState ? <FaCheck /> : <FaShoppingCart />}
             </button>
-            <Link
-              href={`/product/${product._id}`}
-              className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md hover:bg-[#c8a45d] hover:text-white transition-colors"
+            <div 
+              className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md hover:bg-[#c8a45d] hover:text-white transition-colors cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                // This is just a visual button, the entire card is clickable
+              }}
             >
               <FaEye />
-            </Link>
+            </div>
           </div>
         </div>
         
@@ -163,7 +202,7 @@ function GridProductCard({ product, index }: { product: Product; index: number }
       
       {/* Product Info */}
       <div className="p-4">
-        <Link href={`/product/${product._id}`} className="block">
+        <div className="block">
           <h3 className="text-gray-800 font-medium text-lg mb-1 line-clamp-1 group-hover:text-[#c8a45d] transition-colors">
             {typeof product.name === 'object' ? (product.name[locale as keyof typeof product.name] || product.name.fr || product.name.en) : product.name}
           </h3>
@@ -180,11 +219,15 @@ function GridProductCard({ product, index }: { product: Product; index: number }
               <span className="text-gray-500 text-sm">{typeof product.volume === 'object' ? (product.volume[locale as keyof typeof product.volume] || product.volume.fr || product.volume.en) : product.volume}</span>
             )}
           </div>
-        </Link>
+        </div>
         
         {/* Add to Cart button */}
         <button
-          onClick={handleAddToCart}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddToCart(e);
+          }}
           className={`w-full mt-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center ${
             isInCartState 
               ? 'bg-green-100 text-green-700 border border-green-200'
@@ -204,13 +247,41 @@ function GridProductCard({ product, index }: { product: Product; index: number }
           )}
         </button>
       </div>
-    </div>
+    </Link>
   );
 }
 
 function ListProductCard({ product, index }: { product: Product; index: number }) {
   const { t, locale } = useTranslation();
+  const router = useRouter();
   const [isInCartState, setIsInCartState] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string>('/images/product-placeholder.svg');
+  
+  // Log product information to help diagnose problems
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`List product card for index ${index}:`, product);
+    }
+  }, [product, index]);
+  
+  // Set image src with cache busting
+  useEffect(() => {
+    if (product.images?.[0]) {
+      const imgSrc = product.images[0];
+      // Add cache busting parameter for local images
+      if (typeof imgSrc === 'string') {
+        if (imgSrc.startsWith('/')) {
+          setImageSrc(`${imgSrc}?t=${Date.now()}`);
+        } else {
+          setImageSrc(imgSrc);
+        }
+      }
+    } else {
+      setImageSrc('/images/product-placeholder.svg');
+    }
+  }, [product, product.images]);
   
   useEffect(() => {
     // Check if product is in cart on initial load
@@ -235,6 +306,7 @@ function ListProductCard({ product, index }: { product: Product; index: number }
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (isInCartState) {
       removeFromCart(product._id);
     } else {
@@ -243,15 +315,25 @@ function ListProductCard({ product, index }: { product: Product; index: number }
   };
   
   return (
-    <div className="flex border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-white hover:shadow-md transition-all">
+    <Link 
+      href={`/product/${product._id}`}
+      className="flex border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-white hover:shadow-md transition-all cursor-pointer"
+    >
       {/* Product Image */}
       <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
         <Image
-          src={product.images[0] || '/images/product-placeholder.svg'}
+          src={imageSrc}
           alt={typeof product.name === 'object' ? (product.name[locale as keyof typeof product.name] || product.name.fr || product.name.en || 'Product') : (product.name || 'Product')}
           fill
           sizes="(max-width: 768px) 128px, 160px"
           className="object-cover"
+          onLoad={() => setImageLoaded(true)}
+          priority={true}
+          unoptimized={true} /* Disable Next.js image optimization to avoid caching */
+          onError={(e) => {
+            console.log(`Error loading image for product ${product._id || index}`, imageSrc);
+            setImageSrc('/images/product-placeholder.svg');
+          }}
         />
         
         {/* Gender badge */}
@@ -268,7 +350,7 @@ function ListProductCard({ product, index }: { product: Product; index: number }
       <div className="flex-1 p-4 flex flex-col">
         <div className="flex items-start justify-between">
           <div>
-            <Link href={`/product/${product._id}`} className="block">
+            <div className="block">
               <h3 className="text-gray-800 font-medium text-lg mb-1 line-clamp-1 hover:text-[#c8a45d] transition-colors">
                 {typeof product.name === 'object' ? (product.name[locale as keyof typeof product.name] || product.name.en) : product.name}
               </h3>
@@ -284,12 +366,16 @@ function ListProductCard({ product, index }: { product: Product; index: number }
                   {product.category}
                 </span>
               )}
-            </Link>
+            </div>
             
             {/* Mobile Add to Cart button */}
             <div className="mt-3 block md:hidden">
               <button
-                onClick={handleAddToCart}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAddToCart(e);
+                }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isInCartState 
                   ? 'bg-green-100 text-green-700 border border-green-200'
                   : 'bg-[#c8a45d] text-white hover:bg-[#b08d48]'
@@ -301,7 +387,11 @@ function ListProductCard({ product, index }: { product: Product; index: number }
           </div>
           
           <button 
-            onClick={handleAddToCart}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddToCart(e);
+            }}
             className={`p-2 rounded-full ${
               isInCartState 
                 ? 'text-green-600 bg-green-50' 
@@ -330,7 +420,11 @@ function ListProductCard({ product, index }: { product: Product; index: number }
           
           <div className="flex space-x-2">
             <button 
-              onClick={handleAddToCart}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAddToCart(e);
+              }}
               className={`px-4 py-1.5 rounded-lg text-sm transition-colors flex items-center ${
                 isInCartState 
                   ? 'bg-green-100 text-green-700'
@@ -340,26 +434,29 @@ function ListProductCard({ product, index }: { product: Product; index: number }
               {isInCartState ? (
                 <>
                   <FaCheck className="mr-1" />
-                  Added
+                  {t('product.inCart', 'In Cart')}
                 </>
               ) : (
                 <>
                   <FaShoppingCart className="mr-1" />
-                  Add to Cart
+                  {t('product.addToCart', 'Add to Cart')}
                 </>
               )}
             </button>
             
-            <Link 
-              href={`/product/${product._id}`}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg text-sm transition-colors flex items-center"
+            <div 
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg text-sm transition-colors flex items-center cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                // This is just a visual button, the entire card is clickable
+              }}
             >
-              Details
+              {t('product.details', 'Details')}
               <FaEye className="ml-1" />
-            </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 } 

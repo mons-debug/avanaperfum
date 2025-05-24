@@ -257,7 +257,7 @@ export default function CartPage() {
                   </button>
                   
                   <Link
-                    href={`https://wa.me/+212600000000?text=${encodeURIComponent(
+                    href={`https://wa.me/+212674428593?text=${encodeURIComponent(
                       `Hello, I'd like to order the following items:\n\n${cartItems.map(
                         item => `${item.quantity}x ${item.name} - ${item.price} DH each`
                       ).join('\n')}\n\nSubtotal: ${cartTotal} DH\nShipping: ${qualifiesForFreeShipping ? 'Free' : `${shippingFee} DH`}\nTotal: ${totalWithShipping} DH`
