@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/components/i18n/TranslationProvider';
@@ -22,14 +22,27 @@ export default function BasicProductDisplay() {
   const [womenProducts, setWomenProducts] = useState<Product[]>([]);
   const [isLoadingMen, setIsLoadingMen] = useState(true);
   const [isLoadingWomen, setIsLoadingWomen] = useState(true);
+  
+  // Mobile carousel refs for touch handling
+  const mobileCarouselRef = useRef<HTMLDivElement>(null);
+  const desktopMenCarouselRef = useRef<HTMLDivElement>(null);
+  const desktopWomenCarouselRef = useRef<HTMLDivElement>(null);
+  
+  // Touch handling state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  // Fetch men's products
+  // Fetch men's products with error boundary
   useEffect(() => {
     const fetchMenProducts = async () => {
       try {
         setIsLoadingMen(true);
         const response = await fetch(`/api/products?gender=Homme&limit=12`, {
           cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          }
         });
         
         if (!response.ok) {
@@ -41,7 +54,7 @@ export default function BasicProductDisplay() {
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
           setMenProducts(data.data);
         } else {
-          console.error('No men products found');
+          console.warn('No men products found');
           setMenProducts([]);
         }
       } catch (error) {
@@ -55,13 +68,17 @@ export default function BasicProductDisplay() {
     fetchMenProducts();
   }, []);
 
-  // Fetch women's products
+  // Fetch women's products with error boundary
   useEffect(() => {
     const fetchWomenProducts = async () => {
       try {
         setIsLoadingWomen(true);
         const response = await fetch(`/api/products?gender=Femme&limit=12`, {
           cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          }
         });
         
         if (!response.ok) {
@@ -73,7 +90,7 @@ export default function BasicProductDisplay() {
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
           setWomenProducts(data.data);
         } else {
-          console.error('No women products found');
+          console.warn('No women products found');
           setWomenProducts([]);
         }
       } catch (error) {
@@ -87,9 +104,36 @@ export default function BasicProductDisplay() {
     fetchWomenProducts();
   }, []);
 
-  // Product Card Component
+  // Enhanced touch handlers for better mobile experience
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe || isRightSwipe) {
+      // Swipe detected - could add custom swipe behavior here if needed
+      // For now, native scroll handles the horizontal movement
+    }
+
+    setTouchStart(null);
+    setTouchEnd(null);
+  }, [touchStart, touchEnd]);
+
+  // Optimized Product Card Component with better performance
   const ProductCard = ({ product }: { product: Product }) => {
     const [imageError, setImageError] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
     const imageUrl = imageError || !product.images?.length 
       ? '/images/product-placeholder.svg' 
       : product.images[0];
@@ -97,20 +141,33 @@ export default function BasicProductDisplay() {
     return (
       <Link 
         href={`/product/${product._id}`}
-        className="group text-center flex flex-col hover:shadow-lg transition-shadow duration-200 bg-white rounded-lg p-2 h-full"
+        className="group text-center flex flex-col hover:shadow-lg transition-all duration-300 bg-white rounded-lg p-2 h-full border border-gray-100 hover:border-[#c8a45d]/30 will-change-transform"
+        style={{ contain: 'layout style paint' }}
       >
         <div className="aspect-square relative mb-2 bg-gray-50 rounded-lg overflow-hidden">
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-gray-100 animate-pulse rounded-lg"></div>
+          )}
           <Image
             src={imageUrl}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 144px, 160px"
-            className="object-contain group-hover:scale-105 transition-transform duration-200"
-            onError={() => setImageError(true)}
-            unoptimized={true}
+            className={`object-contain group-hover:scale-105 transition-transform duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => {
+              setImageError(true);
+              setImageLoaded(true);
+            }}
+            priority={false}
+            loading="lazy"
           />
         </div>
-        <h3 className="text-xs font-medium mb-1 line-clamp-2 leading-tight">{product.name}</h3>
+        <h3 className="text-xs font-medium mb-1 line-clamp-2 leading-tight text-gray-800 group-hover:text-[#c8a45d] transition-colors">
+          {product.name}
+        </h3>
         <p className="text-xs text-gray-500 mb-2 line-clamp-1 leading-tight">
           {product.description?.slice(0, 30)}{product.description && product.description.length > 30 ? '...' : ''}
         </p>
@@ -119,9 +176,9 @@ export default function BasicProductDisplay() {
     );
   };
 
-  // Loading Skeleton
+  // Optimized Loading Skeleton
   const ProductSkeleton = () => (
-    <div className="animate-pulse flex flex-col bg-white rounded-lg p-2 h-full">
+    <div className="animate-pulse flex flex-col bg-white rounded-lg p-2 h-full border border-gray-100">
       <div className="aspect-square bg-gray-200 rounded-lg mb-2"></div>
       <div className="h-3 bg-gray-200 rounded mb-1"></div>
       <div className="h-3 bg-gray-200 rounded mb-2 w-3/4"></div>
@@ -142,7 +199,7 @@ export default function BasicProductDisplay() {
           </p>
         </div>
         
-        {/* Mobile Toggle & Carousel */}
+        {/* Mobile Toggle & Optimized Carousel */}
         <div className="block lg:hidden mb-8">
           <div className="flex justify-center mb-8">
             <div className="inline-flex items-center bg-gray-50 p-1 rounded-full border border-gray-200 shadow-sm">
@@ -169,36 +226,48 @@ export default function BasicProductDisplay() {
             </div>
           </div>
           
-          {/* Mobile Carousel - Fixed Layout */}
+          {/* Enhanced Mobile Carousel */}
           <div className="w-full overflow-hidden">
-            <div className="flex overflow-x-auto gap-3 px-4 pb-4 scrollbar-hide mobile-carousel">
+            <div 
+              ref={mobileCarouselRef}
+              className="flex overflow-x-auto gap-3 px-4 pb-4 snap-x snap-mandatory scrollbar-hide smooth-scroll"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
+                scrollBehavior: 'smooth'
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               {activeTab === 'male'
                 ? (isLoadingMen
-                    ? Array(12).fill(0).map((_, i) => (
-                        <div className="w-36 flex-shrink-0" key={i}>
+                    ? Array(6).fill(0).map((_, i) => (
+                        <div className="w-36 flex-shrink-0 snap-center" key={`men-skeleton-${i}`}>
                           <ProductSkeleton />
                         </div>
                       ))
-                    : menProducts.map(product => (
-                        <div className="w-36 flex-shrink-0" key={product._id}>
+                    : menProducts.map((product, index) => (
+                        <div className="w-36 flex-shrink-0 snap-center" key={`men-${product._id}-${index}`}>
                           <ProductCard product={product} />
                         </div>
                       ))
                   )
                 : (isLoadingWomen
-                    ? Array(12).fill(0).map((_, i) => (
-                        <div className="w-36 flex-shrink-0" key={i}>
+                    ? Array(6).fill(0).map((_, i) => (
+                        <div className="w-36 flex-shrink-0 snap-center" key={`women-skeleton-${i}`}>
                           <ProductSkeleton />
                         </div>
                       ))
-                    : womenProducts.map(product => (
-                        <div className="w-36 flex-shrink-0" key={product._id}>
+                    : womenProducts.map((product, index) => (
+                        <div className="w-36 flex-shrink-0 snap-center" key={`women-${product._id}-${index}`}>
                           <ProductCard product={product} />
                         </div>
                       ))
                   )
               }
-              {/* Spacer to show last item properly */}
+              {/* Spacer for better UX */}
               <div className="w-4 flex-shrink-0"></div>
             </div>
           </div>
@@ -206,14 +275,14 @@ export default function BasicProductDisplay() {
           <div className="text-center mt-6">
             <Link
               href={activeTab === 'male' ? '/shop?gender=Homme' : '/shop?gender=Femme'}
-              className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
+              className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-200"
             >
               {t('home.about.learnMore', 'EN SAVOIR PLUS')}
             </Link>
           </div>
         </div>
 
-        {/* Desktop View - Fixed Layout */}
+        {/* Enhanced Desktop View */}
         <div className="hidden lg:grid grid-cols-2 gap-8 relative">
           {/* Center divider */}
           <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 transform -translate-x-1/2"></div>
@@ -222,28 +291,34 @@ export default function BasicProductDisplay() {
           <div className="lg:pr-6">
             <h2 className="text-xl sm:text-2xl font-playfair mb-6 text-center text-[#c8a45d]">{t('home.featured.men', 'Homme')}</h2>
             <div className="w-full overflow-hidden">
-              <div className="flex overflow-x-auto gap-4 px-2 pb-4 scrollbar-hide desktop-carousel">
+              <div 
+                ref={desktopMenCarouselRef}
+                className="flex overflow-x-auto gap-4 px-2 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400"
+                style={{
+                  WebkitOverflowScrolling: 'touch',
+                  scrollBehavior: 'smooth'
+                }}
+              >
                 {isLoadingMen ? (
-                  Array(12).fill(0).map((_, i) => (
-                    <div className="w-40 flex-shrink-0" key={i}>
+                  Array(6).fill(0).map((_, i) => (
+                    <div className="w-40 flex-shrink-0" key={`men-desktop-skeleton-${i}`}>
                       <ProductSkeleton />
                     </div>
                   ))
                 ) : (
-                  menProducts.map(product => (
-                    <div className="w-40 flex-shrink-0" key={product._id}>
+                  menProducts.map((product, index) => (
+                    <div className="w-40 flex-shrink-0" key={`men-desktop-${product._id}-${index}`}>
                       <ProductCard product={product} />
                     </div>
                   ))
                 )}
-                {/* Spacer to show last item properly */}
                 <div className="w-2 flex-shrink-0"></div>
               </div>
             </div>
             <div className="text-center mt-8">
               <Link
                 href="/shop?gender=Homme"
-                className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
+                className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-200"
               >
                 {t('home.about.learnMore', 'EN SAVOIR PLUS')}
               </Link>
@@ -254,28 +329,34 @@ export default function BasicProductDisplay() {
           <div className="lg:pl-6">
             <h2 className="text-xl sm:text-2xl font-playfair mb-6 text-center text-[#c8a45d]">{t('home.featured.women', 'Femme')}</h2>
             <div className="w-full overflow-hidden">
-              <div className="flex overflow-x-auto gap-4 px-2 pb-4 scrollbar-hide desktop-carousel">
+              <div 
+                ref={desktopWomenCarouselRef}
+                className="flex overflow-x-auto gap-4 px-2 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400"
+                style={{
+                  WebkitOverflowScrolling: 'touch',
+                  scrollBehavior: 'smooth'
+                }}
+              >
                 {isLoadingWomen ? (
-                  Array(12).fill(0).map((_, i) => (
-                    <div className="w-40 flex-shrink-0" key={i}>
+                  Array(6).fill(0).map((_, i) => (
+                    <div className="w-40 flex-shrink-0" key={`women-desktop-skeleton-${i}`}>
                       <ProductSkeleton />
                     </div>
                   ))
                 ) : (
-                  womenProducts.map(product => (
-                    <div className="w-40 flex-shrink-0" key={product._id}>
+                  womenProducts.map((product, index) => (
+                    <div className="w-40 flex-shrink-0" key={`women-desktop-${product._id}-${index}`}>
                       <ProductCard product={product} />
                     </div>
                   ))
                 )}
-                {/* Spacer to show last item properly */}
                 <div className="w-2 flex-shrink-0"></div>
               </div>
             </div>
             <div className="text-center mt-8">
               <Link
                 href="/shop?gender=Femme"
-                className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
+                className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-200"
               >
                 {t('home.about.learnMore', 'EN SAVOIR PLUS')}
               </Link>
@@ -286,7 +367,7 @@ export default function BasicProductDisplay() {
         <div className="mt-10 text-center">
           <Link
             href="/shop"
-            className="inline-block px-8 py-3 bg-[#c8a45d] hover:bg-[#b08d48] text-white rounded-lg transition-colors"
+            className="inline-block px-8 py-3 bg-[#c8a45d] hover:bg-[#b08d48] text-white rounded-lg transition-colors duration-200"
           >
             Voir Tous les Parfums
           </Link>

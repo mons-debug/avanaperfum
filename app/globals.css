@@ -351,12 +351,14 @@ section, div, main, header, footer, nav {
 
 /* Hide scrollbars for carousel */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Safari and Chrome */
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Improve touch scrolling performance */
@@ -368,103 +370,34 @@ section, div, main, header, footer, nav {
   scroll-snap-align: center;
 }
 
-/* Mobile carousel optimizations */
-@media (max-width: 768px) {
-  .mobile-carousel {
-    touch-action: pan-x;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-  }
-  
-  .mobile-carousel .carousel-item,
-  .mobile-carousel > div {
-    will-change: transform;
-    backface-visibility: hidden;
-    scroll-snap-align: center;
-  }
-  
-  /* Ensure proper spacing for mobile scrolling */
-  .mobile-carousel {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  /* Better visibility for last item */
-  .mobile-carousel::after {
-    content: '';
-    display: block;
-    width: 1rem;
-    height: 1px;
-    flex-shrink: 0;
-  }
+.snap-mandatory {
+  scroll-snap-type: x mandatory;
 }
 
-/* Mobile carousel improvements */
-.mobile-carousel {
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
-  scroll-behavior: smooth;
-  touch-action: pan-x;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: scroll-position;
-}
-
-.mobile-carousel > * {
-  scroll-snap-align: start;
-}
-
-/* Desktop carousel improvements */
-.desktop-carousel {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  touch-action: pan-x;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: scroll-position;
-}
-
-/* Ensure smooth scrolling on all devices */
-.smooth-scroll {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Enhanced mobile touch scrolling */
+/* Enhanced mobile touch scrolling - CLEAN VERSION */
 @media (max-width: 1024px) {
   .mobile-carousel {
-    scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
-    -ms-scroll-snap-type: x proximity;
-    scroll-snap-points-x: repeat(144px);
-    -webkit-scroll-snap-points-x: repeat(144px);
-    /* Better mobile scroll performance */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-perspective: 1000px;
-    perspective: 1000px;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    transform: translateZ(0);
+    will-change: scroll-position;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   
   .mobile-carousel::-webkit-scrollbar {
     display: none;
+    width: 0;
+    height: 0;
   }
   
-  /* Improve touch responsiveness */
-  .mobile-carousel {
-    scroll-padding-left: 1rem;
-    scroll-padding-right: 1rem;
-  }
-  
-  /* Add momentum scrolling for iOS */
-  .mobile-carousel {
-    -webkit-overflow-scrolling: touch !important;
-    overflow: -moz-scrollbars-none;
-    -ms-overflow-style: none;
+  /* Remove all conflicting mobile styles */
+  .mobile-carousel .carousel-item,
+  .mobile-carousel .product-card {
+    transform: translateZ(0);
+    will-change: transform;
   }
 }
 
@@ -474,6 +407,9 @@ section, div, main, header, footer, nav {
     scroll-snap-type: x proximity;
     scroll-padding-left: 0.5rem;
     scroll-padding-right: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
   }
   
   .desktop-carousel::-webkit-scrollbar {
@@ -493,10 +429,30 @@ section, div, main, header, footer, nav {
   .desktop-carousel::-webkit-scrollbar-thumb:hover {
     background: #b08d48;
   }
-  
-  /* Enable horizontal mouse wheel scrolling */
-  .desktop-carousel {
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
 }
+
+/* Thin scrollbar for desktop */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 4px;
+}
+
+.scrollbar-track-gray-100::-webkit-scrollbar-track {
+  background-color: #f3f4f6;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.hover\:scrollbar-thumb-gray-400:hover::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+}
+
+
