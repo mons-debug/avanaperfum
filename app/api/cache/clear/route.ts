@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clearProductsCache } from '../../products/route';
+import { clearProductsCache } from '@/lib/utils/cacheUtils';
 
 export async function POST(request: NextRequest) {
   try {

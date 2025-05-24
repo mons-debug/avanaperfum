@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDB } from '@/lib/mongodb';
 import Product from '@/models/Product';
-import { clearProductsCache } from '../route';
+import { clearProductsCache } from '@/lib/utils/cacheUtils';
 
 interface Params {
   params: Promise<{

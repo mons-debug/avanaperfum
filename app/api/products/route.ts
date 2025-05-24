@@ -2,24 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDB } from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { mockProducts } from '@/lib/mockData';
+import { getCachedProducts, setCachedProducts, isCacheValid, clearProductsCache } from '@/lib/utils/cacheUtils';
 
 const DEFAULT_PRODUCT_IMAGE = '/images/product-placeholder.svg';
-
-// Memory cache to avoid repeated database queries
-let productsCache: Record<string, {
-  data: any[],
-  timestamp: number,
-  expiryTime: number
-}> = {};
-
-// Cache expiry in milliseconds (1 minute - reduced to ensure fresh data appears quickly)
-const CACHE_EXPIRY = 1 * 60 * 1000;
-
-// Function to clear all product caches
-export const clearProductsCache = () => {
-  console.log('Clearing products cache');
-  productsCache = {};
-};
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,8 +24,8 @@ export async function GET(request: NextRequest) {
     const cacheKey = `products-${gender || 'all'}-${categoryId || 'all'}-${limit || 'all'}-${page || 1}`;
     
     // Check if we have cached data and are allowed to use it
-    const cachedData = useCache ? productsCache[cacheKey] : null;
-    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRY) {
+    const cachedData = useCache ? getCachedProducts(cacheKey) : null;
+    if (cachedData && isCacheValid(cachedData)) {
       console.log(`[API/Products] GET: Returning cached data for ${cacheKey}`);
       return NextResponse.json({
         success: true,
@@ -128,11 +113,7 @@ export async function GET(request: NextRequest) {
     
     // Cache the result for future requests (if not a force-refresh request)
     if (useCache) {
-      productsCache[cacheKey] = {
-        data: result.data,
-        timestamp: Date.now(),
-        expiryTime: CACHE_EXPIRY
-      };
+      setCachedProducts(cacheKey, result.data);
       console.log(`[API/Products] GET: Cached results for ${cacheKey}`);
     }
     
