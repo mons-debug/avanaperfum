@@ -325,6 +325,41 @@ section, div, main, header, footer, nav {
     min-width: 44px;
   }
   
+  /* Admin order cards mobile optimization */
+  .order-card-actions {
+    touch-action: manipulation;
+  }
+  
+  .order-card-actions button,
+  .order-card-actions a {
+    min-height: 48px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Status dropdown mobile optimization */
+  .status-dropdown-overlay {
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  
+  .status-dropdown-content {
+    max-width: min(90vw, 400px);
+    margin: auto;
+    animation: fadeInScale 0.2s ease-out;
+  }
+  
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
   /* Reduce motion for users who prefer it */
   @media (prefers-reduced-motion: reduce) {
     * {

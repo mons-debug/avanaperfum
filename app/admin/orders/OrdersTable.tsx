@@ -111,6 +111,41 @@ export default function OrdersTable() {
     }
   };
 
+  // Handle status update from OrderDetails modal
+  const handleStatusUpdateFromModal = (orderId: string, newStatus: string) => {
+    console.log('Received status update from modal:', orderId, newStatus);
+    
+    // Update local state immediately since the API call was already made in OrderDetails
+    const updatedOrders = orders.map(order => 
+      order._id === orderId ? { ...order, status: newStatus as Order['status'] } : order
+    );
+    
+    console.log('Updated orders:', updatedOrders.find(o => o._id === orderId));
+    setOrders(updatedOrders);
+    
+    // Force a re-render of filtered orders as well
+    setTimeout(() => {
+      const query = searchQuery.toLowerCase();
+      let result = updatedOrders;
+      
+      if (searchQuery) {
+        result = result.filter(order => 
+          order.name?.toLowerCase().includes(query) || 
+          order.phone?.toLowerCase().includes(query) || 
+          order.product?.toLowerCase().includes(query) ||
+          order.city?.toLowerCase().includes(query) ||
+          order.address?.toLowerCase().includes(query)
+        );
+      }
+      
+      if (statusFilter !== 'All') {
+        result = result.filter(order => order.status === statusFilter);
+      }
+      
+      setFilteredOrders(result);
+    }, 100);
+  };
+
   // Format date display
   const formatDate = (dateString: string) => {
     try {
@@ -172,6 +207,15 @@ export default function OrdersTable() {
   // View order details
   const viewOrderDetails = (orderId: string) => {
     setSelectedOrderId(orderId);
+  };
+
+  // Close modal and refresh
+  const closeOrderDetails = () => {
+    setSelectedOrderId(null);
+    // Force a small refresh to ensure UI is in sync
+    setTimeout(() => {
+      setFilteredOrders([...filteredOrders]);
+    }, 100);
   };
 
   if (isLoading) {
@@ -330,31 +374,34 @@ export default function OrdersTable() {
                     <h4 className="text-sm font-medium text-gray-700">Actions rapides</h4>
                   </div>
                   
-                  {/* Status dropdown */}
-                  <div className="mb-3">
-                    <StatusDropdown 
-                      orderId={order._id}
-                      currentStatus={order.status}
-                      onStatusChange={handleStatusUpdate}
-                    />
-                  </div>
-                  
-                  {/* Action buttons */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <a 
-                      href={`tel:${order.phone}`} 
-                      className="flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="mr-2 text-xl">📞</span> 
-                      <span className="font-medium">Appeler</span>
-                    </a>
-                    <button 
-                      onClick={() => viewOrderDetails(order._id)} 
-                      className="flex items-center justify-center py-3 px-4 bg-[#c8a45d] rounded-lg text-white hover:bg-[#b08d48] transition-colors"
-                    >
-                      <span className="mr-2 text-xl">👁</span> 
-                      <span className="font-medium">Détails</span>
-                    </button>
+                  {/* Action buttons - Mobile Optimized */}
+                  <div className="space-y-3 order-card-actions">
+                    {/* Status dropdown - full width on mobile */}
+                    <div className="w-full">
+                      <StatusDropdown 
+                        orderId={order._id}
+                        currentStatus={order.status}
+                        onStatusChange={handleStatusUpdate}
+                      />
+                    </div>
+                    
+                    {/* Action buttons - better mobile layout */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <a 
+                        href={`tel:${order.phone}`} 
+                        className="flex items-center justify-center py-3 px-4 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors min-h-[48px] touch-action-manipulation"
+                      >
+                        <span className="mr-3 text-xl">📞</span> 
+                        <span className="font-medium text-base">Appeler</span>
+                      </a>
+                      <button 
+                        onClick={() => viewOrderDetails(order._id)} 
+                        className="flex items-center justify-center py-3 px-4 bg-[#c8a45d] rounded-lg text-white hover:bg-[#b08d48] transition-colors min-h-[48px] touch-action-manipulation"
+                      >
+                        <span className="mr-3 text-xl">👁</span> 
+                        <span className="font-medium text-base">Détails</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -367,7 +414,8 @@ export default function OrdersTable() {
       {selectedOrderId && (
         <OrderDetails 
           orderId={selectedOrderId} 
-          onClose={() => setSelectedOrderId(null)} 
+          onClose={closeOrderDetails} 
+          onStatusUpdate={handleStatusUpdateFromModal}
         />
       )}
     </div>

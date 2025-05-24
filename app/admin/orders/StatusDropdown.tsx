@@ -70,44 +70,49 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({
         <FaChevronDown className={`text-gray-500 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
       </button>
       
-      {/* Status options dropdown - Now fixed positioned relative to viewport */}
+      {/* Status options dropdown - Mobile Centered & Properly Positioned */}
       {isOpen && (
         <div 
-          className="fixed inset-x-0 bg-black bg-opacity-30" 
-          style={{ top: 0, bottom: 0, zIndex: 1000 }}
+          className="fixed inset-0 bg-black bg-opacity-30 z-[1000] flex items-center justify-center p-4 status-dropdown-overlay" 
           onClick={() => setIsOpen(false)}
         >
           <div 
-            className="absolute bg-white border border-gray-200 rounded-lg shadow-xl py-2 overflow-y-auto mx-4 max-h-[80vh]" 
-            style={{
-              width: dropdownRef.current ? dropdownRef.current.offsetWidth : 'auto',
-              top: dropdownRef.current ? 
-                dropdownRef.current.getBoundingClientRect().bottom + window.scrollY + 8 : 0,
-              left: dropdownRef.current ? 
-                dropdownRef.current.getBoundingClientRect().left : 0,
-              zIndex: 1001
-            }}
+            className="bg-white border border-gray-200 rounded-lg shadow-xl py-2 overflow-y-auto max-h-[80vh] w-full max-w-sm z-[1001] status-dropdown-content" 
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-3 py-2 border-b border-gray-100 mb-1">
-              <h3 className="font-medium text-gray-700">Statut de commande</h3>
+            <div className="px-4 py-3 border-b border-gray-100 mb-1">
+              <h3 className="font-medium text-gray-700 text-center">Statut de commande</h3>
             </div>
             
             {statuses.map((status) => (
               <button
                 key={status.value}
-                className={`flex items-center w-full text-left px-4 py-4 text-sm hover:bg-gray-50 ${status.value === currentStatus ? 'bg-gray-50' : ''}`}
+                className={`flex items-center w-full text-left px-4 py-4 text-sm hover:bg-gray-50 transition-colors ${status.value === currentStatus ? 'bg-gray-50' : ''}`}
                 onClick={() => handleStatusSelect(status.value)}
               >
-                <span className={`flex-shrink-0 w-6 h-6 rounded-full mr-3 ${status.value === currentStatus ? status.activeColor : status.color}`}></span>
-                <span className="font-medium">{status.label}</span>
+                <span className={`flex-shrink-0 w-8 h-8 rounded-full mr-3 flex items-center justify-center ${status.value === currentStatus ? status.activeColor : status.color}`}>
+                  {status.value === currentStatus && (
+                    <span className="text-white text-xs">✓</span>
+                  )}
+                </span>
+                <span className="font-medium text-base">{status.label}</span>
                 {status.value === currentStatus && (
-                  <span className="ml-auto bg-[#c8a45d] text-white text-xs px-2 py-1 rounded">
+                  <span className="ml-auto bg-[#c8a45d] text-white text-xs px-3 py-1 rounded-full">
                     Actuel
                   </span>
                 )}
               </button>
             ))}
+            
+            {/* Close button */}
+            <div className="px-4 py-3 border-t border-gray-100 mt-1">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
       )}

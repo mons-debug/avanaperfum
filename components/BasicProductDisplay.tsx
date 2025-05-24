@@ -31,6 +31,40 @@ export default function BasicProductDisplay() {
   // Touch handling state
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  
+  // Arrow navigation state
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  // Check scroll position for arrow visibility
+  const checkScrollPosition = useCallback(() => {
+    if (mobileCarouselRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = mobileCarouselRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  }, []);
+
+  // Arrow navigation functions
+  const scrollLeft = useCallback(() => {
+    if (mobileCarouselRef.current) {
+      const scrollAmount = 152; // Width of one product card + gap
+      mobileCarouselRef.current.scrollBy({
+        left: -scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  const scrollRight = useCallback(() => {
+    if (mobileCarouselRef.current) {
+      const scrollAmount = 152; // Width of one product card + gap
+      mobileCarouselRef.current.scrollBy({
+        left: scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
 
   // Fetch men's products with error boundary
   useEffect(() => {
@@ -104,6 +138,16 @@ export default function BasicProductDisplay() {
     fetchWomenProducts();
   }, []);
 
+  // Update scroll position when tab changes or products load
+  useEffect(() => {
+    if (mobileCarouselRef.current) {
+      // Reset scroll position when switching tabs
+      mobileCarouselRef.current.scrollLeft = 0;
+      // Check scroll position after a short delay to ensure rendering is complete
+      setTimeout(checkScrollPosition, 100);
+    }
+  }, [activeTab, menProducts, womenProducts, checkScrollPosition]);
+
   // Enhanced touch handlers for better mobile experience
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -129,6 +173,11 @@ export default function BasicProductDisplay() {
     setTouchStart(null);
     setTouchEnd(null);
   }, [touchStart, touchEnd]);
+
+  // Handle scroll events to update arrow states
+  const handleScroll = useCallback(() => {
+    checkScrollPosition();
+  }, [checkScrollPosition]);
 
   // Optimized Product Card Component with better performance
   const ProductCard = ({ product }: { product: Product }) => {
@@ -186,6 +235,31 @@ export default function BasicProductDisplay() {
     </div>
   );
 
+  // Arrow Button Component
+  const ArrowButton = ({ direction, onClick, disabled }: { direction: 'left' | 'right', onClick: () => void, disabled: boolean }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`absolute top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center transition-all duration-200 ${
+        direction === 'left' ? 'left-2' : 'right-2'
+      } ${
+        disabled 
+          ? 'opacity-40 cursor-not-allowed' 
+          : 'hover:bg-gray-50 hover:shadow-xl hover:scale-110 active:scale-95'
+      }`}
+      aria-label={`Scroll ${direction}`}
+    >
+      <svg 
+        className={`w-5 h-5 text-gray-600 ${direction === 'left' ? 'rotate-180' : ''}`} 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  );
+
   return (
     <section className="py-24 bg-white">
       <div className="container mx-auto px-4" data-component-name="BasicProductDisplay">
@@ -199,7 +273,7 @@ export default function BasicProductDisplay() {
           </p>
         </div>
         
-        {/* Mobile Toggle & Optimized Carousel */}
+        {/* Mobile Toggle & Optimized Carousel with Arrows */}
         <div className="block lg:hidden mb-8">
           <div className="flex justify-center mb-8">
             <div className="inline-flex items-center bg-gray-50 p-1 rounded-full border border-gray-200 shadow-sm">
@@ -226,8 +300,20 @@ export default function BasicProductDisplay() {
             </div>
           </div>
           
-          {/* Enhanced Mobile Carousel */}
-          <div className="w-full overflow-hidden">
+          {/* Enhanced Mobile Carousel with Navigation Arrows */}
+          <div className="relative w-full overflow-hidden">
+            {/* Navigation Arrows */}
+            <ArrowButton 
+              direction="left" 
+              onClick={scrollLeft} 
+              disabled={!canScrollLeft}
+            />
+            <ArrowButton 
+              direction="right" 
+              onClick={scrollRight} 
+              disabled={!canScrollRight}
+            />
+            
             <div 
               ref={mobileCarouselRef}
               className="flex overflow-x-auto gap-3 px-4 pb-4 snap-x snap-mandatory scrollbar-hide smooth-scroll"
@@ -240,6 +326,7 @@ export default function BasicProductDisplay() {
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
+              onScroll={handleScroll}
             >
               {activeTab === 'male'
                 ? (isLoadingMen
@@ -269,6 +356,18 @@ export default function BasicProductDisplay() {
               }
               {/* Spacer for better UX */}
               <div className="w-4 flex-shrink-0"></div>
+            </div>
+            
+            {/* Scroll Indicator Dots */}
+            <div className="flex justify-center mt-4 space-x-1">
+              {(activeTab === 'male' ? menProducts : womenProducts).length > 0 && (
+                Array(Math.ceil((activeTab === 'male' ? menProducts : womenProducts).length / 2)).fill(0).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-2 h-2 rounded-full bg-gray-300 transition-colors duration-200"
+                  />
+                ))
+              )}
             </div>
           </div>
           

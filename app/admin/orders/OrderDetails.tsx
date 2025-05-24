@@ -16,6 +16,7 @@ interface ProductDetails {
 interface OrderDetailsProps {
   orderId: string;
   onClose: () => void;
+  onStatusUpdate?: (orderId: string, newStatus: string) => void;
 }
 
 interface Order {
@@ -35,7 +36,7 @@ interface Order {
   createdAt: string;
 }
 
-const OrderDetails = ({ orderId, onClose }: OrderDetailsProps) => {
+const OrderDetails = ({ orderId, onClose, onStatusUpdate }: OrderDetailsProps) => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -135,11 +136,22 @@ const OrderDetails = ({ orderId, onClose }: OrderDetailsProps) => {
 
       const data = await response.json();
       if (data.success && data.data) {
-        setOrder({...order, status: data.data.status});
+        // Update local state
+        const updatedOrder = {...order, status: data.data.status};
+        setOrder(updatedOrder);
+        
+        // Notify parent component to update immediately
+        if (onStatusUpdate) {
+          console.log('Updating parent with status:', data.data.status);
+          onStatusUpdate(orderId, data.data.status);
+        }
+        
+        // Show success notification
+        alert(`✅ Statut mis à jour vers: ${data.data.status}`);
       }
     } catch (err: any) {
       console.error('Error updating order status:', err);
-      alert(`Error: ${err.message || 'Failed to update status'}`);
+      alert(`❌ Erreur: ${err.message || 'Échec de la mise à jour du statut'}`);
     }
   };
 
