@@ -133,6 +133,12 @@ function GridProductCard({ product, index }: { product: Product; index: number }
       className="group block bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={(e) => {
+        // Ensure the link works properly on first click/tap on mobile
+        if (window.innerWidth <= 768) {
+          window.location.href = `/product/${product._id}`;
+        }
+      }}
     >
       {/* Product Image */}
       <div className="relative w-full aspect-square overflow-hidden mb-2 rounded-md bg-gray-100">
@@ -318,6 +324,12 @@ function ListProductCard({ product, index }: { product: Product; index: number }
     <Link 
       href={`/product/${product._id}`}
       className="flex border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-white hover:shadow-md transition-all cursor-pointer"
+      onClick={(e) => {
+        // Ensure the link works properly on first click/tap on mobile
+        if (window.innerWidth <= 768) {
+          window.location.href = `/product/${product._id}`;
+        }
+      }}
     >
       {/* Product Image */}
       <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
