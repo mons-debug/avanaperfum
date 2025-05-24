@@ -739,9 +739,11 @@ export default function Home() {
                       }}
                     />
                   </div>
-                  <div className="absolute top-4 right-4 bg-[#c8a45d] text-white text-xs font-medium px-2.5 py-1.5 rounded-full">
-                    {categories[0]?.productCount || 15}
-                  </div>
+                  {categories[0]?.productCount && categories[0].productCount > 0 && (
+                    <div className="absolute top-4 right-4 bg-[#c8a45d] text-white text-xs font-medium px-2.5 py-1.5 rounded-full">
+                      {categories[0].productCount}
+                    </div>
+                  )}
                   <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/70 to-transparent text-white">
                     <h3 className="font-playfair text-xl sm:text-2xl mb-1">
                       {categories[0]?.name || 'Collection'}
@@ -778,9 +780,11 @@ export default function Home() {
                         }}
                       />
                     </div>
-                    <div className="absolute top-3 right-3 bg-[#c8a45d] text-white text-xs font-medium px-2 py-1 rounded-full">
-                      {category.productCount || 15}
-                    </div>
+                    {category.productCount && category.productCount > 0 && (
+                      <div className="absolute top-3 right-3 bg-[#c8a45d] text-white text-xs font-medium px-2 py-1 rounded-full">
+                        {category.productCount}
+                      </div>
+                    )}
                     <div className="p-3 sm:p-4 text-center">
                       <h3 className="font-playfair text-sm sm:text-xl text-gray-800 mb-0 sm:mb-1 line-clamp-1">
                         {category.name}
@@ -818,42 +822,52 @@ export default function Home() {
       </section>
 
       {/* Features Section - Now moved to be above the About section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-playfair text-[#c8a45d] mb-4">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-playfair text-[#c8a45d] mb-2 md:mb-4">
               {t('home.features.title', 'Why Choose Us')}
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Mobile-optimized layout */}
+          <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-6">
             {[
               {
                 title: t('home.features.quality.title', 'Premium Quality'),
                 description: t('home.features.quality.description', 'High-quality ingredients for long-lasting fragrance'),
-                icon: <FaCrown className="w-8 h-8 text-[#c8a45d]" />
+                icon: <FaCrown className="w-6 h-6 md:w-8 md:h-8 text-[#c8a45d]" />
               },
               {
                 title: t('home.features.shipping.title', 'Fast Shipping'),
                 description: t('home.features.shipping.description', 'Shipping throughout Morocco'),
-                icon: <FaTruck className="w-8 h-8 text-[#c8a45d]" />
+                icon: <FaTruck className="w-6 h-6 md:w-8 md:h-8 text-[#c8a45d]" />
               },
               {
                 title: t('home.features.price.title', 'Affordable Prices'),
                 description: t('home.features.price.description', 'Luxury at accessible prices'),
-                icon: <FaMoneyBillWave className="w-8 h-8 text-[#c8a45d]" />
+                icon: <FaMoneyBillWave className="w-6 h-6 md:w-8 md:h-8 text-[#c8a45d]" />
               }
             ].map((feature, index) => (
+              // Mobile: horizontal cards, Desktop: vertical cards
               <div
                 key={index}
-                className="flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-sm border border-gray-100 transition-transform hover:-translate-y-1 hover:shadow-md"
+                className="flex items-start md:flex-col md:items-center md:text-center p-4 md:p-8 bg-white rounded-xl shadow-sm border border-gray-100 transition-transform hover:-translate-y-1 hover:shadow-md"
               >
-                <div className="w-16 h-16 rounded-full flex items-center justify-center bg-[#f9f5eb] mb-6">
+                {/* Mobile: icon on the left, Desktop: icon on top */}
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center bg-[#f9f5eb] mr-4 md:mr-0 md:mb-6 flex-shrink-0">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-playfair text-gray-800 mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600">{feature.description}</p>
+                
+                {/* Mobile: text on the right, Desktop: text below icon */}
+                <div className="flex-1 md:flex-none">
+                  <h3 className="text-lg md:text-xl font-playfair text-gray-800 mb-1 md:mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

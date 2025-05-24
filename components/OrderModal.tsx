@@ -6,7 +6,6 @@ import { FaTimes, FaShoppingBag, FaUserAlt, FaPhone, FaMapMarkerAlt } from 'reac
 import { getImageSrc, imageConfig } from '@/lib/utils/image';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useTranslation } from '@/components/i18n/TranslationProvider';
 
 interface ShippingSettings {
   shippingFee: number;
@@ -34,15 +33,15 @@ interface OrderModalProps {
     inspiredBy?: string;
     quantity: number;
   }>;
+  preSelectedCity?: string;
 }
 
-const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) => {
+const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems, preSelectedCity }) => {
   const router = useRouter();
-  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    city: '',
+    city: preSelectedCity || '',
     // Keep these fields for backend compatibility but don't show them in UI
     email: '',
     address: '',
@@ -95,8 +94,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
       [name]: value,
     }));
   };
-  
-  // Quantity is no longer needed as we're simplifying the form
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,8 +160,26 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
   // Determine if order qualifies for free shipping
   const qualifiesForFreeShipping = subtotal >= shippingSettings.freeShippingThreshold;
   
+  // Special case: Free shipping for Tangier
+  const isTangierFreeShipping = (() => {
+    if (!formData.city) return false;
+    const tangerVariations = ['tanger', 'tangier', 'tanja', 'طنجة'];
+    const cityLower = formData.city.toLowerCase().trim();
+    return tangerVariations.some(variation => 
+      cityLower.includes(variation) || variation.includes(cityLower)
+    );
+  })();
+  
   // Calculate shipping fee
-  const shippingFee = qualifiesForFreeShipping ? 0 : shippingSettings.shippingFee;
+  const shippingFee = (() => {
+    // If no city selected, show free shipping by default
+    if (!formData.city) return 0;
+    
+    // If city is selected, apply normal shipping logic
+    if (qualifiesForFreeShipping || isTangierFreeShipping) return 0;
+    
+    return shippingSettings.shippingFee;
+  })();
   
   // Calculate final price including shipping
   const totalPrice = subtotal + shippingFee;
@@ -174,7 +189,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
       <div className="bg-white rounded-xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-            <h2 className="text-2xl font-playfair font-semibold text-gray-800">{t('order.completeOrder')}</h2>
+            <h2 className="text-2xl font-playfair font-semibold text-gray-800">Finaliser Votre Commande</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -187,7 +202,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
           {/* Product Summary - Show either cart items or single product */}
           {cartItems && cartItems.length > 0 ? (
             <div className="mb-6 space-y-4">
-              <h3 className="font-medium text-gray-800">{t('order.cartItems')}</h3>
+              <h3 className="font-medium text-gray-800">Articles dans votre Panier</h3>
               {cartItems.map((item) => (
                 <div key={item._id} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
                   <div className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden">
@@ -202,10 +217,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
                   <div className="flex-1">
                     <div className="flex justify-between">
                       <h4 className="font-medium text-gray-800">{item.name}</h4>
-                      <span className="text-sm font-medium">{t('order.qty')}: {item.quantity}</span>
+                      <span className="text-sm font-medium">Qté: {item.quantity}</span>
                     </div>
                     {item.inspiredBy && (
-                      <p className="text-gray-500 text-xs">{t('product.inspiredBy')} {item.inspiredBy}</p>
+                      <p className="text-gray-500 text-xs">Inspiré de {item.inspiredBy}</p>
                     )}
                     <div className="flex justify-between mt-1">
                       <span className="text-[#c8a45d] text-sm">{item.price.toFixed(2)} DH</span>
@@ -229,10 +244,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
               <div>
                 <h3 className="font-medium text-gray-800">{product.name}</h3>
                 {product.inspiredBy && (
-                  <p className="text-gray-500 text-sm">{t('product.inspiredBy')} {product.inspiredBy}</p>
+                  <p className="text-gray-500 text-sm">Inspiré de {product.inspiredBy}</p>
                 )}
                 {product.volume && (
-                  <p className="text-gray-500 text-sm">{t('product.volume')}: {product.volume}</p>
+                  <p className="text-gray-500 text-sm">Volume: {product.volume}</p>
                 )}
                 <p className="text-[#c8a45d] font-medium mt-1">{product.price.toFixed(2)} DH</p>
               </div>
@@ -241,14 +256,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-              {t('order.error')}
+              Une erreur s'est produite. Veuillez réessayer.
             </div>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('order.fullName')} *
+                Nom Complet *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -262,14 +277,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
                   onChange={handleChange}
                   required
                   className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
-                  placeholder={t('order.namePlaceholder')}
+                  placeholder="Votre nom complet"
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('order.phoneNumber')} *
+                Numéro de Téléphone *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -283,14 +298,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
                   onChange={handleChange}
                   required
                   className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
-                  placeholder={t('order.phonePlaceholder')}
+                  placeholder="Votre numéro de téléphone"
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('order.city')} *
+                Ville *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -304,32 +319,52 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
                   required
                   className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-sm appearance-none"
                 >
-                  <option value="">{t('order.selectCity', 'Sélectionnez une ville')}</option>
+                  <option value="">Sélectionnez une ville</option>
                   {moroccanCities.map(city => (
                     <option key={city} value={city}>{city}</option>
                   ))}
                 </select>
               </div>
+              
+              {/* Show free shipping indicator for Tanger */}
+              {isTangierFreeShipping && (
+                <div className="mt-2 bg-green-50 p-2 rounded-lg text-xs text-green-700 flex items-center">
+                  <span className="mr-1">🎉</span>
+                  <span>Livraison gratuite pour Tanger !</span>
+                </div>
+              )}
             </div>
             
             {/* Order summary */}
             <div className="mt-6">
-              <h3 className="font-medium text-gray-800 mb-4">{t('order.orderSummary')}</h3>
+              <h3 className="font-medium text-gray-800 mb-4">Résumé de la Commande</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>{t('order.subtotal')}</span>
+                  <span>Sous-total</span>
                   <span>{subtotal.toFixed(2)} {shippingSettings.currency}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>{t('order.shipping')}</span>
+                  <span>Frais de livraison</span>
                   <span>
-                    {qualifiesForFreeShipping 
-                      ? t('order.freeShipping') 
-                      : `${shippingFee.toFixed(2)} ${shippingSettings.currency}`}
+                    {!formData.city ? (
+                      <span className="text-green-600 font-medium">
+                        Gratuit
+                      </span>
+                    ) : isTangierFreeShipping ? (
+                      <span className="text-green-600 font-medium">
+                        Gratuit à Tanger
+                      </span>
+                    ) : qualifiesForFreeShipping ? (
+                      <span className="text-green-600 font-medium">
+                        Livraison gratuite
+                      </span>
+                    ) : (
+                      `${shippingFee.toFixed(2)} ${shippingSettings.currency}`
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold text-base pt-2 border-t">
-                  <span>{t('order.total')}</span>
+                  <span>Total</span>
                   <span className="text-[#c8a45d]">{totalPrice.toFixed(2)} {shippingSettings.currency}</span>
                 </div>
               </div>
@@ -340,7 +375,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems }) 
               disabled={isSubmitting}
               className="w-full py-3 px-4 bg-[#c8a45d] text-white rounded-lg shadow-md hover:bg-[#b18d4a] focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-50 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex justify-center items-center mt-4"
             >
-              {isSubmitting ? t('order.processingOrder') : t('order.placeOrder')}
+              {isSubmitting ? 'Traitement en cours...' : 'Passer la Commande'}
             </button>
           </form>
         </div>

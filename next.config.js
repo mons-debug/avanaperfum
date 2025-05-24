@@ -20,11 +20,9 @@ const nextConfig = {
   reactStrictMode: true,
   compress: true,
   
-  // Enable aggressive caching and optimization
+  // Enable only safe optimizations
   experimental: {
-    optimizeCss: true,
     scrollRestoration: true,
-    optimisticClientCache: true
   },
 };
 

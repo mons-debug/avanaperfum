@@ -116,19 +116,23 @@ const HeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-2 md:gap-3">
+      {/* Slide Indicators - Modern Design */}
+      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3 md:gap-4">
         {heroSlides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`h-1.5 md:h-2 transition-all duration-500 rounded-full ${
+            className={`relative overflow-hidden transition-all duration-500 ease-out ${
               index === currentSlide 
-                ? 'w-6 md:w-8 bg-white' 
-                : 'w-1.5 md:w-2 bg-white/50 hover:bg-white/70'
-            }`}
+                ? 'w-8 md:w-12 h-1.5 bg-white/90 shadow-lg' 
+                : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60 hover:scale-110'
+            } rounded-full backdrop-blur-sm`}
             aria-label={`Go to slide ${index + 1}`}
-          />
+          >
+            {index === currentSlide && (
+              <div className="absolute inset-0 bg-gradient-to-r from-[#c8a45d] to-white rounded-full animate-pulse"></div>
+            )}
+          </button>
         ))}
       </div>
     </section>

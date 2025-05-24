@@ -36,13 +36,13 @@ function AdminLoginForm() {
       
       if (result?.error) {
         setError('Invalid email or password');
+        setLoading(false);
       } else {
         router.push(callbackUrl);
       }
     } catch (error) {
       setError('An error occurred. Please try again.');
       console.error('Login error:', error);
-    } finally {
       setLoading(false);
     }
   };
@@ -120,7 +120,14 @@ function AdminLoginForm() {
                 loading ? 'opacity-70 cursor-not-allowed' : ''
               }`}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Connexion en cours...
+                </div>
+              ) : (
+                'Connexion'
+              )}
             </button>
           </form>
           

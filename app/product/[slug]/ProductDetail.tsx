@@ -102,12 +102,14 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
   // Handle available images with proper error handling
   const images = product.images?.filter(Boolean) || [];
   
-  // Get current image with fallback and add a timestamp to prevent caching
+  // Get current image with fallback and add a stable timestamp to prevent caching
   const getTimestampedImage = (imageUrl: string) => {
     const baseUrl = getImageSrc(imageUrl);
-    // Add timestamp to prevent caching if it's a local product image
+    // Only add timestamp for local product images and make it stable per session
     if (baseUrl.includes('/images/products/')) {
-      return `${baseUrl}?t=${Date.now()}`;
+      // Use a stable timestamp based on the product ID to prevent constant re-rendering
+      const stableTimestamp = product._id ? product._id.slice(-8) : '12345678';
+      return `${baseUrl}?t=${stableTimestamp}`;
     }
     return baseUrl;
   };
@@ -207,12 +209,22 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
         
         addToCart(cartProduct);
         
-        // Dispatch custom event to notify other components
+        // Dispatch custom event to notify other components (including header)
         window.dispatchEvent(new Event('cartUpdated'));
+        
+        // Force update cart count in header by triggering storage event
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'avana_cart',
+          newValue: localStorage.getItem('avana_cart')
+        }));
+        
       } catch (error) {
         console.error('Error adding to cart:', error);
       }
     }
+    
+    // Update local state immediately for UI feedback
+    setIsInCartState(!isInCartState);
   };
 
   // How to order steps
@@ -364,11 +376,11 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                 </div>
                 <div className="flex items-center">
                   <span className="text-2xl font-bold text-[#c8a45d] mr-3">
-                    ${product.price.toFixed(2)}
+                    {product.price.toFixed(2)} DH
                   </span>
                   {product.originalPrice && product.originalPrice > product.price && (
                     <span className="text-gray-400 line-through">
-                      ${product.originalPrice.toFixed(2)}
+                      {product.originalPrice.toFixed(2)} DH
                     </span>
                   )}
                 </div>

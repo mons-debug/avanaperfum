@@ -11,17 +11,18 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const gender = searchParams.get('gender');
     const categoryId = searchParams.get('categoryId');
+    const search = searchParams.get('search');
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
     const page = searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1;
     const timestamp = searchParams.get('t'); // Timestamp for cache busting
     
-    console.log(`[API/Products] GET: Received request with params:`, { gender, categoryId, limit, page, timestamp });
+    console.log(`[API/Products] GET: Received request with params:`, { gender, categoryId, search, limit, page, timestamp });
     
     // Skip cache if timestamp is provided (force fresh data)
     const useCache = !timestamp;
     
     // Cache key based on query parameters
-    const cacheKey = `products-${gender || 'all'}-${categoryId || 'all'}-${limit || 'all'}-${page || 1}`;
+    const cacheKey = `products-${gender || 'all'}-${categoryId || 'all'}-${search || 'all'}-${limit || 'all'}-${page || 1}`;
     
     // Check if we have cached data and are allowed to use it
     const cachedData = useCache ? getCachedProducts(cacheKey) : null;
@@ -50,6 +51,15 @@ export async function GET(request: NextRequest) {
         filteredProducts = filteredProducts.filter(p => p.category === categoryId);
       }
       
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filteredProducts = filteredProducts.filter(p => 
+          p.name.toLowerCase().includes(searchLower) ||
+          (p.description && p.description.toLowerCase().includes(searchLower)) ||
+          (p.inspiredBy && p.inspiredBy.toLowerCase().includes(searchLower))
+        );
+      }
+      
       if (limit) {
         filteredProducts = filteredProducts.slice(0, limit);
       }
@@ -64,13 +74,23 @@ export async function GET(request: NextRequest) {
     const query: any = {};
     
     if (gender) {
-      if (['Homme', 'Femme', 'Mixte'].includes(gender)) {
+      if (['Homme', 'Femme'].includes(gender)) {
         query.gender = gender;
       }
     }
     
     if (categoryId) {
       query.category = categoryId;
+    }
+
+    // Add search functionality
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { inspiredBy: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } }
+      ];
     }
 
     let productsQuery = Product.find(query).sort({ createdAt: -1 });
@@ -165,6 +185,20 @@ export async function POST(request: NextRequest) {
       body.images = [DEFAULT_PRODUCT_IMAGE];
     }
     
+    // Generate slug from name if not provided
+    if (!body.slug) {
+      const nameForSlug = typeof body.name === 'string' ? body.name : (body.name?.en || body.name?.fr || '');
+      body.slug = nameForSlug
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+      
+      // Ensure slug is unique by adding a timestamp if needed
+      const timestamp = Date.now().toString().slice(-6);
+      body.slug = `${body.slug}-${timestamp}`;
+    }
+    
     try {
       await connectToDB();
       
@@ -191,7 +225,7 @@ export async function POST(request: NextRequest) {
       const mockProduct = {
         _id: mockId,
         ...body,
-        slug: body.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+        slug: body.slug || body.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
         createdAt: new Date(),
         updatedAt: new Date()
       };

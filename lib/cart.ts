@@ -94,10 +94,11 @@ export function addToCart(product: ProductWithTranslation | Omit<CartProduct, 'q
   };
 
   // Ensure the product has all required fields with proper types
+  // Use actual product price from database
   const productToAdd: CartProduct = {
     _id: cartProduct._id,
     name: getStringValue(cartProduct.name) || 'Unnamed Product',
-    price: cartProduct.price,
+    price: cartProduct.price, // Use actual price from database
     images: cartProduct.images || [],
     inspiredBy: getStringValue(cartProduct.inspiredBy),
     volume: getStringValue(cartProduct.volume),
@@ -118,8 +119,10 @@ export function addToCart(product: ProductWithTranslation | Omit<CartProduct, 'q
   // Save to local storage
   localStorage.setItem('avana_cart', JSON.stringify(window.cartItems));
   
-  // Notify all listeners
-  window.cartListeners?.forEach((listener) => listener([...(window.cartItems || [])]));
+  // Notify all listeners with slight delay to ensure proper state update
+  setTimeout(() => {
+    window.cartListeners?.forEach((listener) => listener([...(window.cartItems || [])]));
+  }, 10);
 };
 
 // Remove a product from the cart
@@ -159,7 +162,7 @@ export function getCartCount(): number {
   return window.cartItems.reduce((total: number, item: CartProduct) => total + item.quantity, 0);
 };
 
-// Get the total price of all items in the cart
+// Get the total price of all items in the cart (using actual product prices)
 export function getCartTotal(): number {
   if (typeof window === 'undefined') return 0;
   
@@ -167,7 +170,7 @@ export function getCartTotal(): number {
   window.cartItems = window.cartItems || [];
   
   return window.cartItems.reduce(
-    (total: number, item: CartProduct) => total + item.price * item.quantity, 
+    (total: number, item: CartProduct) => total + (item.price * item.quantity), // Use actual price from cart item
     0
   );
 };
@@ -221,4 +224,27 @@ export function updateCartItemQuantity(productId: string, quantity: number) {
     // Notify all listeners
     window.cartListeners?.forEach((listener) => listener([...(window.cartItems || [])]));
   }
-}; 
+};
+
+// Calculate shipping cost based on city
+export function calculateShipping(city: string): number {
+  if (!city) return 0;
+  
+  // Free shipping for Tanger and its variations
+  const tangerVariations = ['tanger', 'tangier', 'tanja', 'طنجة'];
+  const cityLower = city.toLowerCase().trim();
+  
+  // Check if city matches any Tanger variation
+  const isTanger = tangerVariations.some(variation => 
+    cityLower.includes(variation) || variation.includes(cityLower)
+  );
+  
+  return isTanger ? 0 : 30;
+}
+
+// Get total price including shipping
+export function getTotalWithShipping(city: string): number {
+  const subtotal = getCartTotal();
+  const shipping = calculateShipping(city);
+  return subtotal + shipping;
+} 

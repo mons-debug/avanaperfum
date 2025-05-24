@@ -5,99 +5,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/components/i18n/TranslationProvider';
 
-// Define translation interface
-interface ITranslation {
-  en: string;
-  fr: string;
-  [key: string]: string;
-}
-
-// Simple product type
+// Product interface
 interface Product {
   _id: string;
-  name: string | ITranslation;
-  description?: string | ITranslation;
+  name: string;
+  description?: string;
   price: number;
   images: string[];
   gender: string;
 }
 
-// Fallback products if API fails
-const fallbackMenProducts = [
-  {
-    _id: 'fallback-m1',
-    name: { en: 'Classic Homme', fr: 'Homme Classique' },
-    description: { 
-      en: 'A sophisticated fragrance for the modern man',
-      fr: 'Un parfum sophistiqué pour l\'homme moderne'
-    },
-    price: 299,
-    gender: 'Homme',
-    images: ['/images/product-placeholder.svg']
-  },
-  {
-    _id: 'fallback-m2',
-    name: { en: 'Sport Homme', fr: 'Homme Sport' },
-    description: { 
-      en: 'An energetic scent for active lifestyles',
-      fr: 'Un parfum énergisant pour les modes de vie actifs'
-    },
-    price: 250,
-    gender: 'Homme',
-    images: ['/images/product-placeholder.svg']
-  },
-  {
-    _id: 'fallback-m3',
-    name: { en: 'Elegance Homme', fr: 'Homme Élégance' },
-    description: { 
-      en: 'A distinguished fragrance with woody notes',
-      fr: 'Un parfum distingué aux notes boisées'
-    },
-    price: 350,
-    gender: 'Homme',
-    images: ['/images/product-placeholder.svg']
-  }
-];
-
-const fallbackWomenProducts = [
-  {
-    _id: 'fallback-f1',
-    name: { en: 'Classic Femme', fr: 'Femme Classique' },
-    description: { 
-      en: 'A sophisticated fragrance for the modern woman',
-      fr: 'Un parfum sophistiqué pour la femme moderne'
-    },
-    price: 299,
-    gender: 'Femme',
-    images: ['/images/product-placeholder.svg']
-  },
-  {
-    _id: 'fallback-f2',
-    name: { en: 'Elegance Femme', fr: 'Femme Élégance' },
-    description: { 
-      en: 'An elegant scent with floral notes',
-      fr: 'Un parfum élégant aux notes florales'
-    },
-    price: 250,
-    gender: 'Femme',
-    images: ['/images/product-placeholder.svg']
-  },
-  {
-    _id: 'fallback-f3',
-    name: { en: 'Chic Femme', fr: 'Femme Chic' },
-    description: { 
-      en: 'A distinguished fragrance with fruity notes',
-      fr: 'Un parfum distingué aux notes fruitées'
-    },
-    price: 350,
-    gender: 'Femme',
-    images: ['/images/product-placeholder.svg']
-  }
-];
-
 export default function BasicProductDisplay() {
   const { t, locale } = useTranslation();
-  const [activeTab, setActiveTab] = useState('male');
+  const [activeTab, setActiveTab] = useState<'male' | 'female'>('male');
   const [menProducts, setMenProducts] = useState<Product[]>([]);
   const [womenProducts, setWomenProducts] = useState<Product[]>([]);
   const [isLoadingMen, setIsLoadingMen] = useState(true);
@@ -108,29 +28,25 @@ export default function BasicProductDisplay() {
     const fetchMenProducts = async () => {
       try {
         setIsLoadingMen(true);
-        // Add timestamp to force fresh data
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/products?gender=Homme&limit=4&t=${timestamp}`, {
+        const response = await fetch(`/api/products?gender=Homme&limit=12`, {
           cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
         });
-        const data = await response.json();
         
-        console.log('Fetched men products:', data);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
         
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
           setMenProducts(data.data);
         } else {
-          console.warn('No men products found, using fallback');
-          setMenProducts(fallbackMenProducts);
+          console.error('No men products found');
+          setMenProducts([]);
         }
       } catch (error) {
         console.error('Error fetching men products:', error);
-        setMenProducts(fallbackMenProducts);
+        setMenProducts([]);
       } finally {
         setIsLoadingMen(false);
       }
@@ -144,29 +60,25 @@ export default function BasicProductDisplay() {
     const fetchWomenProducts = async () => {
       try {
         setIsLoadingWomen(true);
-        // Add timestamp to force fresh data
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/products?gender=Femme&limit=4&t=${timestamp}`, {
+        const response = await fetch(`/api/products?gender=Femme&limit=12`, {
           cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
         });
-        const data = await response.json();
         
-        console.log('Fetched women products:', data);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
         
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
           setWomenProducts(data.data);
         } else {
-          console.warn('No women products found, using fallback');
-          setWomenProducts(fallbackWomenProducts);
+          console.error('No women products found');
+          setWomenProducts([]);
         }
       } catch (error) {
         console.error('Error fetching women products:', error);
-        setWomenProducts(fallbackWomenProducts);
+        setWomenProducts([]);
       } finally {
         setIsLoadingWomen(false);
       }
@@ -178,56 +90,29 @@ export default function BasicProductDisplay() {
   // Product Card Component
   const ProductCard = ({ product }: { product: Product }) => {
     const [imageError, setImageError] = useState(false);
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string>('/images/product-placeholder.svg');
-    
-    // Set the image source whenever product changes with cache busting
-    useEffect(() => {
-      if (product.images && product.images.length > 0 && !imageError) {
-        // Add cache-busting query parameter to force fresh image
-        const timestamp = new Date().getTime();
-        setImageUrl(`${product.images[0]}?t=${timestamp}`);
-      } else {
-        setImageUrl('/images/product-placeholder.svg');
-      }
-    }, [product.images, imageError]);
-    
-    // Handle translated product name and description, prioritizing French
-    const productName = typeof product.name === 'object' 
-      ? (product.name[locale as keyof typeof product.name] || product.name.fr || product.name.en) 
-      : product.name;
-      
-    const productDescription = product.description 
-      ? (typeof product.description === 'object' 
-          ? (product.description[locale as keyof typeof product.description] || product.description.fr || product.description.en) 
-          : product.description)
-      : '';
+    const imageUrl = imageError || !product.images?.length 
+      ? '/images/product-placeholder.svg' 
+      : product.images[0];
     
     return (
       <Link 
         href={`/product/${product._id}`}
-        className="group text-center flex flex-col"
+        className="group text-center flex flex-col hover:shadow-lg transition-shadow duration-200 bg-white rounded-lg p-2 h-full"
       >
-        <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm">
+        <div className="aspect-square relative mb-2 bg-gray-50 rounded-lg overflow-hidden">
           <Image
             src={imageUrl}
-            alt={productName}
+            alt={product.name}
             fill
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-            className="object-contain"
-            priority={true}
-            unoptimized={true} /* Disable Next.js image optimization to avoid caching */
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              console.log(`Error loading image for product`, imageUrl);
-              setImageError(true);
-              setImageUrl('/images/product-placeholder.svg');
-            }}
+            sizes="(max-width: 768px) 144px, 160px"
+            className="object-contain group-hover:scale-105 transition-transform duration-200"
+            onError={() => setImageError(true)}
+            unoptimized={true}
           />
         </div>
-        <h3 className="text-sm font-medium mb-1 line-clamp-1">{productName}</h3>
-        <p className="text-xs text-gray-500 mb-1 line-clamp-2">
-          {productDescription.slice(0, 40)}...
+        <h3 className="text-xs font-medium mb-1 line-clamp-2 leading-tight">{product.name}</h3>
+        <p className="text-xs text-gray-500 mb-2 line-clamp-1 leading-tight">
+          {product.description?.slice(0, 30)}{product.description && product.description.length > 30 ? '...' : ''}
         </p>
         <p className="text-[#c8a45d] font-semibold text-sm mt-auto">{product.price} {t('product.currency', 'DH')}</p>
       </Link>
@@ -236,9 +121,9 @@ export default function BasicProductDisplay() {
 
   // Loading Skeleton
   const ProductSkeleton = () => (
-    <div className="animate-pulse flex flex-col">
-      <div className="aspect-square bg-gray-200 rounded-lg mb-3"></div>
-      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+    <div className="animate-pulse flex flex-col bg-white rounded-lg p-2 h-full">
+      <div className="aspect-square bg-gray-200 rounded-lg mb-2"></div>
+      <div className="h-3 bg-gray-200 rounded mb-1"></div>
       <div className="h-3 bg-gray-200 rounded mb-2 w-3/4"></div>
       <div className="h-4 bg-gray-200 rounded w-1/3 mt-auto"></div>
     </div>
@@ -269,7 +154,7 @@ export default function BasicProductDisplay() {
                 }`}
                 onClick={() => setActiveTab('male')}
               >
-                {t('home.featured.men', 'Pour Lui')}
+                {t('home.featured.men', 'Homme')}
               </button>
               <button
                 className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
@@ -279,31 +164,45 @@ export default function BasicProductDisplay() {
                 }`}
                 onClick={() => setActiveTab('female')}
               >
-                {t('home.featured.women', 'Pour Elle')}
+                {t('home.featured.women', 'Femme')}
               </button>
             </div>
           </div>
-          {/* Carousel */}
-          <div className="overflow-x-auto flex space-x-4 pb-2 snap-x snap-mandatory">
-            {activeTab === 'male'
-              ? (isLoadingMen
-                  ? Array(3).fill(0).map((_, i) => <div className="min-w-[220px] snap-center" key={i}><ProductSkeleton /></div>)
-                  : menProducts.slice(0, 6).map(product => (
-                      <div className="min-w-[220px] snap-center" key={product._id}>
-                        <ProductCard product={product} />
-                      </div>
-                    ))
-                )
-              : (isLoadingWomen
-                  ? Array(3).fill(0).map((_, i) => <div className="min-w-[220px] snap-center" key={i}><ProductSkeleton /></div>)
-                  : womenProducts.slice(0, 6).map(product => (
-                      <div className="min-w-[220px] snap-center" key={product._id}>
-                        <ProductCard product={product} />
-                      </div>
-                    ))
-                )
-            }
+          
+          {/* Mobile Carousel - Fixed Layout */}
+          <div className="w-full overflow-hidden">
+            <div className="flex overflow-x-auto gap-3 px-4 pb-4 scrollbar-hide mobile-carousel">
+              {activeTab === 'male'
+                ? (isLoadingMen
+                    ? Array(12).fill(0).map((_, i) => (
+                        <div className="w-36 flex-shrink-0" key={i}>
+                          <ProductSkeleton />
+                        </div>
+                      ))
+                    : menProducts.map(product => (
+                        <div className="w-36 flex-shrink-0" key={product._id}>
+                          <ProductCard product={product} />
+                        </div>
+                      ))
+                  )
+                : (isLoadingWomen
+                    ? Array(12).fill(0).map((_, i) => (
+                        <div className="w-36 flex-shrink-0" key={i}>
+                          <ProductSkeleton />
+                        </div>
+                      ))
+                    : womenProducts.map(product => (
+                        <div className="w-36 flex-shrink-0" key={product._id}>
+                          <ProductCard product={product} />
+                        </div>
+                      ))
+                  )
+              }
+              {/* Spacer to show last item properly */}
+              <div className="w-4 flex-shrink-0"></div>
+            </div>
           </div>
+          
           <div className="text-center mt-6">
             <Link
               href={activeTab === 'male' ? '/shop?gender=Homme' : '/shop?gender=Femme'}
@@ -313,21 +212,33 @@ export default function BasicProductDisplay() {
             </Link>
           </div>
         </div>
-        {/* Desktop View */}
+
+        {/* Desktop View - Fixed Layout */}
         <div className="hidden lg:grid grid-cols-2 gap-8 relative">
           {/* Center divider */}
           <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 transform -translate-x-1/2"></div>
+          
           {/* Men's Section */}
           <div className="lg:pr-6">
-            <h2 className="text-xl sm:text-2xl font-playfair mb-6 text-center text-[#c8a45d]">{t('home.featured.men', 'Pour Lui')}</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              {isLoadingMen ? (
-                Array(3).fill(0).map((_, i) => <ProductSkeleton key={i} />)
-              ) : (
-                menProducts.slice(0, 3).map(product => (
-                  <ProductCard key={product._id} product={product} />
-                ))
-              )}
+            <h2 className="text-xl sm:text-2xl font-playfair mb-6 text-center text-[#c8a45d]">{t('home.featured.men', 'Homme')}</h2>
+            <div className="w-full overflow-hidden">
+              <div className="flex overflow-x-auto gap-4 px-2 pb-4 scrollbar-hide desktop-carousel">
+                {isLoadingMen ? (
+                  Array(12).fill(0).map((_, i) => (
+                    <div className="w-40 flex-shrink-0" key={i}>
+                      <ProductSkeleton />
+                    </div>
+                  ))
+                ) : (
+                  menProducts.map(product => (
+                    <div className="w-40 flex-shrink-0" key={product._id}>
+                      <ProductCard product={product} />
+                    </div>
+                  ))
+                )}
+                {/* Spacer to show last item properly */}
+                <div className="w-2 flex-shrink-0"></div>
+              </div>
             </div>
             <div className="text-center mt-8">
               <Link
@@ -338,17 +249,28 @@ export default function BasicProductDisplay() {
               </Link>
             </div>
           </div>
+
           {/* Women's Section */}
           <div className="lg:pl-6">
-            <h2 className="text-xl sm:text-2xl font-playfair mb-6 text-center text-[#c8a45d]">{t('home.featured.women', 'Pour Elle')}</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              {isLoadingWomen ? (
-                Array(3).fill(0).map((_, i) => <ProductSkeleton key={i} />)
-              ) : (
-                womenProducts.slice(0, 3).map(product => (
-                  <ProductCard key={product._id} product={product} />
-                ))
-              )}
+            <h2 className="text-xl sm:text-2xl font-playfair mb-6 text-center text-[#c8a45d]">{t('home.featured.women', 'Femme')}</h2>
+            <div className="w-full overflow-hidden">
+              <div className="flex overflow-x-auto gap-4 px-2 pb-4 scrollbar-hide desktop-carousel">
+                {isLoadingWomen ? (
+                  Array(12).fill(0).map((_, i) => (
+                    <div className="w-40 flex-shrink-0" key={i}>
+                      <ProductSkeleton />
+                    </div>
+                  ))
+                ) : (
+                  womenProducts.map(product => (
+                    <div className="w-40 flex-shrink-0" key={product._id}>
+                      <ProductCard product={product} />
+                    </div>
+                  ))
+                )}
+                {/* Spacer to show last item properly */}
+                <div className="w-2 flex-shrink-0"></div>
+              </div>
             </div>
             <div className="text-center mt-8">
               <Link
@@ -360,13 +282,13 @@ export default function BasicProductDisplay() {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-10 text-center">
-          <Link 
+          <Link
             href="/shop"
             className="inline-block px-8 py-3 bg-[#c8a45d] hover:bg-[#b08d48] text-white rounded-lg transition-colors"
           >
-            {t('home.featured.viewAll', 'Voir Tous les Parfums')}
+            Voir Tous les Parfums
           </Link>
         </div>
       </div>

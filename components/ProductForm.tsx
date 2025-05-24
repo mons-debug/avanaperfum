@@ -322,7 +322,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <option value="">Select Gender</option>
               <option value="Femme">Femme</option>
               <option value="Homme">Homme</option>
-              <option value="Mixte">Mixte</option>
             </select>
           </div>
           

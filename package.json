@@ -15,7 +15,8 @@
     "manual-migration": "node ./scripts/migrateProductsManually.js",
     "export-products": "node ./scripts/exportProductsFromDB.js",
     "finalize-migration": "node ./scripts/finalizeProductMigration.js",
-    "import-products": "node ./scripts/importMigratedProducts.js"
+    "import-products": "node ./scripts/importMigratedProducts.js",
+    "import-avana": "node ./scripts/import-avana-products.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",

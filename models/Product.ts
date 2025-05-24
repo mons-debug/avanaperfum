@@ -14,7 +14,7 @@ interface IProduct extends mongoose.Document {
   price: number;
   originalPrice?: number;
   volume: string;
-  gender: 'Homme' | 'Femme' | 'Mixte';
+  gender: 'Homme' | 'Femme';
   images: string[];
   inspiredBy?: string | ITranslation;
   category: string;
@@ -78,7 +78,7 @@ const productSchema = new mongoose.Schema({
   gender: {
     type: String,
     required: [true, 'Please specify the gender'],
-    enum: ['Homme', 'Femme', 'Mixte'],
+    enum: ['Homme', 'Femme'],
   },
   images: {
     type: [String],
