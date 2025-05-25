@@ -301,7 +301,7 @@ export default function FeaturedProductsSection() {
           src={imageUrl}
           alt={product.name || 'Product'}
           fill
-          className={`object-cover transition-all duration-300 group-hover:scale-105 ${
+          className={`object-cover transition-opacity duration-300 ${
             imageLoading ? 'opacity-0' : 'opacity-100'
           }`}
           loading="lazy"
@@ -312,7 +312,10 @@ export default function FeaturedProductsSection() {
             setImageLoading(false);
           }}
           sizes="(max-width: 768px) 45vw, 200px"
-          style={{ willChange: 'transform' }}
+          style={{ 
+            willChange: 'opacity',
+            backfaceVisibility: 'hidden'
+          }}
         />
       </div>
     );
@@ -320,7 +323,7 @@ export default function FeaturedProductsSection() {
 
   // Product card component
   const ProductCard = ({ product }: { product: Product }) => (
-    <div className="group bg-white rounded-3xl p-4 shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <div className="group bg-white rounded-3xl p-4 shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-lg transform-gpu will-change-transform">
       <Link href={`/product/${product._id}`} className="block">
         <ProductImage product={product} />
         
@@ -354,7 +357,7 @@ export default function FeaturedProductsSection() {
             e.stopPropagation();
             // Add to cart functionality
           }}
-          className="flex-1 bg-[#c8a45d] text-white py-2 rounded-xl text-xs font-medium transition-all duration-300 hover:bg-[#b08d48] flex items-center justify-center active:scale-95"
+          className="flex-1 bg-[#c8a45d] text-white py-2 rounded-xl text-xs font-medium transition-colors duration-200 hover:bg-[#b08d48] flex items-center justify-center"
         >
           <FaShoppingCart className="mr-1" size={10} />
           Panier
@@ -372,7 +375,7 @@ export default function FeaturedProductsSection() {
             });
             window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
           }}
-          className="flex-1 bg-green-500 text-white py-2 rounded-xl text-xs font-medium transition-all duration-300 hover:bg-green-600 flex items-center justify-center active:scale-95"
+          className="flex-1 bg-green-500 text-white py-2 rounded-xl text-xs font-medium transition-colors duration-200 hover:bg-green-600 flex items-center justify-center"
         >
           <FaWhatsapp className="mr-1" size={10} />
           WhatsApp
@@ -447,12 +450,14 @@ export default function FeaturedProductsSection() {
             </div>
           ) : (
             <div className="relative">
-              {/* Carousel Container - Touch/swipe disabled, circle navigation only */}
+              {/* Carousel Container - Optimized for smooth animations */}
               <div 
-                className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden"
+                className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden isolate"
                 style={{ 
                   touchAction: 'auto',
-                  transform: 'translateZ(0)'
+                  transform: 'translateZ(0)',
+                  willChange: 'auto',
+                  contain: 'layout style paint'
                 }}
               >
                 
@@ -464,9 +469,13 @@ export default function FeaturedProductsSection() {
                   return (
                     <div 
                       key={slideIndex}
-                      className={`absolute top-0 left-0 w-full h-full transition-all duration-500 ease-out ${
-                        isVisible ? 'opacity-100 z-10 transform translate-x-0' : 'opacity-0 z-0 transform translate-x-1'
+                      className={`absolute top-0 left-0 w-full h-full transition-opacity duration-400 ease-out ${
+                        isVisible ? 'opacity-100 z-10' : 'opacity-0 z-0'
                       }`}
+                      style={{ 
+                        willChange: 'opacity',
+                        backfaceVisibility: 'hidden'
+                      }}
                     >
                       <div className="min-h-[350px] p-4">
                         {slideProducts.length > 0 ? (
