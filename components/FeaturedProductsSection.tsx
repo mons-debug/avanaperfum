@@ -301,10 +301,10 @@ export default function FeaturedProductsSection() {
           src={imageUrl}
           alt={product.name || 'Product'}
           fill
-          className={`object-cover transition-all duration-500 group-hover:scale-105 ${
+          className={`object-cover transition-all duration-300 group-hover:scale-105 ${
             imageLoading ? 'opacity-0' : 'opacity-100'
           }`}
-          loading="eager"
+          loading="lazy"
           priority={false}
           onLoad={() => setImageLoading(false)}
           onError={() => {
@@ -312,6 +312,7 @@ export default function FeaturedProductsSection() {
             setImageLoading(false);
           }}
           sizes="(max-width: 768px) 45vw, 200px"
+          style={{ willChange: 'transform' }}
         />
       </div>
     );
@@ -319,12 +320,12 @@ export default function FeaturedProductsSection() {
 
   // Product card component
   const ProductCard = ({ product }: { product: Product }) => (
-    <div className="group bg-white rounded-3xl p-4 shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+    <div className="group bg-white rounded-3xl p-4 shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <Link href={`/product/${product._id}`} className="block">
         <ProductImage product={product} />
         
         <div className="mt-4 space-y-2">
-          <h3 className="font-semibold text-gray-800 text-sm line-clamp-1 group-hover:text-[#c8a45d] transition-colors">
+          <h3 className="font-semibold text-gray-800 text-sm line-clamp-1 group-hover:text-[#c8a45d] transition-colors duration-300">
             {product.name}
           </h3>
           
@@ -350,9 +351,10 @@ export default function FeaturedProductsSection() {
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             // Add to cart functionality
           }}
-          className="flex-1 bg-[#c8a45d] text-white py-2 rounded-xl text-xs font-medium transition-all duration-300 hover:bg-[#b08d48] flex items-center justify-center"
+          className="flex-1 bg-[#c8a45d] text-white py-2 rounded-xl text-xs font-medium transition-all duration-300 hover:bg-[#b08d48] flex items-center justify-center active:scale-95"
         >
           <FaShoppingCart className="mr-1" size={10} />
           Panier
@@ -361,6 +363,7 @@ export default function FeaturedProductsSection() {
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             const whatsappUrl = generateSingleProductWhatsAppURL({
               _id: product._id,
               name: product.name,
@@ -369,7 +372,7 @@ export default function FeaturedProductsSection() {
             });
             window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
           }}
-          className="flex-1 bg-green-500 text-white py-2 rounded-xl text-xs font-medium transition-all duration-300 hover:bg-green-600 flex items-center justify-center"
+          className="flex-1 bg-green-500 text-white py-2 rounded-xl text-xs font-medium transition-all duration-300 hover:bg-green-600 flex items-center justify-center active:scale-95"
         >
           <FaWhatsapp className="mr-1" size={10} />
           WhatsApp
@@ -435,7 +438,7 @@ export default function FeaturedProductsSection() {
         </div>
 
         {/* Unified Carousel for Mobile and Desktop */}
-        <div>
+        <div className="min-h-[500px]">
           {isLoading ? (
             <LoadingSkeleton />
           ) : products.length === 0 ? (
@@ -448,7 +451,8 @@ export default function FeaturedProductsSection() {
               <div 
                 className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden"
                 style={{ 
-                  touchAction: 'auto'
+                  touchAction: 'auto',
+                  transform: 'translateZ(0)'
                 }}
               >
                 
@@ -460,8 +464,8 @@ export default function FeaturedProductsSection() {
                   return (
                     <div 
                       key={slideIndex}
-                      className={`absolute top-0 left-0 w-full h-full transition-all duration-700 ease-in-out ${
-                        isVisible ? 'opacity-100 z-10 transform translate-x-0' : 'opacity-0 z-0 transform translate-x-2'
+                      className={`absolute top-0 left-0 w-full h-full transition-all duration-500 ease-out ${
+                        isVisible ? 'opacity-100 z-10 transform translate-x-0' : 'opacity-0 z-0 transform translate-x-1'
                       }`}
                     >
                       <div className="min-h-[350px] p-4">
@@ -482,18 +486,18 @@ export default function FeaturedProductsSection() {
                 })}
               </div>
 
-              {/* Mobile Slide Indicators - Primary navigation method */}
-              <div className="md:hidden flex justify-center gap-4 mt-8 py-4">
+              {/* Mobile Slide Indicators - Smaller and smoother */}
+              <div className="md:hidden flex justify-center gap-2 mt-6 py-2">
                 {Array.from({ length: totalSlides }).map((_, index) => (
                   <button
                     key={index}
                     onClick={() => {
                       setCurrentSlide(index);
                     }}
-                    className={`transition-all duration-500 ease-out rounded-full ${
+                    className={`transition-all duration-400 ease-out rounded-full ${
                       currentSlide === index
-                        ? 'w-12 h-4 bg-[#c8a45d] shadow-lg'
-                        : 'w-4 h-4 bg-gray-300 hover:bg-gray-400 hover:scale-125 active:scale-110'
+                        ? 'w-6 h-2 bg-[#c8a45d] shadow-sm'
+                        : 'w-2 h-2 bg-gray-300 hover:bg-gray-400 hover:scale-110 active:scale-95'
                     }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
