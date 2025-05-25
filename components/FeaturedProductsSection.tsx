@@ -23,49 +23,52 @@ export default function FeaturedProductsSection() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [isUserInteracting, setIsUserInteracting] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
+  // Touch/swipe functionality DISABLED to prevent scroll conflicts
+  // const [touchStart, setTouchStart] = useState<number | null>(null);
+  // const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  // const [isUserInteracting, setIsUserInteracting] = useState(false);
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    setIsUserInteracting(true);
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-    e.preventDefault(); // Prevent scrolling
-  };
+  // Minimum swipe distance (in px) - DISABLED
+  // const minSwipeDistance = 50;
 
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-    e.preventDefault(); // Prevent scrolling
-  };
+  // Touch event handlers - DISABLED to prevent scroll conflicts
+  // const onTouchStart = (e: React.TouchEvent) => {
+  //   setIsUserInteracting(true);
+  //   setTouchEnd(null);
+  //   setTouchStart(e.targetTouches[0].clientX);
+  //   e.preventDefault(); // Prevent scrolling
+  // };
 
-  const onTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault(); // Prevent scrolling
+  // const onTouchMove = (e: React.TouchEvent) => {
+  //   setTouchEnd(e.targetTouches[0].clientX);
+  //   e.preventDefault(); // Prevent scrolling
+  // };
+
+  // const onTouchEnd = (e: React.TouchEvent) => {
+  //   e.preventDefault(); // Prevent scrolling
     
-    if (!touchStart || !touchEnd) {
-      setIsUserInteracting(false);
-      return;
-    }
+  //   if (!touchStart || !touchEnd) {
+  //     setIsUserInteracting(false);
+  //     return;
+  //   }
     
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+  //   const distance = touchStart - touchEnd;
+  //   const isLeftSwipe = distance > minSwipeDistance;
+  //   const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe) {
-      nextSlide();
-    } else if (isRightSwipe) {
-      prevSlide();
-    }
+  //   if (isLeftSwipe) {
+  //     nextSlide();
+  //   } else if (isRightSwipe) {
+  //     prevSlide();
+  //   }
 
-    // Reset interaction state after a delay
-    setTimeout(() => {
-      setIsUserInteracting(false);
-    }, 500);
-  };
+  //   // Reset interaction state after a delay
+  //   setTimeout(() => {
+  //     setIsUserInteracting(false);
+  //   }, 500);
+  // };
 
   // Fetch products based on selected gender (unified for mobile and desktop)
   useEffect(() => {
@@ -158,7 +161,6 @@ export default function FeaturedProductsSection() {
           ]);
         }
         setCurrentSlide(0);
-        setIsUserInteracting(false);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -238,7 +240,6 @@ export default function FeaturedProductsSection() {
           }
         ]);
         setCurrentSlide(0);
-        setIsUserInteracting(false);
         setIsLoading(false);
       }
     };
@@ -443,16 +444,11 @@ export default function FeaturedProductsSection() {
             </div>
           ) : (
             <div className="relative">
-              {/* Carousel Container */}
+              {/* Carousel Container - Touch/swipe disabled, circle navigation only */}
               <div 
-                className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden touch-pan-x select-none"
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
+                className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden"
                 style={{ 
-                  touchAction: 'pan-x',
-                  WebkitUserSelect: 'none',
-                  userSelect: 'none'
+                  touchAction: 'auto'
                 }}
               >
                 
@@ -486,20 +482,18 @@ export default function FeaturedProductsSection() {
                 })}
               </div>
 
-              {/* Mobile Slide Indicators */}
-              <div className="md:hidden flex justify-center gap-3 mt-8">
+              {/* Mobile Slide Indicators - Primary navigation method */}
+              <div className="md:hidden flex justify-center gap-4 mt-8 py-4">
                 {Array.from({ length: totalSlides }).map((_, index) => (
                   <button
                     key={index}
                     onClick={() => {
                       setCurrentSlide(index);
-                      setIsUserInteracting(true);
-                      setTimeout(() => setIsUserInteracting(false), 1000);
                     }}
                     className={`transition-all duration-500 ease-out rounded-full ${
                       currentSlide === index
-                        ? 'w-10 h-3 bg-[#c8a45d] shadow-md'
-                        : 'w-3 h-3 bg-gray-300 hover:bg-gray-400 hover:scale-110'
+                        ? 'w-12 h-4 bg-[#c8a45d] shadow-lg'
+                        : 'w-4 h-4 bg-gray-300 hover:bg-gray-400 hover:scale-125 active:scale-110'
                     }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
