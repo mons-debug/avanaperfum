@@ -25,12 +25,14 @@ export default function FeaturedProductsSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
+    setIsUserInteracting(true);
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
@@ -40,7 +42,10 @@ export default function FeaturedProductsSection() {
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) {
+      setIsUserInteracting(false);
+      return;
+    }
     
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
@@ -51,6 +56,11 @@ export default function FeaturedProductsSection() {
     } else if (isRightSwipe) {
       prevSlide();
     }
+
+    // Reset interaction state after a delay
+    setTimeout(() => {
+      setIsUserInteracting(false);
+    }, 1000);
   };
 
   // Fetch products based on selected gender (unified for mobile and desktop)
@@ -144,6 +154,7 @@ export default function FeaturedProductsSection() {
           ]);
         }
         setCurrentSlide(0);
+        setIsUserInteracting(false);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -222,6 +233,8 @@ export default function FeaturedProductsSection() {
             images: ['/images/product-placeholder.svg']
           }
         ]);
+        setCurrentSlide(0);
+        setIsUserInteracting(false);
         setIsLoading(false);
       }
     };
@@ -244,16 +257,16 @@ export default function FeaturedProductsSection() {
     setCurrentSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
   }, [totalSlides]);
 
-  // Auto-scroll functionality (mobile only)
+  // Auto-scroll functionality (mobile only) - pause when user is interacting
   useEffect(() => {
-    if (products.length > productsPerSlide) {
+    if (products.length > productsPerSlide && !isUserInteracting) {
       const interval = setInterval(() => {
         nextSlide();
       }, 5000); // Auto-advance every 5 seconds
 
       return () => clearInterval(interval);
     }
-  }, [products.length, totalSlides, nextSlide]);
+  }, [products.length, totalSlides, nextSlide, isUserInteracting]);
 
   // Reset slide when switching between mobile/desktop
   useEffect(() => {
@@ -267,20 +280,32 @@ export default function FeaturedProductsSection() {
 
   // Product image component
   const ProductImage = ({ product }: { product: Product }) => {
-    const imageUrl = product.images && product.images.length > 0 
+    const [imageError, setImageError] = useState(false);
+    const [imageLoading, setImageLoading] = useState(true);
+    
+    const imageUrl = product.images && product.images.length > 0 && !imageError
       ? product.images[0] 
       : '/images/product-placeholder.svg';
     
     return (
       <div className="aspect-square relative bg-gray-50 rounded-2xl overflow-hidden shadow-sm">
+        {imageLoading && (
+          <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-2xl" />
+        )}
         <Image
           src={imageUrl}
           alt={product.name || 'Product'}
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          loading="lazy"
-          placeholder="blur"
-          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+          className={`object-cover transition-all duration-500 group-hover:scale-105 ${
+            imageLoading ? 'opacity-0' : 'opacity-100'
+          }`}
+          loading="eager"
+          priority={false}
+          onLoad={() => setImageLoading(false)}
+          onError={() => {
+            setImageError(true);
+            setImageLoading(false);
+          }}
           sizes="(max-width: 768px) 45vw, 200px"
         />
       </div>
@@ -416,14 +441,15 @@ export default function FeaturedProductsSection() {
             <div className="relative">
               {/* Carousel Container */}
               <div 
-                className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden"
+                className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden touch-pan-x"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
+                style={{ touchAction: 'pan-x' }}
               >
                 
                 {/* Mobile slides with absolute positioning */}
-                {[0, 1, 2, 3].map((slideIndex) => {
+                {Array.from({ length: totalSlides }).map((_, slideIndex) => {
                   const slideProducts = products.slice(slideIndex * productsPerSlide, (slideIndex + 1) * productsPerSlide);
                   const isVisible = currentSlide === slideIndex;
                   
@@ -450,6 +476,26 @@ export default function FeaturedProductsSection() {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Mobile Slide Indicators */}
+              <div className="md:hidden flex justify-center gap-2 mt-6">
+                {Array.from({ length: totalSlides }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setCurrentSlide(index);
+                      setIsUserInteracting(true);
+                      setTimeout(() => setIsUserInteracting(false), 2000);
+                    }}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      currentSlide === index
+                        ? 'w-8 bg-[#c8a45d]'
+                        : 'w-2 bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
               </div>
 
               {/* Desktop Grid Layout */}
