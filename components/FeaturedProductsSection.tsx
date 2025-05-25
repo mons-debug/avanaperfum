@@ -35,13 +35,17 @@ export default function FeaturedProductsSection() {
     setIsUserInteracting(true);
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    e.preventDefault(); // Prevent scrolling
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
+    e.preventDefault(); // Prevent scrolling
   };
 
-  const onTouchEnd = () => {
+  const onTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent scrolling
+    
     if (!touchStart || !touchEnd) {
       setIsUserInteracting(false);
       return;
@@ -60,7 +64,7 @@ export default function FeaturedProductsSection() {
     // Reset interaction state after a delay
     setTimeout(() => {
       setIsUserInteracting(false);
-    }, 1000);
+    }, 500);
   };
 
   // Fetch products based on selected gender (unified for mobile and desktop)
@@ -257,16 +261,16 @@ export default function FeaturedProductsSection() {
     setCurrentSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
   }, [totalSlides]);
 
-  // Auto-scroll functionality (mobile only) - pause when user is interacting
-  useEffect(() => {
-    if (products.length > productsPerSlide && !isUserInteracting) {
-      const interval = setInterval(() => {
-        nextSlide();
-      }, 5000); // Auto-advance every 5 seconds
+  // Auto-scroll functionality (mobile only) - DISABLED for manual control
+  // useEffect(() => {
+  //   if (products.length > productsPerSlide && !isUserInteracting) {
+  //     const interval = setInterval(() => {
+  //       nextSlide();
+  //     }, 5000); // Auto-advance every 5 seconds
 
-      return () => clearInterval(interval);
-    }
-  }, [products.length, totalSlides, nextSlide, isUserInteracting]);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [products.length, totalSlides, nextSlide, isUserInteracting]);
 
   // Reset slide when switching between mobile/desktop
   useEffect(() => {
@@ -441,11 +445,15 @@ export default function FeaturedProductsSection() {
             <div className="relative">
               {/* Carousel Container */}
               <div 
-                className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden touch-pan-x"
+                className="relative rounded-2xl min-h-[400px] overflow-hidden md:hidden touch-pan-x select-none"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
-                style={{ touchAction: 'pan-x' }}
+                style={{ 
+                  touchAction: 'pan-x',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none'
+                }}
               >
                 
                 {/* Mobile slides with absolute positioning */}
@@ -456,8 +464,8 @@ export default function FeaturedProductsSection() {
                   return (
                     <div 
                       key={slideIndex}
-                      className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ${
-                        isVisible ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                      className={`absolute top-0 left-0 w-full h-full transition-all duration-700 ease-in-out ${
+                        isVisible ? 'opacity-100 z-10 transform translate-x-0' : 'opacity-0 z-0 transform translate-x-2'
                       }`}
                     >
                       <div className="min-h-[350px] p-4">
@@ -479,19 +487,19 @@ export default function FeaturedProductsSection() {
               </div>
 
               {/* Mobile Slide Indicators */}
-              <div className="md:hidden flex justify-center gap-2 mt-6">
+              <div className="md:hidden flex justify-center gap-3 mt-8">
                 {Array.from({ length: totalSlides }).map((_, index) => (
                   <button
                     key={index}
                     onClick={() => {
                       setCurrentSlide(index);
                       setIsUserInteracting(true);
-                      setTimeout(() => setIsUserInteracting(false), 2000);
+                      setTimeout(() => setIsUserInteracting(false), 1000);
                     }}
-                    className={`h-2 rounded-full transition-all duration-300 ${
+                    className={`transition-all duration-500 ease-out rounded-full ${
                       currentSlide === index
-                        ? 'w-8 bg-[#c8a45d]'
-                        : 'w-2 bg-gray-300 hover:bg-gray-400'
+                        ? 'w-10 h-3 bg-[#c8a45d] shadow-md'
+                        : 'w-3 h-3 bg-gray-300 hover:bg-gray-400 hover:scale-110'
                     }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
