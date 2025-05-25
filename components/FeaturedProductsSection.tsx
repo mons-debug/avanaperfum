@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaArrowLeft, FaArrowRight, FaWhatsapp, FaShoppingCart, FaPlus } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaWhatsapp, FaShoppingCart, FaPlus, FaCheck } from 'react-icons/fa';
 import { generateSingleProductWhatsAppURL } from '@/lib/whatsapp';
+import { addToCart, removeFromCart, isInCart } from '@/lib/cart';
 
 // Product type definition
 interface Product {
@@ -322,67 +323,130 @@ export default function FeaturedProductsSection() {
   };
 
   // Product card component
-  const ProductCard = ({ product }: { product: Product }) => (
-    <div className="group bg-white rounded-3xl p-4 shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-lg transform-gpu will-change-transform">
-      <Link href={`/product/${product._id}`} className="block">
-        <ProductImage product={product} />
+  const ProductCard = ({ product }: { product: Product }) => {
+    const [isInCartState, setIsInCartState] = useState(false);
+
+    // Check if product is in cart on mount and listen for changes
+    useEffect(() => {
+      if (product._id) {
+        setIsInCartState(isInCart(product._id));
         
-        <div className="mt-4 space-y-2">
-          <h3 className="font-semibold text-gray-800 text-sm line-clamp-1 group-hover:text-[#c8a45d] transition-colors duration-300">
-            {product.name}
-          </h3>
-          
-          {product.inspiredBy && (
-            <p className="text-xs text-gray-500 line-clamp-1">
-              ✨ Inspiré de {product.inspiredBy}
-            </p>
-          )}
-          
-          <div className="flex items-center justify-between">
-            <span className="text-[#c8a45d] font-bold text-lg">{product.price} DH</span>
-            {product.volume && (
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                {product.volume}
-              </span>
-            )}
-          </div>
-        </div>
-      </Link>
+        // Subscribe to cart changes
+        const handleCartChange = (items: any[]) => {
+          setIsInCartState(items.some(item => item._id === product._id));
+        };
+        
+        if (typeof window !== 'undefined') {
+          window.cartListeners = window.cartListeners || [];
+          window.cartListeners.push(handleCartChange);
+        }
+        
+        return () => {
+          if (typeof window !== 'undefined' && window.cartListeners) {
+            window.cartListeners = window.cartListeners.filter(listener => listener !== handleCartChange);
+          }
+        };
+      }
+    }, [product._id]);
+
+    const handleAddToCart = useCallback((e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!product._id) {
+        console.error('Cannot add product to cart: missing _id');
+        return;
+      }
       
-      {/* Action buttons */}
-      <div className="mt-4 flex gap-2">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Add to cart functionality
-          }}
-          className="flex-1 bg-[#c8a45d] text-white py-2 rounded-xl text-xs font-medium transition-colors duration-200 hover:bg-[#b08d48] flex items-center justify-center"
-        >
-          <FaShoppingCart className="mr-1" size={10} />
-          Panier
-        </button>
+      if (isInCartState) {
+        removeFromCart(product._id);
+      } else {
+        addToCart(product);
+      }
+    }, [product, isInCartState]);
+
+    return (
+      <div className="group bg-white rounded-3xl p-4 shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-lg transform-gpu will-change-transform">
+        <Link href={`/product/${product._id}`} className="block">
+          {/* Gender Icon */}
+          <div className="flex justify-between items-center mb-3">
+            <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+              product.gender === 'Homme' 
+                ? 'bg-blue-100 text-blue-600' 
+                : 'bg-pink-100 text-pink-600'
+            }`}>
+              {product.gender === 'Homme' ? '♂' : '♀'}
+            </div>
+            <div className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+              {product.volume || '50ml'}
+            </div>
+          </div>
+
+          <ProductImage product={product} />
+          
+          <div className="mt-4 space-y-2">
+            <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 group-hover:text-[#c8a45d] transition-colors duration-300">
+              {product.name}
+            </h3>
+            
+            {product.inspiredBy && (
+              <p className="text-xs text-gray-500 line-clamp-1">
+                ✨ Inspiré de {product.inspiredBy}
+              </p>
+            )}
+            
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-[#c8a45d] font-bold text-lg">{product.price} DH</span>
+              <span className="text-xs text-gray-400">
+                {product.gender}
+              </span>
+            </div>
+          </div>
+        </Link>
         
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const whatsappUrl = generateSingleProductWhatsAppURL({
-              _id: product._id,
-              name: product.name,
-              price: product.price,
-              volume: product.volume
-            });
-            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-          }}
-          className="flex-1 bg-green-500 text-white py-2 rounded-xl text-xs font-medium transition-colors duration-200 hover:bg-green-600 flex items-center justify-center"
-        >
-          <FaWhatsapp className="mr-1" size={10} />
-          WhatsApp
-        </button>
+        {/* Action buttons */}
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={handleAddToCart}
+            className={`flex-1 py-2.5 rounded-xl text-xs font-medium transition-colors duration-200 flex items-center justify-center ${
+              isInCartState 
+                ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200'
+                : 'bg-[#c8a45d] text-white hover:bg-[#b08d48]'
+            }`}
+          >
+            {isInCartState ? (
+              <>
+                <FaCheck className="mr-1.5" size={12} />
+                Ajouté
+              </>
+            ) : (
+              <>
+                <FaShoppingCart className="mr-1.5" size={12} />
+                Panier
+              </>
+            )}
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const whatsappUrl = generateSingleProductWhatsAppURL({
+                _id: product._id,
+                name: product.name,
+                price: product.price,
+                volume: product.volume
+              });
+              window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+            }}
+            className="flex-1 bg-green-500 text-white py-2.5 rounded-xl text-xs font-medium transition-colors duration-200 hover:bg-green-600 flex items-center justify-center"
+          >
+            <FaWhatsapp className="mr-1.5" size={12} />
+            WhatsApp
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Loading skeleton
   const LoadingSkeleton = () => (
