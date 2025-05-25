@@ -273,7 +273,7 @@ const OrderDetails = ({ orderId, onClose, onStatusUpdate }: OrderDetailsProps) =
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <h3 className="text-lg font-semibold mb-3 flex items-center">
               <FaShoppingCart className="mr-2 text-indigo-500" />
-              Products Ordered
+              Produits Commandés
             </h3>
             
             {productDetails ? (
@@ -284,16 +284,16 @@ const OrderDetails = ({ orderId, onClose, onStatusUpdate }: OrderDetailsProps) =
                 </div>
                 {productDetails.inspiredBy && (
                   <div className="text-sm text-gray-600 mb-1">
-                    Inspired by: {productDetails.inspiredBy}
+                    Inspiré par : {productDetails.inspiredBy}
                   </div>
                 )}
                 {productDetails.volume && (
                   <div className="text-sm text-gray-600 mb-1">
-                    Volume: {productDetails.volume}
+                    Volume : {productDetails.volume}
                   </div>
                 )}
                 <div className="flex justify-between text-[#c8a45d] font-medium">
-                  <span>Price:</span>
+                  <span>Prix :</span>
                   <span>{productDetails.price.toFixed(2)} DH</span>
                 </div>
               </div>

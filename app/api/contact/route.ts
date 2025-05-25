@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     // Basic validation
     if (!name || !phone || !message) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: name, phone, and message are required' },
+        { success: false, error: 'Champs requis manquants : nom, téléphone et message sont obligatoires' },
         { status: 400 }
       );
     }
@@ -24,13 +24,13 @@ export async function POST(request: NextRequest) {
     });
     
     return NextResponse.json(
-      { success: true, message: 'Contact form submitted successfully' },
+      { success: true, message: 'Formulaire de contact soumis avec succès' },
       { status: 201 }
     );
   } catch (error) {
     console.error('Error submitting contact form:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to submit contact form' },
+      { success: false, error: 'Échec de l\'envoi du formulaire de contact' },
       { status: 500 }
     );
   }

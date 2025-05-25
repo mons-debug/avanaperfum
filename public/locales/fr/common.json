@@ -68,15 +68,16 @@
       }
     },
     "cta": {
-      "title": "Prêt à découvrir votre nouveau parfum préféré?",
-      "button": "Voir Tous les Parfums"
+      "title": "Prêt à trouver votre parfum signature ?",
+      "description": "Parcourez notre collection de parfums inspirés haut de gamme et trouvez votre accord parfait aujourd'hui.",
+      "button": "Acheter Maintenant"
     }
   },
   "about": {
     "title": "À Propos d'AVANA PARFUM",
     "description": {
-      "part1": "Chez AVANA PARFUM, nous croyons que les parfums de luxe devraient être accessibles à tous. Notre collection présente des parfums inspirés de qualité premium qui capturent l'essence des fragrances mondialement connues.",
-      "part2": "Chaque parfum est méticuleusement élaboré avec les meilleurs ingrédients, garantissant un parfum durable qui laisse une impression durable. Nous sommes fiers de vous offrir une expérience olfactive exceptionnelle à une fraction du prix."
+      "part1": "Chez AVANA PARFUM, nous croyons que les parfums de luxe doivent être accessibles à tous. Notre collection présente des parfums inspirés de qualité supérieure qui capturent l'essence des fragrances de renommée mondiale.",
+      "part2": "Chaque parfum est méticuleusement élaboré en utilisant les meilleurs ingrédients, garantissant un parfum durable qui fait une impression durable. Nous sommes fiers de vous offrir une expérience olfactive exceptionnelle à une fraction du prix."
     },
     "stats": {
       "fragrances": "Parfums Uniques",

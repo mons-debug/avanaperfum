@@ -29,17 +29,21 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="font-playfair text-lg text-white">{t('footer.categories.company', 'Quick Links')}</h4>
+            <h4 className="font-playfair text-lg text-white">{t('footer.categories.company', 'Liens rapides')}</h4>
             <ul className="space-y-2">
               {[
-                { key: 'shop', label: t('header.shop', 'Shop') },
-                { key: 'about', label: t('header.about', 'About') },
-                { key: 'contact', label: t('header.contact', 'Contact') },
-                { key: 'faq', label: t('footer.links.faq', 'FAQs') }
+                { key: 'home', href: '/', label: t('header.home', 'Accueil') },
+                { key: 'shop', href: '/shop', label: t('header.shop', 'Boutique') },
+                { key: 'about', href: '/about', label: t('header.about', 'À propos') },
+                { key: 'contact', href: '/contact', label: t('header.contact', 'Contact') },
+                { key: 'faq', href: '/faq', label: t('footer.links.faq', 'FAQ') },
+                { key: 'shipping', href: '/shipping', label: t('footer.links.shipping', 'Livraison') },
+                { key: 'privacy', href: '/privacy', label: t('footer.links.privacy', 'Confidentialité') },
+                { key: 'terms', href: '/terms', label: t('footer.links.terms', 'Conditions') }
               ].map((link) => (
                 <li key={link.key}>
                   <Link
-                    href={`/${link.key.toLowerCase()}`}
+                    href={link.href}
                     className="text-gray-400 hover:text-avana-gold transition-colors text-sm"
                   >
                     {link.label}
@@ -54,8 +58,8 @@ const Footer = () => {
             <h4 className="font-playfair text-lg text-white">{t('header.contact', 'Contact')}</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>{t('footer.contact.email', 'Email')}: info@avanaparfum.com</li>
-              <li>{t('footer.contact.whatsapp', 'WhatsApp')}: +1234567890</li>
-              <li>{t('footer.contact.hours', 'Hours')}: {t('footer.contact.workingHours', 'Mon-Sat, 9am-6pm')}</li>
+              <li>{t('footer.contact.whatsapp', 'WhatsApp')}: +212674428593</li>
+              <li>{t('footer.contact.hours', 'Horaires')}: {t('footer.contact.workingHours', 'Lun-Sam, 9h-18h')}</li>
             </ul>
           </div>
 
@@ -89,24 +93,29 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex space-x-6">
-              {[
-                { key: 'facebook', label: t('footer.social.facebook', 'Facebook') },
-                { key: 'instagram', label: t('footer.social.instagram', 'Instagram') },
-                { key: 'twitter', label: t('footer.social.twitter', 'Twitter') }
-              ].map((social) => (
-                <a
-                  key={social.key}
-                  href={`https://${social.key.toLowerCase()}.com/avanaparfum`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-avana-gold transition-colors"
-                >
-                  {social.label}
-                </a>
-              ))}
+              <a
+                href="https://wa.me/212674428593"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-avana-gold transition-colors"
+              >
+                WhatsApp
+              </a>
+              <a
+                href="mailto:info@avanaparfum.com"
+                className="text-gray-400 hover:text-avana-gold transition-colors"
+              >
+                Email
+              </a>
+              <a
+                href="tel:+212674428593"
+                className="text-gray-400 hover:text-avana-gold transition-colors"
+              >
+                Téléphone
+              </a>
             </div>
             <p className="text-gray-400 text-sm">
-              {t('footer.copyright', { year: new Date().getFullYear() })}
+              © {new Date().getFullYear()} AVANA PARFUM. Tous droits réservés.
             </p>
           </div>
         </div>

@@ -135,13 +135,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems, pr
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit order');
+        throw new Error(data.error || 'Échec de l\'envoi de la commande');
       }
       
       // Success - redirect to thank you page
       router.push('/thank-you');
     } catch (err: any) {
-      setError(err.message || 'An error occurred while placing your order');
+      setError(err.message || 'Une erreur s\'est produite lors du traitement de votre commande');
       setIsSubmitting(false);
     }
   };
@@ -247,7 +247,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems, pr
                   <p className="text-gray-500 text-sm">Inspiré de {product.inspiredBy}</p>
                 )}
                 {product.volume && (
-                  <p className="text-gray-500 text-sm">Volume: {product.volume}</p>
+                  <p className="text-gray-500 text-sm">Volume : {product.volume}</p>
                 )}
                 <p className="text-[#c8a45d] font-medium mt-1">{product.price.toFixed(2)} DH</p>
               </div>
@@ -256,7 +256,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems, pr
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-              Une erreur s'est produite. Veuillez réessayer.
+              {error}
             </div>
           )}
           

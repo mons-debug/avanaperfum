@@ -33,7 +33,7 @@ export default function ShippingSettings() {
         console.error('Failed to fetch settings:', error);
         setMessage({
           type: 'error',
-          text: 'Failed to load settings. Please try again.'
+          text: 'Échec de la récupération des paramètres. Veuillez réessayer.'
         });
       } finally {
         setIsLoading(false);
@@ -70,16 +70,16 @@ export default function ShippingSettings() {
       if (data.success) {
         setMessage({
           type: 'success',
-          text: 'Shipping settings updated successfully!'
+          text: 'Paramètres de livraison mis à jour avec succès !'
         });
       } else {
-        throw new Error(data.error || 'Failed to update settings');
+        throw new Error(data.error || 'Échec de la mise à jour des paramètres');
       }
     } catch (error) {
       console.error('Error updating settings:', error);
       setMessage({
         type: 'error',
-        text: 'Failed to update settings. Please try again.'
+        text: 'Échec de la mise à jour des paramètres. Veuillez réessayer.'
       });
     } finally {
       setIsSaving(false);

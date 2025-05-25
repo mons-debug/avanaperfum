@@ -34,29 +34,16 @@ export default function ThankYouPage() {
           </svg>
         </div>
         
-        <h1 className="text-3xl font-playfair font-bold text-gray-800 mb-3">Thank You for Your Order!</h1>
+        <h1 className="text-3xl font-playfair font-bold text-gray-800 mb-3">Merci pour votre commande !</h1>
         
         <p className="text-lg text-gray-600 mb-4">
-          Your order has been received and is being processed.
+          Votre commande a été reçue et est en cours de traitement.
         </p>
         
-        <div className="bg-gray-50 rounded-lg p-5 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-3">What happens next?</h2>
-          <ol className="text-left space-y-2 text-gray-600">
-            <li className="flex items-start">
-              <span className="flex-shrink-0 flex items-center justify-center bg-[#c8a45d] text-white rounded-full w-6 h-6 mr-2 text-sm">1</span>
-              <span>Our team will contact you shortly to confirm your order.</span>
-            </li>
-            <li className="flex items-start">
-              <span className="flex-shrink-0 flex items-center justify-center bg-[#c8a45d] text-white rounded-full w-6 h-6 mr-2 text-sm">2</span>
-              <span>Once your order is confirmed, we'll prepare it for shipping.</span>
-            </li>
-            <li className="flex items-start">
-              <span className="flex-shrink-0 flex items-center justify-center bg-[#c8a45d] text-white rounded-full w-6 h-6 mr-2 text-sm">3</span>
-              <span>You'll receive a notification when your order is on its way.</span>
-            </li>
-          </ol>
-        </div>
+        <p className="text-gray-600 mb-8">
+          Nous vous contacterons bientôt pour confirmer les détails et organiser la livraison. 
+          Merci de votre confiance en AVANA PARFUM !
+        </p>
         
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link 
@@ -64,7 +51,7 @@ export default function ThankYouPage() {
             className="flex items-center justify-center px-6 py-3 bg-[#c8a45d] text-white rounded-lg hover:bg-[#b08d48] transition-colors"
           >
             <FaHome className="mr-2" />
-            Return to Home
+            Retour à l'accueil
           </Link>
           
           <Link 
@@ -72,17 +59,17 @@ export default function ThankYouPage() {
             className="flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <FaShoppingBag className="mr-2" />
-            Continue Shopping
+            Continuer mes achats
           </Link>
           
           <a 
-            href="https://wa.me/+212000000000" 
+            href="https://wa.me/+212674428593" 
             target="_blank" 
             rel="noopener noreferrer"
             className="flex items-center justify-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
           >
             <FaWhatsapp className="mr-2" />
-            Contact Us
+            Nous contacter
           </a>
         </div>
       </div>

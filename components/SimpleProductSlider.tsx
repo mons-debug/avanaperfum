@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+import Image from 'next/image';
+import { FaArrowRight, FaArrowLeft, FaWhatsapp } from 'react-icons/fa';
+import { useTranslation } from '@/components/i18n/TranslationProvider';
+import { generateSingleProductWhatsAppURL } from '@/lib/whatsapp';
 
 // Product type definition
 interface Product {
@@ -22,17 +25,18 @@ const ProductImage = ({ product }: { product: Product }) => {
     : '/images/product-placeholder.svg';
   
   return (
-    <div 
-      className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm"
-      style={{
-        backgroundImage: `url('${imageUrl}')`,
-        backgroundSize: "contain",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        width: "100%",
-        height: "100%"
-      }}
-    />
+    <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm">
+      <Image
+        src={imageUrl}
+        alt={product.name || 'Product'}
+        fill
+        className="object-contain"
+        loading="lazy"
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+        sizes="(max-width: 768px) 150px, 200px"
+      />
+    </div>
   );
 };
 
@@ -41,6 +45,7 @@ export default function SimpleProductSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
 
   // Fetch products on component mount
   useEffect(() => {
@@ -171,18 +176,37 @@ export default function SimpleProductSlider() {
           <div key={i} className="min-w-full flex-shrink-0">
             <div className={`grid grid-cols-${productsPerSlide} gap-3 w-full`}>
               {productsInSlide.map((product) => (
-                <Link 
-                  href={`/product/${product._id}`}
-                  key={product._id} 
-                  className="group text-center flex flex-col w-full"
-                >
-                  <div className="aspect-square relative mb-2 bg-gray-50 rounded-lg overflow-hidden shadow-sm w-full">
-                    <ProductImage product={product} />
-                  </div>
-                  <h3 className="text-xs font-medium mb-1 line-clamp-1">{product.name}</h3>
-                  <p className="text-xs text-gray-500 mb-1 line-clamp-1">{product.description?.slice(0, 30) || ''}...</p>
-                  <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
-                </Link>
+                <div key={product._id} className="group text-center flex flex-col w-full">
+                  <Link 
+                    href={`/product/${product._id}`}
+                    className="block"
+                  >
+                    <div className="aspect-square relative mb-2 bg-gray-50 rounded-lg overflow-hidden shadow-sm w-full">
+                      <ProductImage product={product} />
+                    </div>
+                    <h3 className="text-xs font-medium mb-1 line-clamp-1">{product.name}</h3>
+                    <p className="text-xs text-gray-500 mb-1 line-clamp-1">{product.description?.slice(0, 30) || ''}...</p>
+                    <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
+                  </Link>
+                  
+                  {/* WhatsApp Order Button */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const whatsappUrl = generateSingleProductWhatsAppURL({
+                        _id: product._id,
+                        name: product.name,
+                        price: product.price,
+                        volume: product.volume
+                      });
+                      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="mt-2 w-full py-1 px-2 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors flex items-center justify-center gap-1"
+                  >
+                    <FaWhatsapp size={10} />
+                    WhatsApp
+                  </button>
+                </div>
               ))}
             </div>
           </div>
@@ -297,7 +321,7 @@ export default function SimpleProductSlider() {
               href={`/shop?gender=${activeGender === 'male' ? 'Homme' : 'Femme'}`}
               className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
             >
-              EN SAVOIR PLUS
+              {t('home.about.learnMore', 'EN SAVOIR PLUS')}
             </Link>
           </div>
         </div>
@@ -327,18 +351,37 @@ export default function SimpleProductSlider() {
                 ) : (
                   // Static display of men's products
                   products.filter(p => p.gender === 'Homme').slice(0, 3).map(product => (
-                    <Link 
-                      href={`/product/${product._id}`}
-                      key={product._id} 
-                      className="group text-center block"
-                    >
-                      <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm">
-                        <ProductImage product={product} />
-                      </div>
-                      <h3 className="text-sm font-medium mb-1 line-clamp-1">{product.name}</h3>
-                      <p className="text-xs text-gray-500 mb-1 line-clamp-2">{product.description?.slice(0, 40) || ''}...</p>
-                      <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
-                    </Link>
+                    <div key={product._id} className="group text-center block">
+                      <Link 
+                        href={`/product/${product._id}`}
+                        className="block"
+                      >
+                        <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm">
+                          <ProductImage product={product} />
+                        </div>
+                        <h3 className="text-sm font-medium mb-1 line-clamp-1">{product.name}</h3>
+                        <p className="text-xs text-gray-500 mb-1 line-clamp-2">{product.description?.slice(0, 40) || ''}...</p>
+                        <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
+                      </Link>
+                      
+                      {/* WhatsApp Order Button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const whatsappUrl = generateSingleProductWhatsAppURL({
+                            _id: product._id,
+                            name: product.name,
+                            price: product.price,
+                            volume: product.volume
+                          });
+                          window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="mt-2 w-full py-1.5 px-3 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors flex items-center justify-center gap-1"
+                      >
+                        <FaWhatsapp size={12} />
+                        WhatsApp
+                      </button>
+                    </div>
                   ))
                 )}
               </div>
@@ -372,18 +415,37 @@ export default function SimpleProductSlider() {
                 ) : (
                   // Static display of women's products
                   products.filter(p => p.gender === 'Femme').slice(0, 3).map(product => (
-                    <Link 
-                      href={`/product/${product._id}`}
-                      key={product._id} 
-                      className="group text-center block"
-                    >
-                      <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm">
-                        <ProductImage product={product} />
-                      </div>
-                      <h3 className="text-sm font-medium mb-1 line-clamp-1">{product.name}</h3>
-                      <p className="text-xs text-gray-500 mb-1 line-clamp-2">{product.description?.slice(0, 40) || ''}...</p>
-                      <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
-                    </Link>
+                    <div key={product._id} className="group text-center block">
+                      <Link 
+                        href={`/product/${product._id}`}
+                        className="block"
+                      >
+                        <div className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm">
+                          <ProductImage product={product} />
+                        </div>
+                        <h3 className="text-sm font-medium mb-1 line-clamp-1">{product.name}</h3>
+                        <p className="text-xs text-gray-500 mb-1 line-clamp-2">{product.description?.slice(0, 40) || ''}...</p>
+                        <p className="text-[#c8a45d] font-semibold text-sm">{product.price} DH</p>
+                      </Link>
+                      
+                      {/* WhatsApp Order Button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const whatsappUrl = generateSingleProductWhatsAppURL({
+                            _id: product._id,
+                            name: product.name,
+                            price: product.price,
+                            volume: product.volume
+                          });
+                          window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="mt-2 w-full py-1.5 px-3 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors flex items-center justify-center gap-1"
+                      >
+                        <FaWhatsapp size={12} />
+                        WhatsApp
+                      </button>
+                    </div>
                   ))
                 )}
               </div>
@@ -393,7 +455,7 @@ export default function SimpleProductSlider() {
                   href="/shop?gender=Femme"
                   className="inline-block px-10 py-3 border border-black text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
                 >
-                  EN SAVOIR PLUS
+                  {t('home.about.learnMore', 'EN SAVOIR PLUS')}
                 </Link>
               </div>
             </div>

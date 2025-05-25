@@ -22,7 +22,7 @@ export default function BasicProductDisplay() {
   const [womenProducts, setWomenProducts] = useState<Product[]>([]);
   const [isLoadingMen, setIsLoadingMen] = useState(true);
   const [isLoadingWomen, setIsLoadingWomen] = useState(true);
-  
+
   // Mobile carousel refs for touch handling
   const mobileCarouselRef = useRef<HTMLDivElement>(null);
   const desktopMenCarouselRef = useRef<HTMLDivElement>(null);
@@ -328,8 +328,8 @@ export default function BasicProductDisplay() {
               onTouchEnd={handleTouchEnd}
               onScroll={handleScroll}
             >
-              {activeTab === 'male'
-                ? (isLoadingMen
+            {activeTab === 'male'
+              ? (isLoadingMen
                     ? Array(6).fill(0).map((_, i) => (
                         <div className="w-36 flex-shrink-0 snap-center" key={`men-skeleton-${i}`}>
                           <ProductSkeleton />
@@ -337,11 +337,11 @@ export default function BasicProductDisplay() {
                       ))
                     : menProducts.map((product, index) => (
                         <div className="w-36 flex-shrink-0 snap-center" key={`men-${product._id}-${index}`}>
-                          <ProductCard product={product} />
-                        </div>
-                      ))
-                  )
-                : (isLoadingWomen
+                        <ProductCard product={product} />
+                      </div>
+                    ))
+                )
+              : (isLoadingWomen
                     ? Array(6).fill(0).map((_, i) => (
                         <div className="w-36 flex-shrink-0 snap-center" key={`women-skeleton-${i}`}>
                           <ProductSkeleton />
@@ -349,11 +349,11 @@ export default function BasicProductDisplay() {
                       ))
                     : womenProducts.map((product, index) => (
                         <div className="w-36 flex-shrink-0 snap-center" key={`women-${product._id}-${index}`}>
-                          <ProductCard product={product} />
-                        </div>
-                      ))
-                  )
-              }
+                        <ProductCard product={product} />
+                      </div>
+                    ))
+                )
+            }
               {/* Spacer for better UX */}
               <div className="w-4 flex-shrink-0"></div>
             </div>
@@ -398,7 +398,7 @@ export default function BasicProductDisplay() {
                   scrollBehavior: 'smooth'
                 }}
               >
-                {isLoadingMen ? (
+              {isLoadingMen ? (
                   Array(6).fill(0).map((_, i) => (
                     <div className="w-40 flex-shrink-0" key={`men-desktop-skeleton-${i}`}>
                       <ProductSkeleton />
@@ -436,7 +436,7 @@ export default function BasicProductDisplay() {
                   scrollBehavior: 'smooth'
                 }}
               >
-                {isLoadingWomen ? (
+              {isLoadingWomen ? (
                   Array(6).fill(0).map((_, i) => (
                     <div className="w-40 flex-shrink-0" key={`women-desktop-skeleton-${i}`}>
                       <ProductSkeleton />
@@ -462,9 +462,9 @@ export default function BasicProductDisplay() {
             </div>
           </div>
         </div>
-
+        
         <div className="mt-10 text-center">
-          <Link
+          <Link 
             href="/shop"
             className="inline-block px-8 py-3 bg-[#c8a45d] hover:bg-[#b08d48] text-white rounded-lg transition-colors duration-200"
           >

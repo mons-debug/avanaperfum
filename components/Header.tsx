@@ -59,6 +59,14 @@ const Header = () => {
     { href: '/contact', label: 'Contact' },
   ];
 
+  // Enhanced active link detection
+  const isActiveLink = (href: string) => {
+    if (href === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(href);
+  };
+
   return (
     <>
       <header 
@@ -97,11 +105,14 @@ const Header = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm tracking-wider hover:text-[#c8a45d] transition-colors ${
-                    pathname === link.href ? 'text-[#c8a45d]' : 'text-white'
+                  className={`text-sm tracking-wider hover:text-[#c8a45d] transition-colors relative ${
+                    isActiveLink(link.href) ? 'text-[#c8a45d]' : 'text-white'
                   }`}
                 >
                   {link.label}
+                  {isActiveLink(link.href) && (
+                    <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#c8a45d] rounded-full"></span>
+                  )}
                 </Link>
               ))}
             </div>
@@ -119,11 +130,14 @@ const Header = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm tracking-wider hover:text-[#c8a45d] transition-colors ${
-                    pathname === link.href ? 'text-[#c8a45d]' : 'text-white'
+                  className={`text-sm tracking-wider hover:text-[#c8a45d] transition-colors relative ${
+                    isActiveLink(link.href) ? 'text-[#c8a45d]' : 'text-white'
                   }`}
                 >
                   {link.label}
+                  {isActiveLink(link.href) && (
+                    <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#c8a45d] rounded-full"></span>
+                  )}
                 </Link>
               ))}
             </div>
@@ -170,12 +184,15 @@ const Header = () => {
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`block px-4 py-3 text-center text-sm tracking-wider hover:text-[#c8a45d] transition-colors ${
-                        pathname === link.href ? 'text-[#c8a45d]' : 'text-white'
+                      className={`block px-4 py-3 text-center text-sm tracking-wider hover:text-[#c8a45d] transition-colors relative ${
+                        isActiveLink(link.href) ? 'text-[#c8a45d]' : 'text-white'
                       }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {link.label}
+                      {isActiveLink(link.href) && (
+                        <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#c8a45d] rounded-full"></span>
+                      )}
                     </Link>
                   ))}
                   <Link

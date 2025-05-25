@@ -44,7 +44,7 @@ const HeroSection: React.FC = () => {
   // Arrow navigation functions removed as per request
   
   return (
-    <section className="relative h-[80vh] md:h-screen flex items-center overflow-hidden">
+    <section className="relative h-[85vh] sm:h-[90vh] md:h-screen flex items-center justify-center overflow-hidden">
       {/* Slides */}
       {heroSlides.map((slide, index) => (
         <div
@@ -56,22 +56,24 @@ const HeroSection: React.FC = () => {
           }`}
         >
           <div className="absolute inset-0 overflow-hidden">
-            {/* For mobile devices, we'll use a special container with adjusted sizing */}
-            {/* For mobile devices */}
+            {/* Mobile-optimized image container */}
             <div className="relative h-full w-full md:hidden">
               <Image
                 src={slide.image === '/images/hero-avana.jpg' ? '/images/heromobile.png' : slide.image}
                 alt={slide.alt}
                 fill
-                className={`object-cover ${slide.position}`}
+                className="object-cover object-center"
                 style={{ objectFit: 'cover' }}
                 priority={index === 0}
+                loading={index === 0 ? undefined : "lazy"}
                 quality={90}
                 sizes="100vw"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
               />
             </div>
             
-            {/* For larger screens */}
+            {/* Desktop image container */}
             <div className="relative h-full w-full hidden md:block">
               <Image
                 src={slide.image}
@@ -79,11 +81,19 @@ const HeroSection: React.FC = () => {
                 fill
                 className={`object-cover ${slide.position}`}
                 priority={index === 0}
+                loading={index === 0 ? undefined : "lazy"}
                 quality={90}
                 sizes="100vw"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+            {/* Enhanced overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20" />
+            {/* Additional overlay for better text readability */}
+            <div className="absolute inset-0 bg-black/20" />
+            {/* Mobile-specific additional overlay for better readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 md:hidden" />
           </div>
         </div>
       ))}
@@ -91,24 +101,32 @@ const HeroSection: React.FC = () => {
       {/* Navigation Buttons Removed */}
       
       {/* Content */}
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-xl">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+        <div className="max-w-xl lg:max-w-2xl">
+          {/* Enhanced text with better shadows and mobile optimization */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 md:mb-6 leading-tight" 
+              style={{ 
+                textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
+                WebkitTextStroke: '1px rgba(0,0,0,0.1)' 
+              }}>
             Parfums Inspirés de Luxe
           </h1>
-          <p className="text-lg md:text-xl text-white/90 mb-6 md:mb-8">
-            Découvrez notre collection exclusive
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/95 mb-6 md:mb-8 leading-relaxed font-medium"
+             style={{ 
+               textShadow: '1px 1px 6px rgba(0,0,0,0.8), 0 0 15px rgba(0,0,0,0.5)' 
+             }}>
+            Découvrez notre collection exclusive de parfums inspirés des plus grandes maisons de parfumerie
           </p>
-          <div className="flex flex-wrap gap-3 md:gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
             <Link
               href="/shop?gender=Homme"
-              className="px-6 py-2.5 md:px-8 md:py-3 bg-[#c8a45d] hover:bg-[#c8a45d]/90 text-white font-medium rounded-full transition-colors text-sm md:text-base"
+              className="px-6 py-3 md:px-8 md:py-4 bg-[#c8a45d] hover:bg-[#b08d48] text-white font-semibold rounded-full transition-all duration-300 text-sm md:text-base shadow-xl hover:shadow-2xl hover:scale-105 text-center"
             >
               Pour Lui
             </Link>
             <Link
               href="/shop?gender=Femme"
-              className="px-6 py-2.5 md:px-8 md:py-3 border-2 border-white text-white rounded-full hover:bg-white hover:text-[#c8a45d] transition-colors text-sm md:text-base"
+              className="px-6 py-3 md:px-8 md:py-4 border-2 border-white text-white rounded-full hover:bg-white hover:text-[#c8a45d] transition-all duration-300 text-sm md:text-base shadow-xl hover:shadow-2xl hover:scale-105 backdrop-blur-sm text-center font-semibold"
             >
               Pour Elle
             </Link>
@@ -116,17 +134,17 @@ const HeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Slide Indicators - Modern Design */}
-      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-3 md:gap-4">
+      {/* Slide Indicators - Enhanced for better visibility */}
+      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2 md:gap-3 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-md">
         {heroSlides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
             className={`relative overflow-hidden transition-all duration-500 ease-out ${
               index === currentSlide 
-                ? 'w-8 md:w-12 h-1.5 bg-white/90 shadow-lg' 
-                : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/60 hover:scale-110'
-            } rounded-full backdrop-blur-sm`}
+                ? 'w-6 md:w-8 h-1 bg-white shadow-lg' 
+                : 'w-1 h-1 bg-white/50 hover:bg-white/80 hover:scale-125'
+            } rounded-full`}
             aria-label={`Go to slide ${index + 1}`}
           >
             {index === currentSlide && (

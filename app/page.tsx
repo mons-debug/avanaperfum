@@ -2,35 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { connectToDB } from '@/lib/mongodb';
-import Product from '@/models/Product';
-import Category from '@/models/Category';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import HeroSection from '@/components/HeroSection';
-// import ProductCard from '@/components/ProductCard';
-// import CategoryCard from '@/components/CategoryCard';
-import BasicProductDisplay from '@/components/BasicProductDisplay';
+import FeaturedProductsSection from '@/components/FeaturedProductsSection';
 import { FaShoppingBag, FaWhatsapp, FaCheck, FaArrowRight, FaPhone, FaBox, FaCrown, FaTruck, FaMoneyBillWave } from 'react-icons/fa';
 import Image from 'next/image';
-// import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import { useTranslation } from '@/components/i18n/TranslationProvider';
 
 // Add type definitions at the top
-interface Product {
-  _id: string;
-  name: string;
-  inspiredBy?: string;
-  description?: string;
-  price: number;
-  volume: string;
-  images: string[];
-  gender: string;
-  tags?: string[];
-  brand?: string;
-  category?: string;
-}
-
 interface Category {
   _id: string;
   name: string;
@@ -41,145 +21,12 @@ interface Category {
   productCount?: number;
 }
 
-async function getProductsByGender(gender: string) {
-  try {
-    await connectToDB();
-    // Get latest 3 products by gender
-    const products = await Product.find({ gender }).sort({ createdAt: -1 }).limit(3);
-    return JSON.parse(JSON.stringify(products));
-  } catch (error) {
-    console.error(`Error fetching ${gender} products:`, error);
-    return [];
-  }
-}
-
-async function getProductsByCategory(categoryId: string) {
-  try {
-    await connectToDB();
-    // Get latest 3 products by category
-    const products = await Product.find({ categoryId }).sort({ createdAt: -1 }).limit(3);
-    return JSON.parse(JSON.stringify(products));
-  } catch (error) {
-    console.error(`Error fetching products for category ${categoryId}:`, error);
-    return [];
-  }
-}
-
-async function getCategoriesWithCount() {
-  try {
-    await connectToDB();
-    const categories = await Category.find({});
-    
-    // Get product count for each category
-    const categoriesWithCount = await Promise.all(
-      categories.map(async (category) => {
-        const count = await Product.countDocuments({ categoryId: category._id });
-        return {
-          ...JSON.parse(JSON.stringify(category)),
-          productCount: count
-        };
-      })
-    );
-    
-    return categoriesWithCount;
-  } catch (error) {
-    console.error('Error fetching categories with count:', error);
-    return [];
-  }
-}
-
-// Define the ProductImage component
-interface ProductImageProps {
-  initialSrc?: string;
-  alt: string;
-  productId?: string;
-  sizes: string;
-}
-
-const ProductImage: React.FC<ProductImageProps> = ({ initialSrc, alt, productId, sizes }) => {
-  const placeholderSrc = '/images/product-placeholder.svg';
-  const [currentSrc, setCurrentSrc] = useState(initialSrc || placeholderSrc);
-  const [hasErrored, setHasErrored] = useState(false);
-
-  useEffect(() => {
-    // When initialSrc changes, reset the image source
-    if (initialSrc && initialSrc !== currentSrc && !hasErrored) {
-      setCurrentSrc(initialSrc);
-    }
-  }, [initialSrc, currentSrc, hasErrored]);
-
-  const handleError = () => {
-    if (!hasErrored) {
-      console.error(`Image error for product ${productId || 'Unknown ID'} with src "${currentSrc}". Falling back to placeholder.`);
-      setCurrentSrc(placeholderSrc);
-      setHasErrored(true);
-    }
-  };
-
-  if (!initialSrc || hasErrored) {
-    return (
-      <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-        <Image
-          src={placeholderSrc}
-          alt={alt}
-          fill
-          sizes={sizes}
-          className="object-contain p-4"
-          unoptimized={true}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <Image
-      src={currentSrc}
-      alt={alt}
-      fill
-      sizes={sizes}
-      className="object-cover transition-transform duration-500 group-hover:scale-105"
-      onError={handleError}
-    />
-  );
-};
-
 export default function Home() {
-  const [selectedGender, setSelectedGender] = useState('Homme');
-  const [currentMenSlide, setCurrentMenSlide] = useState(0);
-  const [currentWomenSlide, setCurrentWomenSlide] = useState(0);
-  // Hero slide state is now handled within the HeroSection component
-  const [activeGender, setActiveGender] = useState('male'); // For mobile toggle
-  const [isSeeding, setIsSeeding] = useState(false);
   const { t, locale } = useTranslation();
   
-  // Fetch directly from API instead of using SWR hook
-  const [menProducts, setMenProducts] = useState<Product[]>([]);
-  const [isLoadingMen, setIsLoadingMen] = useState(true);
-  const [womenProducts, setWomenProducts] = useState<Product[]>([]);
-  const [isLoadingWomen, setIsLoadingWomen] = useState(true);
-
-
   const { categories, isLoading: isLoadingCategories } = useCategories({
     featured: true,
   });
-
-  // We'll directly fetch products instead of using the useProducts hook
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [isLoadingAll, setIsLoadingAll] = useState(true);
-
-  // Product Display settings
-  const productsPerDesktopSlide = 3; // 3 products per slide on desktop
-  const productsPerMobileSlide = 2; // 2 products per slide on mobile
-
-  // Calculate max slides for men's products
-  const totalMenDesktopSlides = menProducts ? Math.ceil(menProducts.length / productsPerDesktopSlide) : 0;
-  const totalMenMobileSlides = menProducts ? Math.ceil(menProducts.length / productsPerMobileSlide) : 0;
-
-  // Calculate max slides for women's products
-  const totalWomenDesktopSlides = womenProducts ? Math.ceil(womenProducts.length / productsPerDesktopSlide) : 0;
-  const totalWomenMobileSlides = womenProducts ? Math.ceil(womenProducts.length / productsPerMobileSlide) : 0;
-
-  // Hero slides and auto-advancing are now handled in the HeroSection component
 
   const howToOrderSteps = [
     {
@@ -199,497 +46,13 @@ export default function Home() {
     }
   ];
 
-  // Hero slide navigation is now handled within the HeroSection component
-
-  // Updated navigation functions for product slides
-  const nextProductSlide = (gender: 'men' | 'women') => {
-    if (gender === 'men') {
-      // For desktop: advance in groups of 3
-      if (window.innerWidth >= 768) {
-        const totalSlides = Math.ceil(menProducts.length / productsPerDesktopSlide);
-        setCurrentMenSlide(current => (current >= totalSlides - 1 ? 0 : current + 1));
-      } 
-      // For mobile: advance in groups of 2
-      else {
-        const totalSlides = Math.ceil(menProducts.length / productsPerMobileSlide);
-        setCurrentMenSlide(current => (current >= totalSlides - 1 ? 0 : current + 1));
-      }
-    } else {
-      // Updated women's functionality to match men's
-      if (window.innerWidth >= 768) {
-        const totalSlides = Math.ceil(womenProducts.length / productsPerDesktopSlide);
-        setCurrentWomenSlide(current => (current >= totalSlides - 1 ? 0 : current + 1));
-      } else {
-        const totalSlides = Math.ceil(womenProducts.length / productsPerMobileSlide);
-        setCurrentWomenSlide(current => (current >= totalSlides - 1 ? 0 : current + 1));
-      }
-    }
-  };
-
-  const prevProductSlide = (gender: 'men' | 'women') => {
-    if (gender === 'men') {
-      // For desktop: go back in groups of 3
-      if (window.innerWidth >= 768) {
-        const totalSlides = Math.ceil(menProducts.length / productsPerDesktopSlide);
-        setCurrentMenSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
-      }
-      // For mobile: go back in groups of 2
-      else {
-        const totalSlides = Math.ceil(menProducts.length / productsPerMobileSlide);
-        setCurrentMenSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
-      }
-    } else {
-      // Updated women's functionality to match men's
-      if (window.innerWidth >= 768) {
-        const totalSlides = Math.ceil(womenProducts.length / productsPerDesktopSlide);
-        setCurrentWomenSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
-      } else {
-        const totalSlides = Math.ceil(womenProducts.length / productsPerMobileSlide);
-        setCurrentWomenSlide(current => (current <= 0 ? totalSlides - 1 : current - 1));
-      }
-    }
-  };
-
-  // Remove touch swipe support for now to avoid TypeScript errors
-  useEffect(() => {
-    // Will be implemented if needed
-  }, []);
-
-  // Log products for debugging
-  useEffect(() => {
-    if (!isLoadingMen) {
-      console.log(`Fetched Homme category products: ${menProducts?.length || 0}`);
-      
-      if (menProducts?.length > 0) {
-        // Log all products with details to check the data
-        menProducts.forEach((product: Product, index: number) => {
-          console.log(`Homme product ${index + 1}:`, {
-            id: product._id,
-            name: product.name,
-            gender: product.gender,
-            category: product.category,
-            price: product.price,
-            hasImages: !!product.images?.length,
-            firstImage: product.images?.[0] || 'No image',
-            allImages: product.images || []
-          });
-        });
-        
-        // Check all unique genders among men's products
-        if (menProducts.length > 1) {
-          const genders = [...new Set(menProducts.map((p: Product) => p.gender))];
-          console.log('Homme products genders:', genders);
-        }
-      } else {
-        console.log('No products found in Homme category');
-      }
-    }
-  }, [menProducts, isLoadingMen]);
-
-  // Additional debugging to list all products
-  useEffect(() => {
-    if (!isLoadingAll && allProducts) {
-      console.log(`Total products in database: ${allProducts.length}`);
-      
-      // Count products by gender
-      const genderCounts = allProducts.reduce((acc: Record<string, number>, product: Product) => {
-        const gender = product.gender || 'unspecified';
-        acc[gender] = (acc[gender] || 0) + 1;
-        return acc;
-      }, {});
-      console.log('Products by gender:', genderCounts);
-      
-      // Count products by category
-      const categoryCounts = allProducts.reduce((acc: Record<string, number>, product: Product) => {
-        const category = product.category || 'unspecified';
-        acc[category] = (acc[category] || 0) + 1;
-        return acc;
-      }, {});
-      console.log('Products by category:', categoryCounts);
-      
-      // List first 5 products with detailed info
-      if (allProducts.length > 0) {
-        console.log('First 5 products:');
-        allProducts.slice(0, 5).forEach((product: Product, index: number) => {
-          console.log(`Product ${index + 1}:`, {
-            id: product._id,
-            name: product.name,
-            gender: product.gender,
-            category: product.category
-          });
-        });
-      }
-    }
-  }, [allProducts, isLoadingAll]);
-
-  // Function to seed test data when no products are found
-  const seedTestData = async () => {
-    setIsSeeding(true);
-    try {
-      const response = await fetch('/api/seed-test-data');
-      const data = await response.json();
-      if (data.success) {
-        console.log('Successfully seeded test data:', data);
-        // Reload the page to fetch new data
-        window.location.reload();
-      } else {
-        console.error('Failed to seed test data:', data);
-        alert('Failed to add test products. Please try again later.');
-      }
-    } catch (error) {
-      console.error('Error seeding test data:', error);
-      alert('An error occurred while adding test products.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
-  // Fetch products from the API for the home page
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // Fetch men's products
-        setIsLoadingMen(true);
-        console.log('Fetching Homme products by gender...');
-        const menResponse = await fetch('/api/products?gender=Homme&limit=6', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache'
-          }
-        });
-        const menData = await menResponse.json();
-        
-        // Process men's products
-        if (menData.success && Array.isArray(menData.data)) {
-          // Use the actual images from the database
-          const menProductsWithImages = menData.data.map((product: Product) => {
-            // If product has no images, use placeholder
-            if (!product.images || product.images.length === 0) {
-              return {
-                ...product,
-                images: ['/images/product-placeholder.svg']
-              };
-            }
-            return product;
-          });
-          
-          console.log(`Found ${menProductsWithImages.length} Homme products`);
-          if (menProductsWithImages.length > 0) {
-            console.log('Example men product:', menProductsWithImages[0]);
-          }
-          
-          // If no products found, use fallback data
-          if (menProductsWithImages.length === 0) {
-            console.log('No Homme products found, using fallback data');
-            setMenProducts([
-              {
-                _id: 'sample1',
-                name: 'Homme Classic',
-                description: 'A sophisticated fragrance for the modern man',
-                price: 299,
-                volume: '100ml',
-                gender: 'Homme',
-                category: 'Homme',
-                images: ['/images/product-placeholder.svg']
-              },
-              {
-                _id: 'sample2',
-                name: 'Homme Sport',
-                description: 'An energetic scent for active lifestyles',
-                price: 250,
-                volume: '50ml',
-                gender: 'Homme',
-                category: 'Homme',
-                images: ['/images/product-placeholder.svg']
-              },
-              {
-                _id: 'sample3',
-                name: 'Homme Elegance',
-                description: 'A distinguished fragrance with woody notes',
-                price: 350,
-                volume: '100ml',
-                gender: 'Homme',
-                category: 'Homme',
-                images: ['/images/product-placeholder.svg']
-              }
-            ]);
-          } else {
-            setMenProducts(menProductsWithImages);
-          }
-        } else {
-          console.error('API response format error for men products:', menData);
-          // Fallback to sample products if API fails
-          setMenProducts([
-            {
-              _id: 'sample1',
-              name: 'Homme Classic',
-              description: 'A sophisticated fragrance for the modern man',
-              price: 299,
-              volume: '100ml',
-              gender: 'Homme',
-              category: 'Homme',
-              images: ['/images/product-placeholder.svg']
-            },
-            {
-              _id: 'sample2',
-              name: 'Homme Sport',
-              description: 'An energetic scent for active lifestyles',
-              price: 250,
-              volume: '50ml',
-              gender: 'Homme',
-              category: 'Homme',
-              images: ['/images/product-placeholder.svg']
-            },
-            {
-              _id: 'sample3',
-              name: 'Homme Elegance',
-              description: 'A distinguished fragrance with woody notes',
-              price: 350,
-              volume: '100ml',
-              gender: 'Homme',
-              category: 'Homme',
-              images: ['/images/product-placeholder.svg']
-            }
-          ]);
-        }
-        setIsLoadingMen(false);
-        
-        // Fetch women's products
-        setIsLoadingWomen(true);
-        console.log('Fetching Femme products by gender...');
-        const womenResponse = await fetch('/api/products?gender=Femme&limit=6', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache'
-          }
-        });
-        const womenData = await womenResponse.json();
-        
-        // Process women's products
-        if (womenData.success && Array.isArray(womenData.data)) {
-          // Use the actual images from the database
-          const womenProductsWithImages = womenData.data.map((product: Product) => {
-            // If product has no images, use placeholder
-            if (!product.images || product.images.length === 0) {
-              return {
-                ...product,
-                images: ['/images/product-placeholder.svg']
-              };
-            }
-            return product;
-          });
-          
-          console.log(`Found ${womenProductsWithImages.length} Femme products`);
-          if (womenProductsWithImages.length > 0) {
-            console.log('Example women product:', womenProductsWithImages[0]);
-          }
-          
-          // If no products found, use fallback data
-          if (womenProductsWithImages.length === 0) {
-            console.log('No Femme products found, using fallback data');
-            setWomenProducts([
-              {
-                _id: 'sample-f1',
-                name: 'Femme Classic',
-                description: 'A sophisticated fragrance for the modern woman',
-                price: 299,
-                volume: '100ml',
-                gender: 'Femme',
-                category: 'Femme',
-                images: ['/images/product-placeholder.svg']
-              },
-              {
-                _id: 'sample-f2',
-                name: 'Femme Elegance',
-                description: 'An elegant scent with floral notes',
-                price: 250,
-                volume: '50ml',
-                gender: 'Femme',
-                category: 'Femme',
-                images: ['/images/product-placeholder.svg']
-              },
-              {
-                _id: 'sample-f3',
-                name: 'Femme Chic',
-                description: 'A distinguished fragrance with fruity notes',
-                price: 350,
-                volume: '100ml',
-                gender: 'Femme',
-                category: 'Femme',
-                images: ['/images/product-placeholder.svg']
-              }
-            ]);
-          } else {
-            setWomenProducts(womenProductsWithImages);
-          }
-        } else {
-          console.error('API response format error for women products:', womenData);
-          // Fallback to sample products if API fails
-          setWomenProducts([
-            {
-              _id: 'sample-f1',
-              name: 'Femme Classic',
-              description: 'A sophisticated fragrance for the modern woman',
-              price: 299,
-              volume: '100ml',
-              gender: 'Femme',
-              category: 'Femme',
-              images: ['/images/product-placeholder.svg']
-            },
-            {
-              _id: 'sample-f2',
-              name: 'Femme Elegance',
-              description: 'An elegant scent with floral notes',
-              price: 250,
-              volume: '50ml',
-              gender: 'Femme',
-              category: 'Femme',
-              images: ['/images/product-placeholder.svg']
-            },
-            {
-              _id: 'sample-f3',
-              name: 'Femme Chic',
-              description: 'A distinguished fragrance with fruity notes',
-              price: 350,
-              volume: '100ml',
-              gender: 'Femme',
-              category: 'Femme',
-              images: ['/images/product-placeholder.svg']
-            }
-          ]);
-        }
-        setIsLoadingWomen(false);
-        
-        // Also fetch all products for debugging
-        setIsLoadingAll(true);
-        const allResponse = await fetch('/api/products?limit=100', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache'
-          }
-        });
-        const allData = await allResponse.json();
-        if (allData.success && Array.isArray(allData.data)) {
-          setAllProducts(allData.data);
-        }
-        setIsLoadingAll(false);
-        
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        // Set fallback products for both genders
-        setMenProducts([
-          {
-            _id: 'fallback-m1',
-            name: 'Homme Classic',
-            description: 'A sophisticated fragrance for the modern man',
-            price: 299,
-            volume: '100ml',
-            gender: 'Homme',
-            category: 'Homme',
-            images: ['/images/product-placeholder.svg']
-          },
-          {
-            _id: 'fallback-m2',
-            name: 'Homme Sport',
-            description: 'An energetic scent for active lifestyles',
-            price: 250,
-            volume: '50ml',
-            gender: 'Homme',
-            category: 'Homme',
-            images: ['/images/product-placeholder.svg']
-          },
-          {
-            _id: 'fallback-m3',
-            name: 'Homme Elegance',
-            description: 'A distinguished fragrance with woody notes',
-            price: 350,
-            volume: '100ml',
-            gender: 'Homme',
-            category: 'Homme',
-            images: ['/images/product-placeholder.svg']
-          }
-        ]);
-        
-        setWomenProducts([
-          {
-            _id: 'fallback-f1',
-            name: 'Femme Classic',
-            description: 'A sophisticated fragrance for the modern woman',
-            price: 299,
-            volume: '100ml',
-            gender: 'Femme',
-            category: 'Femme',
-            images: ['/images/product-placeholder.svg']
-          },
-          {
-            _id: 'fallback-f2',
-            name: 'Femme Elegance',
-            description: 'An elegant scent with floral notes',
-            price: 250,
-            volume: '50ml',
-            gender: 'Femme',
-            category: 'Femme',
-            images: ['/images/product-placeholder.svg']
-          },
-          {
-            _id: 'fallback-f3',
-            name: 'Femme Chic',
-            description: 'A distinguished fragrance with fruity notes',
-            price: 350,
-            volume: '100ml',
-            gender: 'Femme',
-            category: 'Femme',
-            images: ['/images/product-placeholder.svg']
-          }
-        ]);
-      } finally {
-        setIsLoadingMen(false);
-        setIsLoadingWomen(false);
-      }
-    };
-    
-    fetchProducts();
-  }, []);
-
-  // Simplified but reliable product image component
-  const SimpleProductImage = ({ product }: { product: Product }) => {
-    // Use the first product image if available, otherwise use placeholder
-    const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '/images/product-placeholder.svg';
-    
-    return (
-      <div 
-        className="aspect-square relative mb-3 bg-gray-50 rounded-lg overflow-hidden shadow-sm"
-        style={{
-          backgroundImage: `url('${imageUrl}')`,
-          backgroundSize: "contain",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          width: "100%",
-          height: "100%"
-        }}
-      />
-    );
-  };
-
-  // Add a debug function to check what's happening with men's products
-  useEffect(() => {
-    if (!isLoadingMen) {
-      console.log('Men products state updated:', {
-        count: menProducts?.length || 0,
-        isArray: Array.isArray(menProducts),
-        isEmpty: menProducts?.length === 0,
-        firstProduct: menProducts?.[0]
-      });
-    }
-  }, [menProducts, isLoadingMen]);
-
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section - Using our optimized mobile-focused component */}
       <HeroSection />
 
       {/* Featured Products Section */}
-      <BasicProductDisplay />
+      <FeaturedProductsSection />
 
       {/* Featured Collections Section */}
       <section className="py-16 bg-gray-50">
@@ -904,7 +267,9 @@ export default function Home() {
                       fill
                       className="object-cover object-center scale-110"
                       sizes="100vw"
-                      priority
+                      loading="lazy"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                       quality={100}
                     />
                   </div>
@@ -961,7 +326,9 @@ export default function Home() {
                       fill
                       className="object-cover object-center scale-110"
                       sizes="(max-width: 1200px) 50vw, 33vw"
-                      priority
+                      loading="lazy"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                       quality={100}
                     />
                   </div>
@@ -1056,13 +423,13 @@ export default function Home() {
                     icon: <FaShoppingBag className="w-10 h-10 text-[#c8a45d]" />,
                     title: t('home.howToOrder.steps.choose.title', 'Browse Collection'),
                     description: t('home.howToOrder.steps.choose.description', 'Explore our wide range of luxury inspired fragrances')
-              },
-              {
+                  },
+                  {
                     icon: <FaWhatsapp className="w-10 h-10 text-[#c8a45d]" />,
                     title: t('home.howToOrder.steps.contact.title', 'Place Your Order'),
                     description: t('home.howToOrder.steps.contact.description', 'Message us on WhatsApp and complete the order form')
-              },
-              {
+                  },
+                  {
                     icon: <FaPhone className="w-10 h-10 text-[#c8a45d]" />,
                     title: t('home.howToOrder.steps.confirm.title', 'Confirmation Call'),
                     description: t('home.howToOrder.steps.confirm.description', 'Receive a quick confirmation call to verify your order')
@@ -1081,10 +448,10 @@ export default function Home() {
                       <h3 className="text-xl font-playfair text-gray-800 mb-2">{step.title}</h3>
                       <p className="text-gray-600">{step.description}</p>
                     </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
           </div>
 
           {/* Steps - Mobile Version */}
@@ -1123,7 +490,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-              </div>
+          </div>
           
           {/* Call to Action */}
           <div className="text-center mt-12 md:mt-16">

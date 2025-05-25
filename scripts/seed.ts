@@ -35,20 +35,20 @@ async function connectToDBForSeed() {
 
 async function seedDatabase() {
   try {
-    console.log('🌱 Starting database seeding...');
+    console.log('🌱 Démarrage de l\'ensemencement de la base de données...');
     
     // Connect to the database using our custom function
     await connectToDBForSeed();
-    console.log('📊 Connected to MongoDB');
+    console.log('📊 Connecté à MongoDB');
     
     // Clear existing data
-    console.log('🧹 Clearing existing data...');
+    console.log('🧹 Suppression des données existantes...');
     await Product.deleteMany({});
     // Note: We don't delete categories to preserve collections
-    console.log('✅ Existing products cleared (categories preserved)');
+    console.log('✅ Produits existants supprimés (catégories préservées)');
     
     // Create categories (only if they don't exist)
-    console.log('📝 Creating basic categories (if needed)...');
+    console.log('📝 Création des catégories de base (si nécessaire)...');
     const basicCategories = [
       { name: 'Femme', slug: 'femme', image: '/images/categories/femme.svg' },
       { name: 'Homme', slug: 'homme', image: '/images/categories/homme.svg' },
@@ -70,20 +70,20 @@ async function seedDatabase() {
     }
     
     const categoryCount = await Category.countDocuments();
-    console.log(`✅ Categories ready: ${categoryCount} total`);
+    console.log(`✅ Catégories prêtes : ${categoryCount} au total`);
     
-    // Create products
-    console.log('📝 Creating products...');
+    // Create products with French descriptions
+    console.log('📝 Création des produits...');
     const products = [
       {
         name: 'Bright Crystal Versace',
         slug: 'bright-crystal-versace',
-        inspiredBy: 'Bright Crystal by Versace',
-        description: 'A refreshing and sensual blend of pomegranate, yuzu, and peony with a touch of magnolia and amber.',
+        inspiredBy: 'Bright Crystal de Versace',
+        description: 'Un mélange rafraîchissant et sensuel de grenade, yuzu et pivoine avec une touche de magnolia et d\'ambre.',
         price: 99,
         volume: '50ml',
         tags: ['versace', 'bright crystal'],
-        ingredients: 'Alcohol, Aqua, Parfum, Pomegranate Extract, Peony, Magnolia, Amber, Mahogany Wood',
+        ingredients: 'Alcool, Aqua, Parfum, Extrait de Grenade, Pivoine, Magnolia, Ambre, Bois d\'Acajou',
         images: ['/images/products/53e99b52-Artboard_1.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -91,12 +91,12 @@ async function seedDatabase() {
       {
         name: 'Bombshell Victoria\'s Secret',
         slug: 'bombshell-victoria-secret',
-        inspiredBy: 'Bombshell by Victoria\'s Secret',
-        description: 'A fruity and floral explosion with notes of purple passion fruit, Shangri-la peony, and vanilla orchid.',
+        inspiredBy: 'Bombshell de Victoria\'s Secret',
+        description: 'Une explosion fruitée et florale avec des notes de fruit de la passion pourpre, pivoine Shangri-la et orchidée vanille.',
         price: 99,
         volume: '50ml',
         tags: ['victoria', 'bombshell'],
-        ingredients: 'Alcohol, Aqua, Parfum, Purple Passion Fruit, Peony, Vanilla Orchid, Musk',
+        ingredients: 'Alcool, Aqua, Parfum, Fruit de la Passion Pourpre, Pivoine, Orchidée Vanille, Musc',
         images: ['/images/products/e5419e21-Artboard_6.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -104,12 +104,12 @@ async function seedDatabase() {
       {
         name: 'Black Opium YSL',
         slug: 'black-opium-ysl',
-        inspiredBy: 'Black Opium by Yves Saint Laurent',
-        description: 'An addictive gourmand fragrance featuring notes of black coffee, white flowers, and vanilla.',
+        inspiredBy: 'Black Opium d\'Yves Saint Laurent',
+        description: 'Un parfum gourmand addictif avec des notes de café noir, fleurs blanches et vanille.',
         price: 99,
         volume: '50ml',
         tags: ['ysl', 'opium'],
-        ingredients: 'Alcohol, Aqua, Parfum, Coffee Accord, Jasmine, Vanilla, Cedarwood, Patchouli',
+        ingredients: 'Alcool, Aqua, Parfum, Accord Café, Jasmin, Vanille, Bois de Cèdre, Patchouli',
         images: ['/images/products/44c51182-Artboard_5.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -117,12 +117,12 @@ async function seedDatabase() {
       {
         name: 'Burberry Weekend',
         slug: 'burberry-weekend',
-        inspiredBy: 'Weekend by Burberry',
-        description: 'A fresh floral citrus scent with top notes of mandarin and aromatic grasses.',
+        inspiredBy: 'Weekend de Burberry',
+        description: 'Un parfum floral citronné frais avec des notes de tête de mandarine et d\'herbes aromatiques.',
         price: 99,
         volume: '50ml',
         tags: ['burberry'],
-        ingredients: 'Alcohol, Aqua, Parfum, Mandarin, Wild Rose, Peach Flower, Cedar, Sandalwood',
+        ingredients: 'Alcool, Aqua, Parfum, Mandarine, Rose Sauvage, Fleur de Pêche, Cèdre, Bois de Santal',
         images: ['/images/products/b6c9d384-Artboard_14.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -130,12 +130,12 @@ async function seedDatabase() {
       {
         name: 'Le Beau Jean Paul Gaultier',
         slug: 'le-beau-jean-paul-gaultier',
-        inspiredBy: 'Le Beau by Jean Paul Gaultier',
-        description: 'A sensual woody fragrance featuring coconut wood and tonka bean.',
+        inspiredBy: 'Le Beau de Jean Paul Gaultier',
+        description: 'Un parfum boisé sensuel avec bois de coco et fève tonka.',
         price: 99,
         volume: '50ml',
         tags: ['gaultier', 'le beau'],
-        ingredients: 'Alcohol, Aqua, Parfum, Bergamot, Coconut Wood, Tonka Bean, Amber',
+        ingredients: 'Alcool, Aqua, Parfum, Bergamote, Bois de Coco, Fève Tonka, Ambre',
         images: ['/images/products/ca819074-Artboard_10.jpg'],
         category: 'Homme',
         gender: 'Homme',
@@ -143,12 +143,12 @@ async function seedDatabase() {
       {
         name: 'Le Male Elixir Jean Paul Gaultier',
         slug: 'le-male-elixir-jean-paul-gaultier',
-        inspiredBy: 'Le Male Elixir by Jean Paul Gaultier',
-        description: 'An intense amber woody fragrance with lavender, vanilla, and woody notes.',
+        inspiredBy: 'Le Male Elixir de Jean Paul Gaultier',
+        description: 'Un parfum ambre boisé intense avec lavande, vanille et notes boisées.',
         price: 99,
         volume: '50ml',
         tags: ['gaultier', 'elixir'],
-        ingredients: 'Alcohol, Aqua, Parfum, Lavender, Mint, Vanilla, Tonka Bean, Woody Notes',
+        ingredients: 'Alcool, Aqua, Parfum, Lavande, Menthe, Vanille, Fève Tonka, Notes Boisées',
         images: ['/images/products/9c5a631e-Artboard_12.jpg'],
         category: 'Homme',
         gender: 'Homme',
@@ -156,12 +156,12 @@ async function seedDatabase() {
       {
         name: 'Born in Roma Gold Valentino',
         slug: 'born-in-roma-gold-valentino',
-        inspiredBy: 'Born in Roma Gold by Valentino',
-        description: 'A warm spicy blend with notes of incense, vanilla, and rich spices.',
+        inspiredBy: 'Born in Roma Gold de Valentino',
+        description: 'Un mélange épicé chaleureux avec des notes d\'encens, vanille et épices riches.',
         price: 99,
         volume: '50ml',
         tags: ['valentino', 'roma'],
-        ingredients: 'Alcohol, Aqua, Parfum, Incense, Vanilla, Spice Accord, Cedarwood',
+        ingredients: 'Alcool, Aqua, Parfum, Encens, Vanille, Accord d\'Épices, Bois de Cèdre',
         images: ['/images/products/3f296814-Artboard_15.jpg'],
         category: 'Homme',
         gender: 'Homme',
@@ -169,12 +169,12 @@ async function seedDatabase() {
       {
         name: 'Aventus Creed',
         slug: 'aventus-creed',
-        inspiredBy: 'Aventus by Creed',
-        description: 'A sophisticated blend of pineapple, blackcurrant, birch, and ambergris.',
+        inspiredBy: 'Aventus de Creed',
+        description: 'Un mélange sophistiqué d\'ananas, cassis, bouleau et ambre gris.',
         price: 99,
         volume: '50ml',
         tags: ['creed', 'aventus'],
-        ingredients: 'Alcohol, Aqua, Parfum, Pineapple, Blackcurrant, Birch, Ambergris, Oakmoss',
+        ingredients: 'Alcool, Aqua, Parfum, Ananas, Cassis, Bouleau, Ambre Gris, Mousse de Chêne',
         images: ['/images/products/d42144e9-Artboard_17.jpg'],
         category: 'Homme',
         gender: 'Homme',
@@ -182,12 +182,12 @@ async function seedDatabase() {
       {
         name: 'Dior Homme 2020',
         slug: 'dior-homme-2020',
-        inspiredBy: 'Dior Homme (2020 version)',
-        description: 'An elegant iris-based fragrance with woody notes and a hint of leather.',
+        inspiredBy: 'Dior Homme (version 2020)',
+        description: 'Un parfum élégant à base d\'iris avec des notes boisées et une pointe de cuir.',
         price: 99,
         volume: '50ml',
         tags: ['dior', 'homme'],
-        ingredients: 'Alcohol, Aqua, Parfum, Bergamot, Pink Pepper, Iris, Patchouli, Cedar, Musks',
+        ingredients: 'Alcool, Aqua, Parfum, Bergamote, Poivre Rose, Iris, Patchouli, Cèdre, Muscs',
         images: ['/images/products/2811be99-Artboard_3.jpg'],
         category: 'Homme',
         gender: 'Homme',
@@ -196,11 +196,11 @@ async function seedDatabase() {
         name: 'Dior Homme Intense',
         slug: 'dior-homme-intense',
         inspiredBy: 'Dior Homme Intense',
-        description: 'An intense and sophisticated iris woody fragrance with a lavender heart.',
+        description: 'Un parfum iris boisé intense et sophistiqué avec un cœur de lavande.',
         price: 99,
         volume: '50ml',
         tags: ['dior', 'intense'],
-        ingredients: 'Alcohol, Aqua, Parfum, Lavender, Iris, Ambrette Seed, Pear, Vanilla, Vetiver, Cedar',
+        ingredients: 'Alcool, Aqua, Parfum, Lavande, Iris, Graine d\'Ambrette, Poire, Vanille, Vétiver, Cèdre',
         images: ['/images/products/3dc570fa-Artboard_8.jpg'],
         category: 'Homme',
         gender: 'Homme',
@@ -208,12 +208,12 @@ async function seedDatabase() {
       {
         name: 'Versace Eros',
         slug: 'versace-eros',
-        inspiredBy: 'Eros by Versace',
-        description: 'A bold masculine fragrance with mint, green apple, and vanilla notes.',
+        inspiredBy: 'Eros de Versace',
+        description: 'Un parfum masculin audacieux avec menthe, pomme verte et notes de vanille.',
         price: 99,
         volume: '50ml',
         tags: ['eros'],
-        ingredients: 'Alcohol, Aqua, Parfum, Mint, Green Apple, Lemon, Tonka Bean, Vanilla, Cedarwood, Vetiver',
+        ingredients: 'Alcool, Aqua, Parfum, Menthe, Pomme Verte, Citron, Fève Tonka, Vanille, Bois de Cèdre, Vétiver',
         images: ['/images/products/versace-eros.jpg'],
         category: 'Homme',
         gender: 'Homme',
@@ -221,12 +221,12 @@ async function seedDatabase() {
       {
         name: 'Emporio Armani Stronger With You',
         slug: 'emporio-armani-stronger-with-you',
-        inspiredBy: 'Stronger With You by Emporio Armani',
-        description: 'A spicy fragrance with notes of cardamom, pink pepper, and chestnut.',
+        inspiredBy: 'Stronger With You d\'Emporio Armani',
+        description: 'Un parfum épicé avec des notes de cardamome, poivre rose et châtaigne.',
         price: 99,
         volume: '50ml',
         tags: ['armani'],
-        ingredients: 'Alcohol, Aqua, Parfum, Cardamom, Pink Pepper, Chestnut, Vanilla, Cedarwood',
+        ingredients: 'Alcool, Aqua, Parfum, Cardamome, Poivre Rose, Châtaigne, Vanille, Bois de Cèdre',
         images: ['/images/products/b5e4e349-Artboard_4.jpg'],
         category: 'Homme',
         gender: 'Homme',
@@ -234,12 +234,12 @@ async function seedDatabase() {
       {
         name: 'Prada Paradoxe',
         slug: 'prada-paradoxe',
-        inspiredBy: 'Paradoxe by Prada',
-        description: 'A floral amber that blends neroli, jasmine, and amber notes for a modern feminine scent.',
+        inspiredBy: 'Paradoxe de Prada',
+        description: 'Un ambre floral qui mélange néroli, jasmin et notes d\'ambre pour un parfum féminin moderne.',
         price: 99,
         volume: '50ml',
         tags: ['prada'],
-        ingredients: 'Alcohol, Aqua, Parfum, Neroli, Jasmine, Amber, Musk, Bourbon Vanilla',
+        ingredients: 'Alcool, Aqua, Parfum, Néroli, Jasmin, Ambre, Musc, Vanille Bourbon',
         images: ['/images/products/e71b7454-Artboard_4.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -247,12 +247,12 @@ async function seedDatabase() {
       {
         name: 'Q by Dolce & Gabbana',
         slug: 'q-dolce-gabbana',
-        inspiredBy: 'Q by Dolce & Gabbana',
-        description: 'A citrusy musk fragrance with fresh lemon, mandarin, and sophisticated musk notes.',
+        inspiredBy: 'Q de Dolce & Gabbana',
+        description: 'Un parfum musc citronné avec citron frais, mandarine et notes de musc sophistiquées.',
         price: 99,
         volume: '50ml',
         tags: ['dolce'],
-        ingredients: 'Alcohol, Aqua, Parfum, Lemon, Mandarin, White Flowers, Musk, Woods',
+        ingredients: 'Alcool, Aqua, Parfum, Citron, Mandarine, Fleurs Blanches, Musc, Bois',
         images: ['/images/products/237db6ef-Artboard_1.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -260,12 +260,12 @@ async function seedDatabase() {
       {
         name: 'The One by Dolce & Gabbana',
         slug: 'the-one-dolce-gabbana',
-        inspiredBy: 'The One by Dolce & Gabbana',
-        description: 'A warm and sensual vanilla floral with notes of bergamot, lily, and amber musk.',
+        inspiredBy: 'The One de Dolce & Gabbana',
+        description: 'Un floral vanillé chaleureux et sensuel avec des notes de bergamote, lys et musc ambré.',
         price: 99,
         volume: '50ml',
         tags: ['dolce'],
-        ingredients: 'Alcohol, Aqua, Parfum, Bergamot, Lily, Jasmine, Vanilla, Vetiver, Amber Musk',
+        ingredients: 'Alcool, Aqua, Parfum, Bergamote, Lys, Jasmin, Vanille, Vétiver, Musc Ambré',
         images: ['/images/products/995bbe50-arbord18.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -273,12 +273,12 @@ async function seedDatabase() {
       {
         name: 'Erba Pura Xerjoff',
         slug: 'erba-pura-xerjoff',
-        inspiredBy: 'Erba Pura by Xerjoff',
-        description: 'A rich fruity amber with a vibrant blend of citrus, sweet fruits, and white musk.',
+        inspiredBy: 'Erba Pura de Xerjoff',
+        description: 'Un ambre fruité riche avec un mélange vibrant d\'agrumes, fruits sucrés et musc blanc.',
         price: 99,
         volume: '50ml',
         tags: ['xerjoff'],
-        ingredients: 'Alcohol, Aqua, Parfum, Orange, Lemon, Bergamot, Fruits, White Musk, Amber',
+        ingredients: 'Alcool, Aqua, Parfum, Orange, Citron, Bergamote, Fruits, Musc Blanc, Ambre',
         images: ['/images/products/8d11dd9b-artboard20.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -286,12 +286,12 @@ async function seedDatabase() {
       {
         name: 'Lady Million Paco Rabanne',
         slug: 'lady-million-paco-rabanne',
-        inspiredBy: 'Lady Million by Paco Rabanne',
-        description: 'A honey floral fragrance with raspberry, neroli, and honey notes.',
+        inspiredBy: 'Lady Million de Paco Rabanne',
+        description: 'Un parfum floral miel avec framboise, néroli et notes de miel.',
         price: 99,
         volume: '50ml',
         tags: ['paco rabanne'],
-        ingredients: 'Alcohol, Aqua, Parfum, Raspberry, Neroli, Orange Blossom, Honey, Patchouli, Amber',
+        ingredients: 'Alcool, Aqua, Parfum, Framboise, Néroli, Fleur d\'Oranger, Miel, Patchouli, Ambre',
         images: ['/images/products/45a8d0d0-artboard21.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -299,12 +299,12 @@ async function seedDatabase() {
       {
         name: 'Touch of Pink Lacoste',
         slug: 'touch-of-pink-lacoste',
-        inspiredBy: 'Touch of Pink by Lacoste',
-        description: 'A fresh floral fragrance with coriander, blood orange, and jasmine.',
+        inspiredBy: 'Touch of Pink de Lacoste',
+        description: 'Un parfum floral frais avec coriandre, orange sanguine et jasmin.',
         price: 99,
         volume: '50ml',
         tags: ['lacoste'],
-        ingredients: 'Alcohol, Aqua, Parfum, Coriander, Blood Orange, Jasmine, Violet, Musk, Sandalwood',
+        ingredients: 'Alcool, Aqua, Parfum, Coriandre, Orange Sanguine, Jasmin, Violette, Musc, Bois de Santal',
         images: ['/images/products/074f7eae-Artboard_7.jpg'],
         category: 'Femme',
         gender: 'Femme',
@@ -312,12 +312,12 @@ async function seedDatabase() {
     ];
     
     const createdProducts = await Product.create(products);
-    console.log(`✅ Created ${createdProducts.length} products`);
+    console.log(`✅ ${createdProducts.length} produits créés`);
     
-    console.log('🌱 Database seeding completed successfully!');
+    console.log('🌱 Ensemencement de la base de données terminé avec succès !');
     
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    console.error('❌ Erreur lors de l\'ensemencement de la base de données :', error);
   } finally {
     // Disconnect from MongoDB
     try {

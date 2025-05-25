@@ -10,7 +10,7 @@ const WhatsAppButton: React.FC<{ customMessage?: string }> = ({ customMessage })
     : `+212${rawNumber}`;
     
   // Default message or use custom message if provided
-  const defaultMessage = 'Hi! I have a question about AVANA PARFUM.';
+  const defaultMessage = 'Bonjour ! J\'ai une question à propos d\'AVANA PARFUM.';
   const message = encodeURIComponent(customMessage || defaultMessage);
   
   // Create WhatsApp URL using the wa.me format
@@ -21,9 +21,9 @@ const WhatsAppButton: React.FC<{ customMessage?: string }> = ({ customMessage })
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-colors z-50 flex items-center justify-center"
+      className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-colors z-40 flex items-center justify-center"
       style={{ maxWidth: 'calc(100% - 1.5rem)', boxSizing: 'border-box' }}
-      aria-label="Chat on WhatsApp"
+      aria-label="Chat sur WhatsApp"
     >
       <FaWhatsapp className="text-2xl" />
     </Link>

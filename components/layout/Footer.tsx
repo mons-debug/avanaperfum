@@ -74,41 +74,27 @@ const Footer = () => {
 
   const footerLinks = {
     shop: [
-      { id: 'shop-men', href: '/shop?gender=men', label: translatedLinks.forHim },
-      { id: 'shop-women', href: '/shop?gender=women', label: translatedLinks.forHer },
-      { id: 'shop-collections', href: '/shop', label: translatedLinks.collections },
-      { id: 'shop-new', href: '/shop', label: translatedLinks.newArrivals },
-      { id: 'shop-best', href: '/shop', label: translatedLinks.bestSellers },
+      { id: 'shop-homme', href: '/shop?gender=Homme', label: 'Pour Homme' },
+      { id: 'shop-femme', href: '/shop?gender=Femme', label: 'Pour Femme' },
+      { id: 'shop-all', href: '/shop', label: 'Tous les parfums' },
     ],
     company: [
-      { id: 'company-about', href: '/about', label: translatedLinks.aboutUs },
-      { id: 'company-contact', href: '/contact', label: translatedLinks.contact },
-      // Temporarily point to about until careers page is created
-      { id: 'company-careers', href: '/about', label: translatedLinks.careers },
-      // Temporarily point to contact until stores page is created
-      { id: 'company-stores', href: '/contact', label: translatedLinks.storeLocator },
+      { id: 'company-about', href: '/about', label: 'À propos' },
+      { id: 'company-contact', href: '/contact', label: 'Contact' },
     ],
     support: [
-      { id: 'support-faq', href: '/faq', label: translatedLinks.faq },
-      { id: 'support-shipping', href: '/shipping', label: translatedLinks.shippingInfo },
-      // Temporarily point to shipping until returns page is created
-      { id: 'support-returns', href: '/shipping', label: translatedLinks.returns },
-      // Temporarily point to contact until track-order page is created
-      { id: 'support-track', href: '/contact', label: translatedLinks.trackOrder },
+      { id: 'support-faq', href: '/faq', label: 'FAQ' },
+      { id: 'support-shipping', href: '/shipping', label: 'Livraison' },
     ],
     legal: [
-      { id: 'legal-privacy', href: '/privacy', label: translatedLinks.privacyPolicy },
-      { id: 'legal-terms', href: '/terms', label: translatedLinks.termsOfService },
-      // Temporarily point to terms until refund page is created
-      { id: 'legal-refund', href: '/terms', label: translatedLinks.refundPolicy },
+      { id: 'legal-privacy', href: '/privacy', label: 'Confidentialité' },
+      { id: 'legal-terms', href: '/terms', label: 'Conditions' },
     ],
   };
 
   const socialLinks = [
-    { href: 'https://facebook.com/avanaparfum', icon: FaFacebookF, label: translatedSocial.facebook },
-    { href: 'https://twitter.com/avanaparfum', icon: FaTwitter, label: translatedSocial.twitter },
-    { href: 'https://instagram.com/avanaparfum', icon: FaInstagram, label: translatedSocial.instagram },
-    { href: 'https://wa.me/+212674428593', icon: FaWhatsapp, label: translatedSocial.whatsapp },
+    { href: 'https://wa.me/+212674428593', icon: FaWhatsapp, label: 'WhatsApp' },
+    { href: 'mailto:info@avanaparfum.com', icon: FaInstagram, label: 'Email' },
   ];
 
   return (

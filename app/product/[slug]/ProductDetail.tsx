@@ -20,6 +20,7 @@ import {
   ProductWithTranslation,
   CartProduct 
 } from '@/lib/cart';
+import { generateDetailedProductWhatsAppURL } from '@/lib/whatsapp';
 
 // Re-export the ITranslation type from cart to ensure consistency
 type ITranslation = CartITranslation;
@@ -399,7 +400,7 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                 
                 {product.ingredients && (
                   <div className="mt-4">
-                    <h2 className="text-lg font-playfair font-semibold mb-2">Ingredients</h2>
+                    <h2 className="text-lg font-playfair font-semibold mb-2">Ingrédients</h2>
                     <p className="text-gray-600">
                       {getTranslatedText(product.ingredients)}
                     </p>
@@ -438,14 +439,19 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
                 </div>
                 
                 <Link
-                  href={`https://wa.me/+212674428593?text=${encodeURIComponent(
-                    `Hello, I'm interested in purchasing:\n\n*${getTranslatedText(product.name)}*${product.inspiredBy ? ` (Inspired by ${getTranslatedText(product.inspiredBy)})` : ''}\nPrice: ${product.price.toFixed(2)} DH\n${product.volume ? `Volume: ${getTranslatedText(product.volume)}\n` : ''}${product.gender ? `Type: ${product.gender}\n` : ''}\n\nPlease let me know how to proceed with my order.`
-                  )}`}
+                  href={generateDetailedProductWhatsAppURL({
+                    _id: product._id,
+                    name: getTranslatedText(product.name, 'Produit'),
+                    price: product.price,
+                    volume: getTranslatedText(product.volume),
+                    inspiredBy: getTranslatedText(product.inspiredBy)
+                  })}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-3.5 px-6 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
                 >
                   <FaWhatsapp size={20} />
-                  <span>Order via WhatsApp</span>
+                  <span>Commander sur WhatsApp</span>
                 </Link>
               </div>
               

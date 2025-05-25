@@ -125,7 +125,7 @@ export const TranslationProvider = ({ children, locale = 'fr' }: TranslationProv
             <div className="translation-loading fixed inset-0 flex items-center justify-center bg-white bg-opacity-80 z-50">
               <div className="text-center p-4 rounded-lg bg-white shadow-md">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary mx-auto mb-2"></div>
-                <span className="text-gray-700">Loading translations...</span>
+                <span className="text-gray-700">Chargement des traductions...</span>
               </div>
             </div>
           )}
