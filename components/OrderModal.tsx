@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaTimes, FaShoppingBag, FaUserAlt, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import { getImageSrc, imageConfig } from '@/lib/utils/image';
+import { calculateBulkPricing, getPromotionalMessage } from '@/lib/pricing';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -108,18 +109,26 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems, pr
             // Auto-fill address with city for backend compatibility
             address: formData.address || `Ville de ${formData.city}`,
             items: cartItems.map(item => ({ id: item._id, quantity: item.quantity })),
-            subtotal: cartTotal,
+            originalSubtotal: originalTotal,
+            bulkDiscount: bulkPricing.savings,
+            subtotal: subtotal,
             shipping: shippingFee,
-            total: totalPrice
+            total: totalPrice,
+            totalQuantity: totalQuantity,
+            promoMessage: promoMessage
           }
         : { 
             ...formData, 
             // Auto-fill address with city for backend compatibility
             address: formData.address || `Ville de ${formData.city}`,
             product: product._id,
-            subtotal: singleProductTotal,
+            originalSubtotal: originalTotal,
+            bulkDiscount: bulkPricing.savings,
+            subtotal: subtotal,
             shipping: shippingFee,
-            total: totalPrice
+            total: totalPrice,
+            totalQuantity: totalQuantity,
+            promoMessage: promoMessage
           };
 
       console.log('Submitting order data:', orderData);
@@ -149,14 +158,24 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems, pr
   // Calculate total price for a single product
   const singleProductTotal = product.price * (product.quantity || 1);
   
+  // Calculate total quantity and use bulk pricing for cart items
+  const totalQuantity = cartItems 
+    ? cartItems.reduce((total, item) => total + item.quantity, 0)
+    : (product.quantity || 1);
+  
+  // Use bulk pricing for all orders
+  const bulkPricing = calculateBulkPricing(totalQuantity);
+  const originalTotal = totalQuantity * 99; // Original price per item
+  const subtotal = bulkPricing.bulkTotal;
+  
+  // Get promotional message
+  const promoMessage = getPromotionalMessage(totalQuantity);
+  
   // Calculate total price for cart items if present
   const cartTotal = cartItems 
     ? cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
     : 0;
     
-  // Determine the subtotal (before shipping)
-  const subtotal = cartItems ? cartTotal : singleProductTotal;
-  
   // Determine if order qualifies for free shipping
   const qualifiesForFreeShipping = subtotal >= shippingSettings.freeShippingThreshold;
   
@@ -337,12 +356,36 @@ const OrderModal: React.FC<OrderModalProps> = ({ product, onClose, cartItems, pr
             
             {/* Order summary */}
             <div className="mt-6">
+              {/* Promotional Message */}
+              {promoMessage && (
+                <div className="mb-4">
+                  <div className="bg-gradient-to-r from-[#c8a45d] to-[#d4b366] text-white p-3 rounded-lg text-center">
+                    <span className="text-sm font-medium">{promoMessage}</span>
+                  </div>
+                </div>
+              )}
+              
               <h3 className="font-medium text-gray-800 mb-4">Résumé de la Commande</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Sous-total</span>
-                  <span>{subtotal.toFixed(2)} {shippingSettings.currency}</span>
+                  <span>Sous-total ({totalQuantity} article{totalQuantity > 1 ? 's' : ''})</span>
+                  <span>{originalTotal.toFixed(2)} {shippingSettings.currency}</span>
                 </div>
+                
+                {bulkPricing.savings > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-green-600">🎉 Remise quantité</span>
+                    <span className="text-green-600 font-medium">-{bulkPricing.savings.toFixed(2)} {shippingSettings.currency}</span>
+                  </div>
+                )}
+                
+                {bulkPricing.savings > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Sous-total avec remise</span>
+                    <span className="font-medium">{subtotal.toFixed(2)} {shippingSettings.currency}</span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between text-sm">
                   <span>Frais de livraison</span>
                   <span>

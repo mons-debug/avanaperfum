@@ -45,6 +45,15 @@ const OrderSchema = new Schema({
     required: false
   },
   // Order totals
+  originalSubtotal: {
+    type: Number,
+    required: false
+  },
+  bulkDiscount: {
+    type: Number,
+    required: false,
+    default: 0
+  },
   subtotal: {
     type: Number,
     required: [true, 'Subtotal is required']
@@ -56,6 +65,14 @@ const OrderSchema = new Schema({
   total: {
     type: Number,
     required: [true, 'Total is required']
+  },
+  totalQuantity: {
+    type: Number,
+    required: false
+  },
+  promoMessage: {
+    type: String,
+    required: false
   },
   note: {
     type: String

@@ -20,7 +20,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, address, city, product, items, subtotal, shipping, total, note } = body;
+    const { 
+      name, email, phone, address, city, product, items, 
+      originalSubtotal, bulkDiscount, subtotal, shipping, total, 
+      totalQuantity, promoMessage, note 
+    } = body;
     
     // Basic validation
     if (!name || !phone || !address || !city) {
@@ -56,9 +60,13 @@ export async function POST(request: NextRequest) {
       city,
       product,
       items,
+      originalSubtotal,
+      bulkDiscount,
       subtotal,
       shipping,
       total,
+      totalQuantity,
+      promoMessage,
       note,
       status: 'New',
       createdAt: new Date(),

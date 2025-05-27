@@ -28,9 +28,13 @@ interface Order {
   city: string;
   product: string;
   items?: Array<{ id: string; quantity: number; name?: string; price?: number }>;
+  originalSubtotal?: number;
+  bulkDiscount?: number;
   subtotal: number;
   shipping: number;
   total: number;
+  totalQuantity?: number;
+  promoMessage?: string;
   note?: string;
   status: string;
   createdAt: string;
@@ -335,10 +339,37 @@ const OrderDetails = ({ orderId, onClose, onStatusUpdate }: OrderDetailsProps) =
               <FaMoneyBillWave className="mr-2 text-green-500" />
               Payment Information
             </h3>
-            <div className="flex justify-between items-center mb-2">
-              <span>Subtotal:</span>
-              <span>{order.subtotal.toFixed(2)} DH</span>
-            </div>
+            
+            {/* Show promotional message if available */}
+            {order.promoMessage && (
+              <div className="mb-3 p-2 bg-gradient-to-r from-[#c8a45d] to-[#d4b366] text-white rounded-lg text-center text-sm">
+                {order.promoMessage}
+              </div>
+            )}
+            
+            {/* Show bulk pricing breakdown if available */}
+            {order.originalSubtotal && order.bulkDiscount && order.bulkDiscount > 0 ? (
+              <>
+                <div className="flex justify-between items-center mb-2">
+                  <span>Original Subtotal ({order.totalQuantity || 1} item{(order.totalQuantity || 1) > 1 ? 's' : ''}):</span>
+                  <span>{order.originalSubtotal.toFixed(2)} DH</span>
+                </div>
+                <div className="flex justify-between items-center mb-2 text-green-600">
+                  <span>🎉 Bulk Discount:</span>
+                  <span>-{order.bulkDiscount.toFixed(2)} DH</span>
+                </div>
+                <div className="flex justify-between items-center mb-2 font-medium">
+                  <span>Subtotal with discount:</span>
+                  <span>{order.subtotal.toFixed(2)} DH</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between items-center mb-2">
+                <span>Subtotal:</span>
+                <span>{order.subtotal.toFixed(2)} DH</span>
+              </div>
+            )}
+            
             <div className="flex justify-between items-center mb-2">
               <span>Shipping:</span>
               <span>{order.shipping.toFixed(2)} DH</span>
