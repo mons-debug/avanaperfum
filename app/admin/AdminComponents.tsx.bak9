@@ -14,9 +14,6 @@ import {
   FaBars,
   FaTimes,
   FaBell,
-  FaBellSlash,
-  FaVolumeUp,
-  FaVolumeMute,
   FaUser
 } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';

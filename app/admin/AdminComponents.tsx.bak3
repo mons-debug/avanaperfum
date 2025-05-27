@@ -14,14 +14,11 @@ import {
   FaBars,
   FaTimes,
   FaBell,
-  FaBellSlash,
-  FaVolumeUp,
-  FaVolumeMute,
   FaUser
 } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { SessionProvider, useSession } from 'next-auth/react';
+import { SessionProvider } from 'next-auth/react';
 
 // Mobile-first sidebar component
 export function AdminSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -143,49 +140,6 @@ export function AdminSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: ()
 
 // Professional admin header
 export function AdminHeader({ onMenuToggle }: { onMenuToggle: () => void }) {
-  const { data: session } = useSession();
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [isNotificationEnabled, setIsNotificationEnabled] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      audioRef.current = new Audio("/sounds/notification.mp3");
-      audioRef.current.volume = 0.8;
-    }
-  }, []);
-
-  const requestNotificationPermission = async () => {
-    if ("Notification" in window) {
-      const permission = await Notification.requestPermission();
-      setIsNotificationEnabled(permission === "granted");
-      if (permission === "granted") {
-        new Notification("🛍️ Notifications AVANA activées!", {
-          body: "Vous recevrez maintenant des alertes pour les nouvelles commandes.",
-          icon: "/images/logowhw.png"
-        });
-      }
-    }
-  };
-
-  const testNotification = () => {
-    if (audioRef.current) {
-      audioRef.current.play().catch(console.error);
-    }
-    if (isNotificationEnabled) {
-      new Notification("🛍️ Test - Nouvelle Commande!", {
-        body: "Client: Test Client\nMontant: 199 DH",
-        icon: "/images/logowhw.png"
-      });
-    }
-    setNotificationCount(prev => prev + 1);
-  };
-
-  useEffect(() => {
-    if ("Notification" in window) {
-      setIsNotificationEnabled(Notification.permission === "granted");
-    }
-  }, []);
   return (
     <header className="h-16 bg-white border-b border-gray-200 shadow-sm admin-header">
       <div className="h-full flex items-center justify-between px-4 lg:px-6">
@@ -209,17 +163,9 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle: () => void }) {
         {/* Right side - Actions */}
         <div className="flex items-center space-x-3">
           {/* Notifications */}
-          <button onClick={requestNotificationPermission} onDoubleClick={testNotification} className={`relative p-2 rounded-lg transition-colors ${
-            isNotificationEnabled 
-              ? "text-green-600 hover:bg-green-50" 
-              : "text-gray-400 hover:bg-gray-50"
-          }`} title={isNotificationEnabled ? "Notifications activées - Double-clic pour test" : "Activer les notifications"}>
-            {isNotificationEnabled ? <FaBell size={18} /> : <FaBellSlash size={18} />}
-            {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center animate-bounce">
-              {notificationCount > 9 ? "9+" : notificationCount}
-            </span>
-          )}
+          <button className="relative p-2 text-gray-600 hover:text-[#c8a45d] hover:bg-gray-100 rounded-lg transition-colors">
+            <FaBell size={18} />
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
           </button>
           
           {/* Profile */}
