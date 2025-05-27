@@ -1,11 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display, DM_Sans } from 'next/font/google';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { TranslationProvider } from '@/components/i18n/TranslationProvider';
-import FontAwesomeConfig from '@/components/FontAwesomeConfig';
-import FloatingWhatsAppCart from '@/components/FloatingWhatsAppCart';
+import { ConditionalLayout } from '@/components/ConditionalLayout';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -65,17 +61,9 @@ export default function RootLayout({
         <link rel="preload" href="/images/product-placeholder.svg" as="image" />
       </head>
       <body className="min-h-screen flex flex-col overflow-x-hidden w-full no-x-scrollbar">
-        <div className="root-wrapper overflow-x-hidden no-x-scrollbar">
-          <FontAwesomeConfig />
-          <TranslationProvider locale={locale}>
-            <Header />
-            <main className="flex-grow pt-header overflow-x-hidden w-full">
-              {children}
-            </main>
-            <Footer />
-            <FloatingWhatsAppCart />
-          </TranslationProvider>
-        </div>
+        <ConditionalLayout locale={locale}>
+          {children}
+        </ConditionalLayout>
       </body>
     </html>
   );
