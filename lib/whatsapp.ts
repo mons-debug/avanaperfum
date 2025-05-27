@@ -1,5 +1,7 @@
 // WhatsApp utility functions for AVANA PARFUM
 
+import { calculateBulkPricing } from './pricing';
+
 // The primary WhatsApp number for orders
 export const WHATSAPP_NUMBER = '+212674428593';
 
@@ -41,7 +43,7 @@ export const generateSingleProductWhatsAppURL = (product: WhatsAppProduct): stri
 };
 
 // Generate WhatsApp URL for multiple products
-export const generateBulkOrderWhatsAppURL = (products: WhatsAppProduct[]): string => {
+export const generateBulkOrderWhatsAppURL = (products: WhatsAppCartItem[]): string => {
   if (products.length === 0) {
     return `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=${encodeURIComponent('Bonjour, je souhaite passer une commande.')}`;
   }
@@ -50,10 +52,21 @@ export const generateBulkOrderWhatsAppURL = (products: WhatsAppProduct[]): strin
     const productName = typeof product.name === 'object' 
       ? (product.name as any).fr || (product.name as any).en || 'Produit'
       : product.name;
-    return `- ${productName}`;
+    return `'${productName}' — ${product.quantity || 1} pièce${(product.quantity || 1) > 1 ? 's' : ''}`;
   }).join('\n');
   
-  const message = `Bonjour, je souhaite commander les parfums suivants :\n${productList}\nMerci de me confirmer la disponibilité.`;
+  // Calculate total quantity for bulk pricing
+  const totalQuantity = products.reduce((total, item) => total + (item.quantity || 1), 0);
+  const bulkPricing = calculateBulkPricing(totalQuantity);
+  
+  let priceText = '';
+  if (bulkPricing.savings > 0) {
+    priceText = `\n\nPrix normal: ${bulkPricing.originalTotal} DH\nRemise quantité: -${bulkPricing.savings} DH\nTotal avec remise: ${bulkPricing.bulkTotal} DH`;
+  } else {
+    priceText = `\n\nTotal: ${bulkPricing.bulkTotal} DH`;
+  }
+  
+  const message = `Bonjour, je souhaite commander :\n\n${productList}${priceText}\n\nMerci de me confirmer la disponibilité et les modalités de livraison.`;
   
   return `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=${encodeURIComponent(message)}`;
 };

@@ -1,10 +1,11 @@
 // Simple cart utility for managing product cart functionality
 
-// Define translation interface
-export interface ITranslation {
-  en?: string;
-  fr?: string;
-  [key: string]: string | undefined;
+import { calculateBulkPricing } from './pricing';
+
+// Define translation interface locally
+interface ITranslation {
+  en: string;
+  fr: string;
 }
 
 // Define the product type
@@ -162,18 +163,59 @@ export function getCartCount(): number {
   return window.cartItems.reduce((total: number, item: CartProduct) => total + item.quantity, 0);
 };
 
-// Get the total price of all items in the cart (using actual product prices)
+// Get the total price of all items in the cart using bulk pricing
 export function getCartTotal(): number {
   if (typeof window === 'undefined') return 0;
   
   // Ensure cart items are initialized
   window.cartItems = window.cartItems || [];
   
-  return window.cartItems.reduce(
-    (total: number, item: CartProduct) => total + (item.price * item.quantity), // Use actual price from cart item
+  // Calculate total quantity of all items
+  const totalQuantity = window.cartItems.reduce(
+    (total: number, item: CartProduct) => total + item.quantity,
     0
   );
-};
+  
+  // Use bulk pricing for the total
+  if (totalQuantity === 0) return 0;
+  
+  const bulkPricing = calculateBulkPricing(totalQuantity);
+  return bulkPricing.bulkTotal;
+}
+
+// Get the original total (without bulk pricing) for comparison
+export function getOriginalCartTotal(): number {
+  if (typeof window === 'undefined') return 0;
+  
+  // Ensure cart items are initialized
+  window.cartItems = window.cartItems || [];
+  
+  // Calculate total quantity and use original pricing (99 DH per item)
+  const totalQuantity = window.cartItems.reduce(
+    (total: number, item: CartProduct) => total + item.quantity,
+    0
+  );
+  
+  return totalQuantity * 99; // Original price per item
+}
+
+// Get bulk pricing information for the current cart
+export function getCartBulkPricing() {
+  if (typeof window === 'undefined') return null;
+  
+  // Ensure cart items are initialized
+  window.cartItems = window.cartItems || [];
+  
+  // Calculate total quantity of all items
+  const totalQuantity = window.cartItems.reduce(
+    (total: number, item: CartProduct) => total + item.quantity,
+    0
+  );
+  
+  if (totalQuantity === 0) return null;
+  
+  return calculateBulkPricing(totalQuantity);
+}
 
 // Clear the entire cart
 export function clearCart() {
