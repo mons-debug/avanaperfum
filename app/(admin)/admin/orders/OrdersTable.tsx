@@ -242,61 +242,91 @@ export default function OrdersTable() {
     <div>
       {/* Filters and Search - Mobile Optimized */}
       <div className="mb-6 space-y-4">
+        {/* Search Bar */}
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <FaSearch className="text-gray-400" />
           </div>
           <input
             type="text"
-            placeholder="Rechercher une commande..."
-            className="pl-10 pr-4 py-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c8a45d] focus:border-transparent text-base"
+            placeholder="Rechercher par nom, téléphone, ville..."
+            className="pl-12 pr-4 py-4 w-full border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#c8a45d] focus:border-transparent text-base bg-gray-50 focus:bg-white transition-colors"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         
+        {/* Status Filter Pills */}
         <div className="flex flex-wrap gap-2">
           <button 
             onClick={() => setStatusFilter('All')}
-            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'All' ? 'bg-[#c8a45d] text-white' : 'bg-gray-100 text-gray-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              statusFilter === 'All' 
+                ? 'bg-[#c8a45d] text-white shadow-md' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
           >
-            Tous
+            Tous ({orders.length})
           </button>
           <button 
             onClick={() => setStatusFilter('New')}
-            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'New' ? 'bg-blue-500 text-white' : 'bg-blue-50 text-blue-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              statusFilter === 'New' 
+                ? 'bg-blue-500 text-white shadow-md' 
+                : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+            }`}
           >
-            Nouveau
+            Nouveau ({orders.filter(o => o.status === 'New').length})
           </button>
           <button 
             onClick={() => setStatusFilter('Called')}
-            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Called' ? 'bg-yellow-500 text-white' : 'bg-yellow-50 text-yellow-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              statusFilter === 'Called' 
+                ? 'bg-yellow-500 text-white shadow-md' 
+                : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+            }`}
           >
-            Appelé
+            Appelé ({orders.filter(o => o.status === 'Called').length})
           </button>
           <button 
             onClick={() => setStatusFilter('Confirmed')}
-            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Confirmed' ? 'bg-purple-500 text-white' : 'bg-purple-50 text-purple-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              statusFilter === 'Confirmed' 
+                ? 'bg-purple-500 text-white shadow-md' 
+                : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+            }`}
           >
-            Confirmé
+            Confirmé ({orders.filter(o => o.status === 'Confirmed').length})
           </button>
           <button 
             onClick={() => setStatusFilter('Shipped')}
-            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Shipped' ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              statusFilter === 'Shipped' 
+                ? 'bg-indigo-500 text-white shadow-md' 
+                : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+            }`}
           >
-            Expédié
+            Expédié ({orders.filter(o => o.status === 'Shipped').length})
           </button>
           <button 
             onClick={() => setStatusFilter('Delivered')}
-            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Delivered' ? 'bg-green-500 text-white' : 'bg-green-50 text-green-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              statusFilter === 'Delivered' 
+                ? 'bg-green-500 text-white shadow-md' 
+                : 'bg-green-50 text-green-700 hover:bg-green-100'
+            }`}
           >
-            Livré
+            Livré ({orders.filter(o => o.status === 'Delivered').length})
           </button>
           <button 
             onClick={() => setStatusFilter('Cancelled')}
-            className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'Cancelled' ? 'bg-red-500 text-white' : 'bg-red-50 text-red-700'}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              statusFilter === 'Cancelled' 
+                ? 'bg-red-500 text-white shadow-md' 
+                : 'bg-red-50 text-red-700 hover:bg-red-100'
+            }`}
           >
-            Annulé
+            Annulé ({orders.filter(o => o.status === 'Cancelled').length})
           </button>
         </div>
       </div>
@@ -321,62 +351,91 @@ export default function OrdersTable() {
       </div>
       
       {filteredOrders.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-lg text-gray-600">Aucune commande trouvée</p>
+        <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
+          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FaSearch className="text-gray-400 text-xl" />
+          </div>
+          <p className="text-lg font-medium text-gray-600 mb-2">Aucune commande trouvée</p>
+          <p className="text-sm text-gray-500">
+            {searchQuery || statusFilter !== 'All' 
+              ? 'Essayez de modifier vos filtres de recherche' 
+              : 'Les nouvelles commandes apparaîtront ici'
+            }
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-4">
           {filteredOrders.map(order => (
-            <div key={order._id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-              <div className="p-4">
+            <div key={order._id} className="bg-gradient-to-r from-white to-gray-50 border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+              <div className="p-6">
                 {/* Order header with status and date */}
-                <div className="flex justify-between items-center mb-3">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                  <div className="flex items-center space-x-3 mb-2 sm:mb-0">
                     {getStatusBadge(order.status)}
+                    <span className="text-xs text-gray-500 font-medium">
+                      #{order._id.slice(-6).toUpperCase()}
+                    </span>
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 flex items-center">
+                    <span className="w-2 h-2 bg-gray-300 rounded-full mr-2"></span>
                     {formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })}
                   </div>
                 </div>
                 
                 {/* Customer info */}
-                <div className="flex items-start mb-3">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="font-medium text-gray-900 text-base">{order.name}</h3>
-                    <a href={`tel:${order.phone}`} className="text-sm text-[#c8a45d] hover:underline">{order.phone}</a>
+                    <h3 className="font-semibold text-gray-900 text-lg mb-1">{order.name}</h3>
+                    <a 
+                      href={`tel:${order.phone}`} 
+                      className="text-[#c8a45d] hover:text-[#b08d48] font-medium text-sm flex items-center transition-colors"
+                    >
+                      📞 {order.phone}
+                    </a>
                   </div>
                   <button 
                     onClick={() => viewOrderDetails(order._id)}
-                    className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-600"
+                    className="p-3 bg-gray-100 hover:bg-[#c8a45d] hover:text-white rounded-xl text-gray-600 transition-all duration-200 group"
                   >
-                    <FaEye size={16} />
+                    <FaEye size={16} className="group-hover:scale-110 transition-transform" />
                   </button>
                 </div>
                 
-                {/* Location */}
-                <div className="flex items-start mb-3">
-                  <FaMapMarkerAlt className="text-red-500 mt-1 mr-2 flex-shrink-0" />
-                  <div>
-                    <div className="font-medium">{order.city || 'N/A'}</div>
-                    <div className="text-sm text-gray-500 line-clamp-1">{order.address || 'Pas d\'adresse fournie'}</div>
-                  </div>
-                </div>
-                
-                {/* Product info */}
-                <div className="mb-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="font-medium">Produit</div>
-                  <div className="text-sm">{getProductDisplay(order)}</div>
-                </div>
-                
-                {/* Status indicator and actions */}
-                <div className="mt-2 pt-3 border-t border-gray-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-medium text-gray-700">Actions rapides</h4>
+                {/* Location and Product Info Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  {/* Location */}
+                  <div className="flex items-start space-x-3 p-3 bg-white rounded-lg border border-gray-100">
+                    <FaMapMarkerAlt className="text-red-500 mt-1 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-gray-900 text-sm">{order.city || 'N/A'}</div>
+                      <div className="text-xs text-gray-500 truncate">{order.address || 'Pas d\'adresse fournie'}</div>
+                    </div>
                   </div>
                   
-                  {/* Action buttons - Mobile Optimized */}
-                  <div className="space-y-3 order-card-actions">
-                    {/* Status dropdown - full width on mobile */}
+                  {/* Product info */}
+                  <div className="flex items-start space-x-3 p-3 bg-white rounded-lg border border-gray-100">
+                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-purple-600 text-xs font-bold">P</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-gray-900 text-sm">Produit</div>
+                      <div className="text-xs text-gray-500 truncate">{getProductDisplay(order)}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Actions Section */}
+                <div className="border-t border-gray-100 pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-gray-700">Actions Rapides</h4>
+                    <div className="text-xs text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString('fr-FR')}
+                    </div>
+                  </div>
+                  
+                  {/* Action buttons - Enhanced mobile layout */}
+                  <div className="space-y-3">
+                    {/* Status dropdown - full width */}
                     <div className="w-full">
                       <StatusDropdown 
                         orderId={order._id}
@@ -385,21 +444,21 @@ export default function OrdersTable() {
                       />
                     </div>
                     
-                    {/* Action buttons - better mobile layout */}
+                    {/* Action buttons - improved mobile design */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <a 
                         href={`tel:${order.phone}`} 
-                        className="flex items-center justify-center py-3 px-4 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors min-h-[48px] touch-action-manipulation"
+                        className="flex items-center justify-center py-3 px-4 border-2 border-gray-200 rounded-xl text-gray-700 hover:border-[#c8a45d] hover:text-[#c8a45d] hover:bg-[#c8a45d]/5 transition-all duration-200 min-h-[52px] group"
                       >
-                        <span className="mr-3 text-xl">📞</span> 
-                        <span className="font-medium text-base">Appeler</span>
+                        <span className="mr-3 text-lg group-hover:scale-110 transition-transform">📞</span> 
+                        <span className="font-medium">Appeler Client</span>
                       </a>
                       <button 
                         onClick={() => viewOrderDetails(order._id)} 
-                        className="flex items-center justify-center py-3 px-4 bg-[#c8a45d] rounded-lg text-white hover:bg-[#b08d48] transition-colors min-h-[48px] touch-action-manipulation"
+                        className="flex items-center justify-center py-3 px-4 bg-gradient-to-r from-[#c8a45d] to-[#d4b366] rounded-xl text-white hover:from-[#b08d48] hover:to-[#c8a45d] transition-all duration-200 min-h-[52px] shadow-sm hover:shadow-md group"
                       >
-                        <span className="mr-3 text-xl">👁</span> 
-                        <span className="font-medium text-base">Détails</span>
+                        <span className="mr-3 text-lg group-hover:scale-110 transition-transform">👁</span> 
+                        <span className="font-medium">Voir Détails</span>
                       </button>
                     </div>
                   </div>
