@@ -1,0 +1,26 @@
+{
+  "name": "AVANA PARFUM - Parfums de Luxe Inspirés",
+  "short_name": "AVANA PARFUM",
+  "description": "Découvrez notre collection exclusive de parfums de luxe inspirés des plus grandes marques. Qualité premium, prix accessible.",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#c8a45d",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "categories": ["shopping", "lifestyle", "beauty"],
+  "lang": "fr",
+  "dir": "ltr"
+} 

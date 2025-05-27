@@ -2,6 +2,55 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 
+// Import push notification function
+declare global {
+  var pushSubscriptions: PushSubscription[] | undefined;
+  var notifyNewOrder: ((order: any) => void) | undefined;
+}
+
+// Function to send push notifications
+async function sendPushNotifications(order: any) {
+  if (!global.pushSubscriptions || global.pushSubscriptions.length === 0) {
+    console.log('📱 No push subscriptions available');
+    return;
+  }
+
+  const webpush = require('web-push');
+  
+  // Configure VAPID keys
+  webpush.setVapidDetails(
+    'mailto:admin@avanaparfum.com',
+    'BEl62iUYgUivxIkv69yViEuiBIa40HI0DLb8P5QFebdUFBrDNBEN_MuBpSUgVLb1VJKHSBhf6_7JnZ0Z6lNW_dM',
+    'aUiz-xQC6VRyOWNufsm3zwBh6Ysx6sWAkKTOKFXVqWo'
+  );
+
+  const payload = {
+    title: '🛍️ Nouvelle Commande AVANA!',
+    body: `Client: ${order.name}\nMontant: ${order.total} DH\nVille: ${order.city}`,
+    icon: '/images/logowhw.png',
+    badge: '/images/logowhw.png',
+    data: {
+      orderId: order._id,
+      url: '/admin/orders'
+    }
+  };
+
+  console.log(`📱 Sending push to ${global.pushSubscriptions.length} subscriptions`);
+  
+  const promises = global.pushSubscriptions.map(async (subscription) => {
+    try {
+      await webpush.sendNotification(subscription as any, JSON.stringify(payload));
+      console.log('✅ Push sent successfully');
+    } catch (error) {
+      console.error('❌ Push failed:', error);
+      // Remove invalid subscriptions
+      global.pushSubscriptions = global.pushSubscriptions?.filter(sub => sub !== subscription);
+    }
+  });
+
+  await Promise.all(promises);
+}
+
 export async function GET() {
   try {
     await connectToDB();
@@ -72,6 +121,14 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
       updatedAt: new Date()
     });
+    
+    // Trigger WebSocket notification for admin
+    if (global.notifyNewOrder) {
+      global.notifyNewOrder(newOrder);
+    }
+    
+    // Send push notifications
+    await sendPushNotifications(newOrder);
     
     return NextResponse.json(
       { success: true, data: newOrder },
