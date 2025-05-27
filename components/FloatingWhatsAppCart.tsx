@@ -10,6 +10,7 @@ import {
   generateBulkOrderWhatsAppURL,
   type WhatsAppCartItem 
 } from '@/lib/whatsapp';
+import { calculateBulkPricing, getPromotionalMessage } from '@/lib/pricing';
 import { useTranslation } from './i18n/TranslationProvider';
 
 const FloatingWhatsAppCart: React.FC = () => {
@@ -127,11 +128,6 @@ const FloatingWhatsAppCart: React.FC = () => {
                           <h4 className="font-medium text-sm line-clamp-1">
                             {productName}
                           </h4>
-                          {item.price && (
-                            <p className="text-[#c8a45d] font-semibold text-sm">
-                              {item.price} DH
-                            </p>
-                          )}
                           {item.quantity && item.quantity > 1 && (
                             <p className="text-gray-500 text-xs">
                               Quantité: {item.quantity}
@@ -155,7 +151,45 @@ const FloatingWhatsAppCart: React.FC = () => {
             {/* Footer */}
             {cartItems.length > 0 && (
               <div className="p-4 border-t border-gray-200 space-y-3">
-                <div className="flex justify-between items-center">
+                {/* Pricing Breakdown */}
+                {(() => {
+                  const totalQuantity = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
+                  const bulkPricing = calculateBulkPricing(totalQuantity);
+                  const promoMessage = getPromotionalMessage(totalQuantity);
+                  
+                  return (
+                    <>
+                      {/* Promotional Message */}
+                      {promoMessage && (
+                        <div className="bg-gradient-to-r from-[#c8a45d] to-[#d4b366] text-white p-3 rounded-lg text-center">
+                          <span className="text-sm font-medium">{promoMessage}</span>
+                        </div>
+                      )}
+                      
+                      {/* Pricing Details */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Prix normal ({totalQuantity} article{totalQuantity > 1 ? 's' : ''})</span>
+                          <span className="text-gray-600">{bulkPricing.originalTotal} DH</span>
+                        </div>
+                        
+                        {bulkPricing.savings > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-green-600">🎉 Remise quantité</span>
+                            <span className="text-green-600 font-medium">-{bulkPricing.savings} DH</span>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between font-medium border-t pt-2">
+                          <span className="text-gray-800">Total avec remise</span>
+                          <span className="text-[#c8a45d] font-bold">{bulkPricing.bulkTotal} DH</span>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+                
+                <div className="flex justify-between items-center pt-2">
                   <span className="text-sm text-gray-600">
                     {cartItems.length} produit{cartItems.length > 1 ? 's' : ''} sélectionné{cartItems.length > 1 ? 's' : ''}
                   </span>
