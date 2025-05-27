@@ -2,10 +2,11 @@
 
 import { calculateBulkPricing } from './pricing';
 
-// Define translation interface locally
-interface ITranslation {
-  en: string;
-  fr: string;
+// Define translation interface
+export interface ITranslation {
+  en?: string;
+  fr?: string;
+  [key: string]: string | undefined;
 }
 
 // Define the product type

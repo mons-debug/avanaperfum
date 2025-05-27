@@ -16,27 +16,27 @@ import {
   addToCart, 
   removeFromCart, 
   isInCart, 
-  ITranslation as CartITranslation, 
+  ITranslation, 
   ProductWithTranslation,
   CartProduct 
 } from '@/lib/cart';
 import { generateDetailedProductWhatsAppURL } from '@/lib/whatsapp';
 
-// Re-export the ITranslation type from cart to ensure consistency
-type ITranslation = CartITranslation;
+// Use the ITranslation type from cart module
+type ProductITranslation = ITranslation;
 
 interface ProductProps {
   product: {
     _id: string;
-    name: string | ITranslation;
+    name: string | ProductITranslation;
     slug?: string;
-    inspiredBy?: string | ITranslation;
-    description?: string | ITranslation;
-    volume?: string | ITranslation;
+    inspiredBy?: string | ProductITranslation;
+    description?: string | ProductITranslation;
+    volume?: string | ProductITranslation;
     price: number;
     originalPrice?: number;
     tags?: string[];
-    ingredients?: string | ITranslation;
+    ingredients?: string | ProductITranslation;
     images: string[];
     category?: string;
     gender?: string;
@@ -47,23 +47,23 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
   const { t, locale = 'fr' } = useTranslation();
   
   // Type guard to check if a value is an ITranslation object
-  const isITranslation = (value: any): value is ITranslation => {
+  const isITranslation = (value: any): value is ProductITranslation => {
     return value && typeof value === 'object' && ('en' in value || 'fr' in value);
   };
 
   // Helper function to get translated text
-  const getTranslatedText = (text: string | ITranslation | undefined, defaultText: string = ''): string => {
+  const getTranslatedText = (text: string | ProductITranslation | undefined, defaultText: string = ''): string => {
     if (!text) return defaultText;
     if (typeof text === 'string') return text;
     if (!isITranslation(text)) return defaultText;
     
     // Safely access the translation with type checking
-    const translation = text as ITranslation;
-    return translation[locale as keyof ITranslation] || translation.fr || translation.en || defaultText;
+    const translation = text as ProductITranslation;
+    return translation[locale as keyof ProductITranslation] || translation.fr || translation.en || defaultText;
   };
   
   // Helper function to get translated text for cart (ensures string output)
-  const getCartText = (text: string | ITranslation | undefined, defaultText: string = ''): string => {
+  const getCartText = (text: string | ProductITranslation | undefined, defaultText: string = ''): string => {
     if (!text) return defaultText;
     if (typeof text === 'string') return text;
     if (!isITranslation(text)) return defaultText;
@@ -73,12 +73,12 @@ const ProductDetail: React.FC<ProductProps> = ({ product }) => {
   };
   
   // Helper function to ensure string output for JSX rendering
-  const renderTranslatedText = (text: string | ITranslation | undefined, defaultText: string = ''): React.ReactNode => {
+  const renderTranslatedText = (text: string | ProductITranslation | undefined, defaultText: string = ''): React.ReactNode => {
     if (!text) return defaultText;
     if (typeof text === 'string') return text;
     if (!isITranslation(text)) return defaultText;
     
-    return text[locale as keyof ITranslation] || text.fr || text.en || defaultText;
+    return text[locale as keyof ProductITranslation] || text.fr || text.en || defaultText;
   };
   
   const [isModalOpen, setIsModalOpen] = useState(false);
