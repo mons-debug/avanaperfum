@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test AVANA Notifications</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin: 10px 0; }
+        input, button { padding: 10px; margin: 5px; }
+        button { background: #c8a45d; color: white; border: none; cursor: pointer; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🛍️ Test AVANA Notifications</h1>
+    <p>Use this form to create a test order and verify WebSocket notifications work.</p>
+    
+    <form id="orderForm">
+        <div class="form-group">
+            <input type="text" id="name" placeholder="Nom du client" required>
+        </div>
+        <div class="form-group">
+            <input type="tel" id="phone" placeholder="Téléphone" required>
+        </div>
+        <div class="form-group">
+            <input type="text" id="address" placeholder="Adresse" required>
+        </div>
+        <div class="form-group">
+            <input type="text" id="city" placeholder="Ville" required>
+        </div>
+        <button type="submit">📦 Créer Commande Test</button>
+    </form>
+    
+    <div id="status"></div>
+    
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '⏳ Création de la commande...';
+            statusDiv.className = 'status';
+            
+            const orderData = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                items: [{ 
+                    id: 'test-product-' + Date.now(),
+                    name: 'Test Product', 
+                    price: 99, 
+                    quantity: 1 
+                }],
+                originalSubtotal: 99,
+                bulkDiscount: 0,
+                subtotal: 99,
+                shipping: 0,
+                total: 99,
+                totalQuantity: 1,
+                promoMessage: 'Test order'
+            };
+            
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.innerHTML = '✅ Commande créée! Vérifiez les notifications admin.';
+                    statusDiv.className = 'status success';
+                    document.getElementById('orderForm').reset();
+                } else {
+                    statusDiv.innerHTML = '❌ Erreur: ' + result.error;
+                    statusDiv.className = 'status error';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Erreur réseau: ' + error.message;
+                statusDiv.className = 'status error';
+            }
+        });
+    </script>
+</body>
+</html> 

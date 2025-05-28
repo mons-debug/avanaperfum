@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test AVANA WebSocket</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; max-height: 300px; overflow-y: auto; }
+        button { padding: 10px; margin: 5px; background: #c8a45d; color: white; border: none; cursor: pointer; }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>🔌 Test AVANA WebSocket Connection</h1>
+    
+    <div id="status" class="status disconnected">❌ Disconnected</div>
+    
+    <button onclick="testConnection()">🧪 Test Connection</button>
+    <button onclick="testNotification()">📢 Test Notification</button>
+    <button onclick="clearLog()">🗑️ Clear Log</button>
+    
+    <div id="log" class="log"></div>
+    
+    <script>
+        let socket = null;
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function testConnection() {
+            if (socket) {
+                socket.disconnect();
+            }
+            
+            log('🔌 Connecting to WebSocket...');
+            socket = io();
+            
+            socket.on('connect', () => {
+                log('✅ Connected! Socket ID: ' + socket.id);
+                statusDiv.innerHTML = '✅ Connected';
+                statusDiv.className = 'status connected';
+            });
+            
+            socket.on('disconnect', () => {
+                log('❌ Disconnected');
+                statusDiv.innerHTML = '❌ Disconnected';
+                statusDiv.className = 'status disconnected';
+            });
+            
+            socket.on('welcome', (data) => {
+                log('👋 Welcome message: ' + JSON.stringify(data));
+            });
+            
+            socket.on('test-response', (data) => {
+                log('🧪 Test response: ' + JSON.stringify(data));
+            });
+            
+            socket.on('new-order', (data) => {
+                log('📢 NEW ORDER RECEIVED: ' + JSON.stringify(data));
+                alert('🛍️ New Order: ' + data.order.name + ' - ' + data.order.total + ' DH');
+            });
+            
+            socket.on('connect_error', (error) => {
+                log('❌ Connection error: ' + error.message);
+            });
+        }
+        
+        function testNotification() {
+            if (socket && socket.connected) {
+                log('📤 Sending test message...');
+                socket.emit('test', { message: 'Test from browser', timestamp: new Date() });
+            } else {
+                log('❌ Not connected! Click "Test Connection" first.');
+            }
+        }
+        
+        function clearLog() {
+            logDiv.innerHTML = '';
+        }
+        
+        // Auto-connect on page load
+        window.onload = () => {
+            testConnection();
+        };
+    </script>
+</body>
+</html> 
