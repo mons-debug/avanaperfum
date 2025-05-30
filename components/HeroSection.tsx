@@ -17,16 +17,19 @@ const HeroSection: React.FC = () => {
   const heroSlides = [
     {
       image: '/images/hero3.jpg',
+      mobileImage: '/images/heromobile.png',
       alt: 'AVANA PARFUM luxury fragrance by the ocean at sunset',
       position: 'object-[90%_center] sm:object-[80%_center] lg:object-[75%_center]'
     },
     {
       image: '/images/hero2.jpg',
+      mobileImage: '/images/heromobile.png',
       alt: 'AVANA PARFUM premium collection with elegant packaging',
       position: 'object-[75%_center] sm:object-[80%_center] lg:object-[85%_center]'
     },
     {
       image: '/images/hero-avana.jpg',
+      mobileImage: '/images/heromobile.png',
       alt: 'AVANA PARFUM signature perfume collection',
       position: 'object-center sm:object-center lg:object-center'
     }
@@ -59,7 +62,7 @@ const HeroSection: React.FC = () => {
             {/* Mobile-optimized image container */}
             <div className="relative h-full w-full md:hidden">
               <Image
-                src={slide.image === '/images/hero-avana.jpg' ? '/images/heromobile.png' : slide.image}
+                src={slide.mobileImage}
                 alt={slide.alt}
                 fill
                 className="object-cover object-center"
@@ -122,13 +125,13 @@ const HeroSection: React.FC = () => {
               href="/shop?gender=Homme"
               className="px-6 py-3 md:px-8 md:py-4 bg-[#c8a45d] hover:bg-[#b08d48] text-white font-semibold rounded-full transition-all duration-300 text-sm md:text-base shadow-xl hover:shadow-2xl hover:scale-105 text-center"
             >
-              Pour Lui
+              Homme
             </Link>
             <Link
               href="/shop?gender=Femme"
               className="px-6 py-3 md:px-8 md:py-4 border-2 border-white text-white rounded-full hover:bg-white hover:text-[#c8a45d] transition-all duration-300 text-sm md:text-base shadow-xl hover:shadow-2xl hover:scale-105 backdrop-blur-sm text-center font-semibold"
             >
-              Pour Elle
+              Femme
             </Link>
           </div>
         </div>

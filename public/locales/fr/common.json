@@ -20,12 +20,12 @@
       "viewAll": "Voir Tout"
     },
     "forHim": {
-      "title": "Pour Lui",
+      "title": "Homme",
       "subtitle": "Parfums masculins inspirés des plus grandes marques",
       "viewAll": "Voir Tous les Parfums Homme"
     },
     "forHer": {
-      "title": "Pour Elle",
+      "title": "Femme",
       "subtitle": "Parfums féminins inspirés des plus grandes marques",
       "viewAll": "Voir Tous les Parfums Femme"
     },
@@ -108,8 +108,8 @@
       "workingHours": "Lun-Sam, 9h-18h"
     },
     "links": {
-      "forHim": "Pour Lui",
-      "forHer": "Pour Elle",
+      "forHim": "Homme",
+      "forHer": "Femme",
       "collections": "Collections",
       "newArrivals": "Nouveautés",
       "bestSellers": "Meilleures Ventes",

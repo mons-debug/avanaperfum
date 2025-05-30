@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import ProductForm from '@/components/ProductForm';
 import LocalImageInstructions from '@/components/LocalImageInstructions';
+import { connectToDB } from '@/lib/mongodb';
+import Product from '@/models/Product';
 
 // Define the product type
 interface Product {
@@ -27,28 +29,23 @@ interface PageProps {
 
 export default async function EditProductPage({ params }: PageProps) {
   const { id } = await params;
-  // Fetch product data on the server side
+  // Fetch product data directly from database instead of API call
   let product: Product | null = null;
   let error = '';
   
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/products/${id}`, 
-      { cache: 'no-store' }
-    );
+    await connectToDB();
     
-    if (!response.ok) {
-      throw new Error('Failed to fetch product');
-    }
+    const foundProduct = await Product.findById(id);
     
-    const data = await response.json();
-    if (data.success) {
-      product = data.data;
+    if (!foundProduct) {
+      error = 'Product not found';
     } else {
-      throw new Error(data.error || 'Failed to fetch product');
+      // Convert mongoose document to plain object and handle _id
+      product = JSON.parse(JSON.stringify(foundProduct));
     }
   } catch (err) {
-    error = err instanceof Error ? err.message : 'An error occurred';
+    error = err instanceof Error ? err.message : 'An error occurred while fetching the product';
     console.error('Error fetching product:', err);
   }
   
@@ -71,8 +68,6 @@ export default async function EditProductPage({ params }: PageProps) {
   if (!product) {
     notFound();
   }
-
-  // No loading state needed as we're using server components
 
   return (
     <div className="container mx-auto px-4 py-8">
