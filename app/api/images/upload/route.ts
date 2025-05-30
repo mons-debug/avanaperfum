@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // This function will handle direct image uploads
 export async function POST(request: NextRequest) {
   try {
+    // Check if Cloudinary is configured
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      return NextResponse.json(
+        { success: false, error: 'Cloudinary configuration missing. Please contact support.' },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
@@ -33,50 +46,71 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get file bytes
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     // Generate a unique filename
+    const timestamp = Date.now();
     const originalName = file.name.replace(/[^a-zA-Z0-9-_.]/g, '_');
-    const fileExt = originalName.split('.').pop() || 'jpg';
-    const fileName = `${uuidv4().substring(0, 8)}-${originalName}`;
-    const productImagePath = `/images/products/${fileName}`;
-    
-    // Ensure directory exists
-    const productsDir = path.join(process.cwd(), 'public/images/products');
-    if (!fs.existsSync(productsDir)) {
-      fs.mkdirSync(productsDir, { recursive: true });
-    }
-    
-    // Write file to disk
-    const filePath = path.join(process.cwd(), 'public', productImagePath);
-    fs.writeFileSync(filePath, buffer);
-    
-    // Add a timestamp to prevent caching
-    const timestampedPath = `${productImagePath}?t=${Date.now()}`;
-    
-    // Return the response with cache control headers
-    const response = NextResponse.json({
+    const nameWithoutExt = originalName.split('.')[0];
+    const publicId = `avana-products/${timestamp}-${nameWithoutExt}`;
+
+    // Upload to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'image',
+          public_id: publicId,
+          folder: 'avana-products',
+          transformation: [
+            { width: 800, height: 800, crop: 'limit', quality: 'auto:good' }
+          ]
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      ).end(buffer);
+    });
+
+    const result = uploadResult as any;
+
+    // Return success response
+    return NextResponse.json({
       success: true,
       data: {
-        url: timestampedPath,
-        filename: fileName,
+        url: result.secure_url,
+        public_id: result.public_id,
+        filename: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
+        width: result.width,
+        height: result.height
       }
     });
-    
-    // Add headers to prevent caching
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    
-    return response;
+
   } catch (error) {
     console.error('Error uploading image:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to upload image';
+    if (error instanceof Error) {
+      if (error.message.includes('cloudinary')) {
+        errorMessage = 'Cloud storage service error. Please try again.';
+      } else if (error.message.includes('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
     return NextResponse.json(
-      { success: false, error: 'Failed to upload image' },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }

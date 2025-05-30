@@ -2,7 +2,7 @@
 
 import { useState, ChangeEvent, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { FaCloudUploadAlt, FaTrash, FaSpinner } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaTrash, FaSpinner, FaExclamationTriangle, FaInfo } from 'react-icons/fa';
 import axios from 'axios';
 
 interface ImageUploaderProps {
@@ -24,6 +24,7 @@ export default function ImageUploader({
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [error, setError] = useState<string>('');
   const [showFallback, setShowFallback] = useState<boolean>(false);
+  const [showCloudinaryInfo, setShowCloudinaryInfo] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const placeholderImage = '/images/product-placeholder.svg';
 
@@ -67,6 +68,7 @@ export default function ImageUploader({
     setIsUploading(true);
     setUploadProgress(0);
     setShowFallback(false);
+    setShowCloudinaryInfo(false);
     
     try {
       // Set up progress tracking
@@ -108,7 +110,23 @@ export default function ImageUploader({
       }, 500);
     } catch (err: any) {
       console.error('Upload error:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to upload image. Please try again.');
+      
+      let errorMessage = 'Failed to upload image. Please try again.';
+      
+      // Handle specific error types
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+        
+        // Check if it's a Cloudinary configuration error
+        if (errorMessage.includes('Cloudinary configuration missing')) {
+          setShowCloudinaryInfo(true);
+          errorMessage = 'Image upload service not configured. Please see setup instructions below.';
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -138,7 +156,29 @@ export default function ImageUploader({
     <div className={`image-uploader ${className}`}>
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-md mb-3 text-sm">
-          {error}
+          <div className="flex items-start">
+            <FaExclamationTriangle className="mt-0.5 mr-2 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+
+      {showCloudinaryInfo && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-md mb-4 text-sm">
+          <div className="flex items-start">
+            <FaInfo className="mt-0.5 mr-2 flex-shrink-0" />
+            <div>
+              <h4 className="font-medium mb-2">Image Upload Setup Required</h4>
+              <p className="mb-2">To enable image uploads, you need to configure Cloudinary:</p>
+              <ol className="list-decimal list-inside space-y-1 text-xs">
+                <li>Create a free account at <a href="https://cloudinary.com" target="_blank" rel="noopener noreferrer" className="underline">cloudinary.com</a></li>
+                <li>Get your Cloud Name, API Key, and API Secret from the dashboard</li>
+                <li>Add these to your environment variables</li>
+                <li>Restart your application</li>
+              </ol>
+              <p className="mt-2 text-xs">See <code>CLOUDINARY-SETUP.md</code> for detailed instructions.</p>
+            </div>
+          </div>
         </div>
       )}
       
@@ -208,7 +248,7 @@ export default function ImageUploader({
                 </div>
                 <div className="flex items-center justify-center mt-2 text-sm text-blue-600">
                   <FaSpinner className="animate-spin mr-2" />
-                  <span>Uploading... {uploadProgress}%</span>
+                  <span>Uploading to cloud storage... {uploadProgress}%</span>
                 </div>
               </div>
             )}
