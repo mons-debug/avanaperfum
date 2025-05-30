@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaArrowLeft, FaTrash, FaMinus, FaPlus, FaWhatsapp, FaShoppingCart, FaShoppingBag } from 'react-icons/fa';
+import { FaArrowLeft, FaTrash, FaMinus, FaPlus, FaWhatsapp, FaShoppingCart, FaShoppingBag, FaSync } from 'react-icons/fa';
 import { getCartTotal, getOriginalCartTotal, getCartBulkPricing, updateCartItemQuantity, removeFromCart, clearCart, calculateShipping, getTotalWithShipping } from '@/lib/cart';
 import { getPromotionalMessage } from '@/lib/pricing';
 import OrderModal from '@/components/OrderModal';
@@ -140,6 +140,19 @@ export default function CartPage() {
                 </div>
               </div>
             )}
+
+            {/* Cart Sync Notice */}
+            <div className="mb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-center">
+                  <FaSync className="text-blue-600 mr-3" />
+                  <div>
+                    <h3 className="text-blue-800 font-medium">Panier Synchronisé</h3>
+                    <p className="text-blue-600 text-sm">Vos produits sont automatiquement disponibles pour la commande par formulaire ou WhatsApp</p>
+                  </div>
+                </div>
+              </div>
+            </div>
             
             <div className="flex flex-col lg:flex-row gap-8">
               {/* Cart Items */}
@@ -299,22 +312,40 @@ export default function CartPage() {
                       </div>
                     </div>
                     
+                    {/* Checkout Options Header */}
+                    <div className="mb-4">
+                      <h3 className="text-lg font-medium text-gray-800 mb-2">Options de commande</h3>
+                      <p className="text-sm text-gray-600">Choisissez votre méthode de commande préférée</p>
+                    </div>
+                    
+                    {/* Regular Checkout Button */}
                     <button
                       onClick={() => cartItems.length > 0 && openOrderModal()}
-                      className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium flex items-center justify-center mb-4"
+                      className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium flex items-center justify-center mb-3"
                     >
                       <FaShoppingBag className="mr-2" size={18} />
-                      Achetez maintenant
+                      Commande par formulaire
                     </button>
                     
+                    {/* WhatsApp Checkout Button */}
                     <Link
                       href={`https://wa.me/+212674428593?text=${encodeURIComponent(generateWhatsAppMessage())}`}
                       target="_blank"
                       className="w-full flex items-center justify-center bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-medium"
                     >
                       <FaWhatsapp className="mr-2" size={20} />
-                      Commander via WhatsApp
+                      Commande via WhatsApp
                     </Link>
+
+                    {/* Benefits of sync */}
+                    <div className="mt-4 bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-start">
+                        <FaSync className="text-gray-400 mr-2 mt-0.5 flex-shrink-0" size={12} />
+                        <p className="text-xs text-gray-600">
+                          Vos produits sont synchronisés entre les deux méthodes de commande pour votre convenance.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

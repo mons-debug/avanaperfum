@@ -2,6 +2,9 @@
 
 import { calculateBulkPricing } from './pricing';
 
+// Import WhatsApp cart functions for synchronization
+import type { WhatsAppCartItem } from './whatsapp';
+
 // Define translation interface
 export interface ITranslation {
   en?: string;
@@ -46,6 +49,109 @@ declare global {
     cartItems?: CartProduct[];
     cartListeners?: CartListenerFunction[];
     clearCart?: () => void;
+    cartSyncInitialized?: boolean;
+  }
+}
+
+// Cart synchronization functions
+const WHATSAPP_CART_KEY = 'avana_whatsapp_cart';
+
+// Convert CartProduct to WhatsAppCartItem
+function convertToWhatsAppItem(cartProduct: CartProduct): WhatsAppCartItem {
+  return {
+    _id: cartProduct._id,
+    name: cartProduct.name,
+    price: cartProduct.price,
+    volume: cartProduct.volume,
+    inspiredBy: cartProduct.inspiredBy,
+    quantity: cartProduct.quantity
+  };
+}
+
+// Convert WhatsAppCartItem to CartProduct
+function convertFromWhatsAppItem(whatsappItem: WhatsAppCartItem): CartProduct {
+  return {
+    _id: whatsappItem._id,
+    name: whatsappItem.name || 'Produit',
+    price: whatsappItem.price || 99,
+    images: [], // WhatsApp cart doesn't store images
+    inspiredBy: whatsappItem.inspiredBy,
+    volume: whatsappItem.volume,
+    quantity: whatsappItem.quantity || 1
+  };
+}
+
+// Sync regular cart to WhatsApp cart
+function syncToWhatsAppCart() {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const cartItems = window.cartItems || [];
+    const whatsappItems = cartItems.map(convertToWhatsAppItem);
+    
+    localStorage.setItem(WHATSAPP_CART_KEY, JSON.stringify(whatsappItems));
+    
+    // Dispatch custom event to notify WhatsApp cart components
+    window.dispatchEvent(new CustomEvent('whatsappCartUpdated', { detail: whatsappItems }));
+  } catch (error) {
+    console.error('Error syncing to WhatsApp cart:', error);
+  }
+}
+
+// Sync WhatsApp cart to regular cart (called from WhatsApp functions)
+export function syncFromWhatsAppCart() {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const whatsappCart = localStorage.getItem(WHATSAPP_CART_KEY);
+    if (!whatsappCart) return;
+    
+    const whatsappItems: WhatsAppCartItem[] = JSON.parse(whatsappCart);
+    const cartItems = whatsappItems.map(convertFromWhatsAppItem);
+    
+    // Update window cart items
+    window.cartItems = cartItems;
+    
+    // Save to localStorage
+    localStorage.setItem('avana_cart', JSON.stringify(cartItems));
+    
+    // Notify all listeners
+    window.cartListeners?.forEach((listener) => listener([...cartItems]));
+  } catch (error) {
+    console.error('Error syncing from WhatsApp cart:', error);
+  }
+}
+
+// Initialize cart synchronization - call this when the app loads
+export function initializeCartSync() {
+  if (typeof window === 'undefined' || window.cartSyncInitialized) return;
+  
+  try {
+    // Get both carts
+    const savedCart = localStorage.getItem('avana_cart');
+    const whatsappCart = localStorage.getItem(WHATSAPP_CART_KEY);
+    
+    const regularCartItems: CartProduct[] = savedCart ? JSON.parse(savedCart) : [];
+    const whatsappCartItems: WhatsAppCartItem[] = whatsappCart ? JSON.parse(whatsappCart) : [];
+    
+    // Calculate quantities for both carts
+    const regularQuantity = regularCartItems.reduce((total, item) => total + item.quantity, 0);
+    const whatsappQuantity = whatsappCartItems.reduce((total, item) => total + (item.quantity || 1), 0);
+    
+    // Use the cart with more items as the source of truth
+    if (regularQuantity >= whatsappQuantity) {
+      // Sync regular cart to WhatsApp cart
+      window.cartItems = regularCartItems;
+      syncToWhatsAppCart();
+    } else {
+      // Sync WhatsApp cart to regular cart
+      syncFromWhatsAppCart();
+    }
+    
+    window.cartSyncInitialized = true;
+    console.log('Cart synchronization initialized');
+  } catch (error) {
+    console.error('Error initializing cart sync:', error);
   }
 }
 
@@ -55,10 +161,17 @@ if (typeof window !== 'undefined') {
   const savedCart = localStorage.getItem('avana_cart');
   window.cartItems = savedCart ? JSON.parse(savedCart) : [];
   window.cartListeners = window.cartListeners || [];
+  
+  // Initialize synchronization when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCartSync);
+  } else {
+    initializeCartSync();
+  }
 }
 
 // Helper function to convert a product with translations to a cart product
-function convertToCartProduct(product: ProductWithTranslation): Omit<CartProduct, 'quantity'> {
+function convertProductToCartFormat(product: ProductWithTranslation): Omit<CartProduct, 'quantity'> {
   const getTranslatedValue = (value: string | ITranslation | undefined, defaultVal: string = ''): string => {
     if (!value) return defaultVal;
     if (typeof value === 'string') return value;
@@ -85,7 +198,7 @@ export function addToCart(product: ProductWithTranslation | Omit<CartProduct, 'q
   
   // Convert product to cart product if it has translations
   const cartProduct = 'description' in product 
-    ? convertToCartProduct(product as ProductWithTranslation)
+    ? convertProductToCartFormat(product as ProductWithTranslation)
     : product as Omit<CartProduct, 'quantity'>;
   
     // Helper function to safely get string value from ITranslation or string
@@ -121,6 +234,9 @@ export function addToCart(product: ProductWithTranslation | Omit<CartProduct, 'q
   // Save to local storage
   localStorage.setItem('avana_cart', JSON.stringify(window.cartItems));
   
+  // Sync to WhatsApp cart
+  syncToWhatsAppCart();
+  
   // Notify all listeners with slight delay to ensure proper state update
   setTimeout(() => {
     window.cartListeners?.forEach((listener) => listener([...(window.cartItems || [])]));
@@ -139,6 +255,9 @@ export function removeFromCart(productId: string) {
   
   // Save to local storage
   localStorage.setItem('avana_cart', JSON.stringify(window.cartItems));
+  
+  // Sync to WhatsApp cart
+  syncToWhatsAppCart();
   
   // Notify all listeners
   window.cartListeners?.forEach((listener) => listener([...(window.cartItems || [])]));
@@ -231,6 +350,9 @@ export function clearCart() {
   // Save to local storage
   localStorage.setItem('avana_cart', JSON.stringify(window.cartItems));
   
+  // Sync to WhatsApp cart (clear it too)
+  syncToWhatsAppCart();
+  
   // Notify all listeners
   window.cartListeners?.forEach((listener) => listener([...(window.cartItems || [])]));
 };
@@ -263,6 +385,9 @@ export function updateCartItemQuantity(productId: string, quantity: number) {
     
     // Save to local storage
     localStorage.setItem('avana_cart', JSON.stringify(window.cartItems));
+    
+    // Sync to WhatsApp cart
+    syncToWhatsAppCart();
     
     // Notify all listeners
     window.cartListeners?.forEach((listener) => listener([...(window.cartItems || [])]));

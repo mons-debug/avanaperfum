@@ -112,6 +112,17 @@ export interface WhatsAppCartItem extends WhatsAppProduct {
 
 const WHATSAPP_CART_KEY = 'avana_whatsapp_cart';
 
+// Import sync function from cart (we'll import this dynamically to avoid circular imports)
+let syncFromWhatsAppCart: (() => void) | null = null;
+
+// Initialize sync function when available
+if (typeof window !== 'undefined') {
+  // Dynamically import sync function to avoid circular dependency
+  import('./cart').then(cartModule => {
+    syncFromWhatsAppCart = cartModule.syncFromWhatsAppCart;
+  }).catch(console.error);
+}
+
 // Get items from WhatsApp cart
 export const getWhatsAppCart = (): WhatsAppCartItem[] => {
   if (typeof window === 'undefined') return [];
@@ -143,10 +154,47 @@ export const addToWhatsAppCart = (product: WhatsAppProduct): void => {
     
     localStorage.setItem(WHATSAPP_CART_KEY, JSON.stringify(cart));
     
+    // Sync to regular cart
+    if (syncFromWhatsAppCart) {
+      syncFromWhatsAppCart();
+    }
+    
     // Dispatch custom event to notify components
     window.dispatchEvent(new CustomEvent('whatsappCartUpdated', { detail: cart }));
   } catch (error) {
     console.error('Error adding to WhatsApp cart:', error);
+  }
+};
+
+// Update WhatsApp cart item quantity
+export const updateWhatsAppCartQuantity = (productId: string, quantity: number): void => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const cart = getWhatsAppCart();
+    const existingIndex = cart.findIndex(item => item._id === productId);
+    
+    if (existingIndex >= 0) {
+      if (quantity <= 0) {
+        // Remove item if quantity is 0 or less
+        cart.splice(existingIndex, 1);
+      } else {
+        // Update quantity
+        cart[existingIndex].quantity = quantity;
+      }
+      
+      localStorage.setItem(WHATSAPP_CART_KEY, JSON.stringify(cart));
+      
+      // Sync to regular cart
+      if (syncFromWhatsAppCart) {
+        syncFromWhatsAppCart();
+      }
+      
+      // Dispatch custom event to notify components
+      window.dispatchEvent(new CustomEvent('whatsappCartUpdated', { detail: cart }));
+    }
+  } catch (error) {
+    console.error('Error updating WhatsApp cart quantity:', error);
   }
 };
 
@@ -159,6 +207,11 @@ export const removeFromWhatsAppCart = (productId: string): void => {
     const updatedCart = cart.filter(item => item._id !== productId);
     
     localStorage.setItem(WHATSAPP_CART_KEY, JSON.stringify(updatedCart));
+    
+    // Sync to regular cart
+    if (syncFromWhatsAppCart) {
+      syncFromWhatsAppCart();
+    }
     
     // Dispatch custom event to notify components
     window.dispatchEvent(new CustomEvent('whatsappCartUpdated', { detail: updatedCart }));
@@ -173,6 +226,11 @@ export const clearWhatsAppCart = (): void => {
   
   try {
     localStorage.removeItem(WHATSAPP_CART_KEY);
+    
+    // Sync to regular cart
+    if (syncFromWhatsAppCart) {
+      syncFromWhatsAppCart();
+    }
     
     // Dispatch custom event to notify components
     window.dispatchEvent(new CustomEvent('whatsappCartUpdated', { detail: [] }));
