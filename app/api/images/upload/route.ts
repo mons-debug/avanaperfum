@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,73 +37,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get file bytes
+    // Check if Cloudinary is configured
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      return NextResponse.json({
+        success: false,
+        error: 'Cloudinary not configured. Please add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your environment variables.',
+        configurationError: true
+      }, { status: 500 });
+    }
+
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Generate a unique filename
-    const originalName = file.name.replace(/[^a-zA-Z0-9-_.]/g, '_');
-    const fileExt = originalName.split('.').pop() || 'jpg';
-    const fileName = `${uuidv4().substring(0, 8)}-${originalName}`;
-    const productImagePath = `/images/products/${fileName}`;
-    
     try {
-      // Ensure directory exists
-      const productsDir = path.join(process.cwd(), 'public/images/products');
-      
-      // Check if we can write to the file system
-      if (!fs.existsSync(productsDir)) {
-        fs.mkdirSync(productsDir, { recursive: true });
-      }
-      
-      // Write file to disk
-      const filePath = path.join(process.cwd(), 'public', productImagePath);
-      fs.writeFileSync(filePath, buffer);
-      
-      // Add a timestamp to prevent caching
-      const timestampedPath = `${productImagePath}?t=${Date.now()}`;
-      
-      // Return the response with cache control headers
-      const response = NextResponse.json({
+      // Upload to Cloudinary
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type: 'auto',
+            folder: 'avana-parfum/products',
+            transformation: [
+              { width: 800, height: 800, crop: 'limit' },
+              { quality: 'auto:good' },
+              { format: 'auto' }
+            ]
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(buffer);
+      });
+
+      const cloudinaryResult = result as any;
+
+      return NextResponse.json({
         success: true,
         data: {
-          url: timestampedPath,
-          filename: fileName,
+          url: cloudinaryResult.secure_url,
+          public_id: cloudinaryResult.public_id,
+          filename: file.name,
           size: file.size,
-          type: file.type
+          type: file.type,
+          width: cloudinaryResult.width,
+          height: cloudinaryResult.height
         }
       });
+
+    } catch (cloudinaryError: any) {
+      console.error('Cloudinary upload error:', cloudinaryError);
       
-      // Add headers to prevent caching
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
-      
-      return response;
-      
-    } catch (fsError: any) {
-      console.error('File system error:', fsError);
-      
-      // Handle read-only file system (common in serverless environments)
-      if (fsError.code === 'EROFS' || fsError.code === 'EACCES' || fsError.message.includes('read-only')) {
-        return NextResponse.json({
-          success: false,
-          error: 'File system is read-only. This deployment environment doesn\'t support local file uploads. Consider using a VPS/dedicated server or enable persistent storage.',
-          deploymentError: true,
-          suggestions: [
-            'Deploy to a VPS or dedicated server with writable file system',
-            'Use a hosting platform that supports persistent storage',
-            'Mount a writable volume for file uploads',
-            'Consider using database storage for images (base64)'
-          ]
-        }, { status: 500 });
-      }
-      
-      // Other file system errors
       return NextResponse.json({
         success: false,
-        error: `File system error: ${fsError.message}`,
-        deploymentError: true
+        error: `Failed to upload to Cloudinary: ${cloudinaryError.message || 'Unknown error'}`,
+        cloudinaryError: true
       }, { status: 500 });
     }
     
